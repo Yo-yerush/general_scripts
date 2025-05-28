@@ -19,7 +19,7 @@ for SRR_ID in "${SRR_ARRAY[@]}"; do
     
     # convert the .sra file to fastq.gz
     echo "Converting ${SRR_ID} to '.fastq.gz'..."
-    fasterq-dump "$SRR_ID" --threads 10 -m 4G --progress --split-files
+    fasterq-dump "$SRR_ID" --threads 12 -m 4G --progress --split-files
     gzip "$SRR_ID".fastq
     
     # remove the .sra file
