@@ -147,7 +147,7 @@ cd $output_path/tmp
 
 ### Generate log file with a timestamp
 log_file="../${output_suffix}.log"
-echo "**  $(date +"%d-%m-%y %H:%M")" >"$log_file"
+echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
 echo "**  samples: ${sample_name[@]}" >> "$log_file"
 #echo "paired-end sequence: $paired_end_sequence" >> "$log_file"
 if [[ "$keep_cx" == "true" ]]; then
@@ -179,6 +179,7 @@ bismark_genome_preparation $output_path/genome_indx
 
 echo "" >> "$log_file"
 echo "-----------------------------------" >> "$log_file"
+echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
 echo "" >> "$log_file"
 
 ####################
@@ -211,18 +212,19 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
     echo "" >> "$log_file"
     echo "methylation calling..." >> "$log_file"
     mkdir -p $output_path/"$i"/methylation_extractor
-    bismark_methylation_extractor --CX --bedGraph --parallel "$n_cores_2" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam # *_bt2_"$Rs_type".bam
+    bismark_methylation_extractor --cytosine_report --CX --bedGraph --parallel "$n_cores_2" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam # *_bt2_"$Rs_type".bam
 
     if [[ "$keep_cx" == "true" ]]; then
-        # keep just 'CX_report' or '.bam' and '.cov' files
-        mv $output_path/"$i"/methylation_extractor/*.CX_report.txt $output_path/"$i"/methylation_extractor/"$i".CX_report.txt # change name
-        mv $output_path/"$i"/methylation_extractor/"$i".CX_report.txt $output_path
+        # keep just 'CX_report' or keep all bismark files
+        #mv $output_path/"$i"/methylation_extractor/*.CX_report.txt $output_path/"$i"/methylation_extractor/"$i".CX_report.txt # change name
+        #mv $output_path/"$i"/methylation_extractor/"$i".CX_report.txt $output_path
+        mv  $output_path/"$i"/"$i"_bismark_"$Rs_type".CX_report.txt $output_path
 
         # check if CX_report file exists
-        if [[ -f "$output_path/$i.CX_report.txt" ]]; then
-            echo "CX_report file: '$i.CX_report.txt' (exists)" >> "$log_file"
+        if [[ -f "$output_path/"$i"/"$i"_bismark_"$Rs_type".CX_report.txt" ]]; then
+            echo "CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt' (exists)" >> "$log_file"
         else
-            echo "Error: CX_report file: '$output_path/$i.CX_report.txt' does not exist." >> "$log_file"
+            echo "Error: CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt' does not exist." >> "$log_file"
         fi
 
         rm -r $output_path/"$i"
@@ -237,7 +239,6 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
     fi
 
     #echo "Completed sample: $i" >> "$log_file"
-    echo "Done" >> "$log_file"
     echo "" >> "$log_file"
     echo "-----------------------------------" >> "$log_file"
     echo "" >> "$log_file"
