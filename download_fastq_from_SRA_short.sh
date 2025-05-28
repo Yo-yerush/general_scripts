@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage: 
-#   download_fastq_from_SRA.sh "SRR534177 SRR534193 SRR534209" "/path/to/output"
+#   ./download_fastq_from_SRA.sh "SRR534177 SRR534193 SRR534209" "/path/to/output"
 
 SRR_ARRAY=($1) # space-separated SRR IDs
 OUTPUT_DIR=$2
