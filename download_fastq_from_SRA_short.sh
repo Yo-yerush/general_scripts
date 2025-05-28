@@ -14,12 +14,12 @@ cd "$OUTPUT_DIR"
 for SRR_ID in "${SRR_ARRAY[@]}"; do
     echo ""
     echo "Downloading ${SRR_ID}..."
-    prefetch "$SRR_ID"
+    prefetch "$SRR_ID" --progress
     echo ""
     
     # convert the .sra file to fastq.gz
     echo "Converting ${SRR_ID} to '.fastq.gz'..."
-    fasterq-dump "$SRR_ID" --split-files --threads 10 # --outdir "$OUTPUT_DIR"
+    fasterq-dump "$SRR_ID" --threads 10 -m 4G --progress --split-files
     gzip "$SRR_ID".fastq
     
     # remove the .sra file
