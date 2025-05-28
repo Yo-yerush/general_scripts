@@ -31,10 +31,10 @@ usage_yo="
  
  Create a sample table file (example):
  -------------------------------------
- mut_1    PATH/TO/FILE/m1_R1.fastq
- mut_1    PATH/TO/FILE/m1_R2.fastq
- mut_2    PATH/TO/FILE/m2_R1.fastq
- mut_2    PATH/TO/FILE/m2_R2.fastq
+ mt_1    PATH/TO/FILE/mt1_R1.fastq
+ mt_1    PATH/TO/FILE/mt1_R2.fastq
+ mt_2    PATH/TO/FILE/mt2_R1.fastq
+ mt_2    PATH/TO/FILE/mt2_R2.fastq
  wt_1    PATH/TO/FILE/wt1_R1.fastq
  wt_1    PATH/TO/FILE/wt1_R2.fastq
  wt_2    PATH/TO/FILE/wt2_R1.fastq
