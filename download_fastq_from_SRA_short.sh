@@ -12,15 +12,18 @@ mkdir -p "$OUTPUT_DIR"
 cd "$OUTPUT_DIR"
 
 for SRR_ID in "${SRR_ARRAY[@]}"; do
+    echo ""
     echo "Downloading ${SRR_ID}..."
     prefetch "$SRR_ID"
+    echo ""
     
     # convert the .sra file to fastq.gz
-    echo "Converting ${SRR_ID} to FASTQ..."
+    echo "Converting ${SRR_ID} to '.fastq.gz'..."
     fasterq-dump "$SRR_ID" --split-files --threads 10 # --outdir "$OUTPUT_DIR"
     gzip "$SRR_ID".fastq
     
     # remove the .sra file
+    echo ""
     echo "Removing ${SRR_ID}.sra file..."
     rm -r "${SRR_ID}"
     echo ""
@@ -29,3 +32,4 @@ done
 ########################
 
 echo "completed. check '$OUTPUT_DIR' directory"
+echo ""
