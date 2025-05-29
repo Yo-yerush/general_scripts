@@ -4,7 +4,7 @@
 
 #### Download fastq files from SRA and run [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
 ```
-./download_fastq_from_SRA_short.sh "SRR7848067 SRR7848068 SRR7848069 SRR7848070" "/home/yoyerush/yo/methylome_pipeline/other_mutants/dml3_NS"
+./download_fastq_from_SRA_short.sh "SRR7848067 SRR7848068 SRR7848069 SRR7848070" "/PATH/TO/dml3_NS"
 ```
 
 #### Create a sample table file (example):
@@ -20,7 +20,7 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 ```
 #### run Bismark to get only '**.CX_report.txt**' file (can run without '--cx' option to get all ouput files)
 ```
-.run_bismark_yo.sh -s dml3_NS/bismark_dml3_samples.txt -g /home/yoyerush/TAIR10_chr_all.fas.gz -o ./dml3_NS/bismark_results -n 32 -m 16G --cx
+.run_bismark_yo.sh -s ./dml3_NS/bismark_dml3_samples.txt -g /PATH/TO/TAIR10_chr_all.fas.gz -o ./dml3_NS/bismark_results -n 32 -m 16G --cx
 ```
 
 #### Use [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
