@@ -5,12 +5,12 @@ windowSize <- function(x, mcol_name, windowSize = 150000) {
     seqlengths(x) <- seqlens[seqlevels(x)]
 
     # windows by window size
-    windows <- tileGenome(seqlengths(x), # seqlens,
+    windows <- tileGenome(seqlens,
         tilewidth = windowSize,
         cut.last.tile.in.chrom = TRUE
     )
 
-    # map to windows and claculate mean value
+    # map to windows and calculate mean value
     hits <- findOverlaps(windows, x, ignore.strand = TRUE)
     mValue <- tapply(mcols(x)[[mcol_name]][subjectHits(hits)],
         queryHits(hits),
