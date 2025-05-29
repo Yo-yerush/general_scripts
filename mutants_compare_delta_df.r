@@ -1,5 +1,5 @@
 #########################################################################################################
-#   Calculate delta methylation in methylome '.wig' files
+#   Calculate delta (mutant vs. wt) methylation in methylome '.wig' files
 #
 # Description:
 #   This example script using input methylome from 'Stroud et al.' published data.
@@ -20,21 +20,21 @@ library(GenomicRanges)
 library(rtracklayer)
 library(circlize)
 
-file_path <- "C:/Users/YonatanY/Migal/Rachel Amir Team - General/Arabidopsis_db/Jacobsen_Lab_Epigenomics_Data/GSE39901_RAW/"
-output_dir <- "C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/mutants_figs/"
+file_path <- "PATH/TO/GSE39901_RAW/" # GEO: GSE39901 ; Stroud et al.
+output_dir <- "PATH/TO/mutants_figs/"
 
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/trimm_and_rename_seq.R")
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/edit_TE_file.R")
 
 ############# ############# ############# #############
 
-ann.file <- read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/annotation_files/Methylome.At_annotations.csv.gz") %>%
+ann.file <- read.csv("PATH/TO/Methylome.At_annotations.csv.gz") %>%
     makeGRangesFromDataFrame(., keep.extra.columns = T) %>%
     trimm_and_rename()
 
 genes_type <- ann.file[which(ann.file$type == "gene")]
 
-TE_4_dens <- edit_TE_file(read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t"))
+TE_4_dens <- edit_TE_file(read.csv("PATH/TO/TAIR10_Transposable_Elements.txt", sep = "\t"))
 
 ############# ############# ############# #############
 
