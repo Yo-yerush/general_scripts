@@ -1,3 +1,5 @@
+-----------------------------------------------------------------
+
 ### Download fastq files from SRA and run Bismark for dml3 samples
 ```
 ./download_fastq_from_SRA_short.sh "SRR7848067 SRR7848068 SRR7848069 SRR7848070" "/home/yoyerush/yo/methylome_pipeline/other_mutants/dml3_NS"
@@ -19,11 +21,12 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 .run_bismark_yo.sh -s dml3_NS/bismark_dml3_samples.txt -g /home/yoyerush/TAIR10_chr_all.fas.gz -o ./dml3_NS/bismark_results -n 32 -m 16G --cx
 ```
 
-##################################################
-# Calculate 'delta' methylation levels from '.wig' files ('stroud et al. 2013' example)
-### Run [mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/mutants_compare_delta_df.r) script
+-----------------------------------------------------------------
 
-### Than to create a ChrPlot:
+# Calculate 'delta' methylation levels from '.wig' files ('stroud et al. 2013' example)
+#### Use [mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/mutants_compare_delta_df.r) script
+
+#### Then to create a ChrPlot use this example:
 ```
 library(ggplot2)
 library(dplyr)
@@ -50,3 +53,7 @@ ChrPlots_CX("MTs_stroud", list(met1$cg,cmt2$cg,cmt3$cg), c("met1","cmt2","cmt3")
 ChrPlots_CX("MTs_stroud", list(met1$cg,cmt2$cg,cmt3$cg), c("met1","cmt2","cmt3"), "CHG", y_max = 0.2, y_mid = 0, y_min = -0.5, output_dir="PATH/TO/mutants_figs")
 ChrPlots_CX("MTs_stroud", list(met1$cg,cmt2$cg,cmt3$cg), c("met1","cmt2","cmt3"), "CHH", y_max = 0.05, y_mid = 0, y_min = -0.15, output_dir="PATH/TO/mutants_figs")
 ```
+
+#### ChrPlot in CHH context:
+![ChrPlot_CHH]([https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png](https://github.com/Yo-yerush/general_scripts/blob/main/ChrPlot_CHH_test_stroud_290525.svg))
+-----------------------------------------------------------------
