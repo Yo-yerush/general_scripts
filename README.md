@@ -7,7 +7,7 @@
 ./download_fastq_from_SRA_short.sh "SRR7848067 SRR7848068 SRR7848069 SRR7848070" "/PATH/TO/dml3_NS"
 ```
 
-#### Create a sample table file (example):
+#### Create a sample table file (*tab* delimiter):
 ```
 dml3_1    PATH/TO/FILE/dml3_1_R1.fastq
 dml3_1    PATH/TO/FILE/dml3_1_R2.fastq
