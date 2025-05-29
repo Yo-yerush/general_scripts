@@ -55,5 +55,5 @@ ChrPlots_CX("MTs_stroud", list(met1$cg,cmt2$cg,cmt3$cg), c("met1","cmt2","cmt3")
 ```
 
 #### ChrPlot in CHH context:
-![ChrPlot_CHH]([https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png](https://github.com/Yo-yerush/general_scripts/blob/main/ChrPlot_CHH_test_stroud_290525.svg))
+![fig]([https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png](https://github.com/Yo-yerush/general_scripts/blob/main/ChrPlot_CHH_test_stroud_290525.svg)
 -----------------------------------------------------------------
