@@ -5,7 +5,7 @@ windowSize <- function(x, mcol_name, windowSize = 150000) {
     seqlengths(x) <- seqlens[seqlevels(x)]
 
     # windows by window size
-    windows <- tileGenome(seqlens,
+    windows <- tileGenome(seqlengths(x), # seqlens,
         tilewidth = windowSize,
         cut.last.tile.in.chrom = TRUE
     )
