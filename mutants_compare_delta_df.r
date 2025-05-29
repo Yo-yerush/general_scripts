@@ -23,22 +23,8 @@ library(circlize)
 file_path <- "PATH/TO/GSE39901_RAW/" # GEO: GSE39901 ; Stroud et al.
 output_dir <- "PATH/TO/mutants_figs/"
 
-ann_file_url <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/Methylome.At_annotations.csv.gz"
-te_file_url <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt"
-
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/trimm_and_rename_seq.R")
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/edit_TE_file.R")
-
-############# ############# ############# #############
-
-ann.file <- readr::read_csv(ann_file_url) %>%
-    as.data.frame() %>%
-    makeGRangesFromDataFrame(., keep.extra.columns = T) %>%
-    trimm_and_rename()
-
-genes_type <- ann.file[which(ann.file$type == "gene")]
-
-TE_4_dens <- edit_TE_file(read.csv(te_file_url, sep = "\t"))
 
 ############# ############# ############# #############
 
