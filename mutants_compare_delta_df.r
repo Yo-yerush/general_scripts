@@ -18,7 +18,6 @@ library(dplyr)
 library(ggplot2)
 library(GenomicRanges)
 library(rtracklayer)
-library(circlize)
 
 file_path <- "PATH/TO/GSE39901_RAW/" # GEO: GSE39901 ; Stroud et al.
 output_dir <- "PATH/TO/mutants_figs/"
