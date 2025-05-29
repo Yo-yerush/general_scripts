@@ -1,4 +1,5 @@
 -----------------------------------------------------------------
+-----------------------------------------------------------------
 
 # WGBS pipeline
 
@@ -26,6 +27,7 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 #### * Use [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
 
 -----------------------------------------------------------------
+-----------------------------------------------------------------
 
 # Calculate and plot '*delta*' methylation levels from '*.wig*' files
 *[Stroud et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23313553/) ([SRP014726](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP014726&o=biosample_s%3Aa%3Bacc_s%3Aa))*
@@ -38,3 +40,5 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 ![fig](https://github.com/Yo-yerush/general_scripts/blob/main/ChrPlot_CHH_test_stroud_290525.svg)
 
 -----------------------------------------------------------------
+-----------------------------------------------------------------
+
