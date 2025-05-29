@@ -40,7 +40,7 @@ chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_
 ChrPlots_CX <- function(comparison_name, meth_var_list, meth_names, cntx, y_max = 1, y_mid = NULL, y_min = 0, italic_legend_names = TRUE, output_dir = ".") {
   ### color palette
   n.pal <- ifelse(length(meth_var_list) < 3, 3, length(meth_var_list))
-  col_vec <- c("gray50", "#bf682890", paste0(RColorBrewer::brewer.pal(n = n.pal, name = "Set1")[-5], "90"))
+  col_vec <- c("#00000090", "#bf682890", paste0(RColorBrewer::brewer.pal(n = n.pal, name = "Set1")[-5], "90"))
 
   ### change seqnames for plot
   meth_vars_trimmed <- lapply(meth_var_list, function(m) renameSeqlevels(m, gsub("Chr", "", seqlevels(m))))
