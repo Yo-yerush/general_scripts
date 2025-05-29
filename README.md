@@ -9,10 +9,10 @@
 
 #### Create a sample table file (example):
 ```
-dml_1    PATH/TO/FILE/mt1_R1.fastq
-dml_1    PATH/TO/FILE/mt1_R2.fastq
-dml_2    PATH/TO/FILE/mt2_R1.fastq
-dml_2    PATH/TO/FILE/mt2_R2.fastq
+dml3_1    PATH/TO/FILE/dml3_1_R1.fastq
+dml3_1    PATH/TO/FILE/dml3_1_R2.fastq
+dml3_2    PATH/TO/FILE/dml3_2_R1.fastq
+dml3_2    PATH/TO/FILE/dml3_2_R2.fastq
 wt_1    PATH/TO/FILE/wt1_R1.fastq
 wt_1    PATH/TO/FILE/wt1_R2.fastq
 wt_2    PATH/TO/FILE/wt2_R1.fastq
