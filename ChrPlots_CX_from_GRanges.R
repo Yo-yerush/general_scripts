@@ -1,8 +1,20 @@
 chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_min, col_vec) {
-
   ### filter by chromosome
   profile_vars <- lapply(profile_vars, function(x) {
     x[x@seqnames == chr.n]
+  })
+
+  ### if the seqlevels are not the same, align them
+  ### by taking the max length of each seqlevel
+  maxLens <- Reduce(
+    function(a, b) pmax(a, b, na.rm = TRUE),
+    lapply(profile_vars, seqlengths)
+  )
+  common_si <- Seqinfo(names(maxLens), maxLens)
+  profile_vars <- lapply(profile_vars, function(gr) {
+    seqlevels(gr) <- seqlevels(common_si) # ensure same ordering
+    seqinfo(gr) <- common_si # overwrite lengths
+    gr
   })
 
   ### make it as gr list
@@ -31,7 +43,7 @@ chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_
     }
   }
 
-  lines(pos, rep(y_mid, length(pos)), type = "o", col = "gray30", lty = 2, pch = 26 )
+  lines(pos, rep(y_mid, length(pos)), type = "o", col = "gray30", lty = 2, pch = 26)
   mtext(paste0("Chr ", chr.n), side = 1, line = 0, cex = 1)
 }
 
@@ -52,7 +64,7 @@ ChrPlots_CX <- function(comparison_name, meth_var_list, meth_names, cntx, y_max 
   meth_vars_trimmed <- lapply(meth_var_list, function(m) renameSeqlevels(m, gsub("Chr", "", seqlevels(m))))
 
   ### change value column name
-    meth_vars_trimmed <- lapply(meth_vars_trimmed, function(x) {
+  meth_vars_trimmed <- lapply(meth_vars_trimmed, function(x) {
     names(mcols(x)) <- "Proportion"
     x
   })
