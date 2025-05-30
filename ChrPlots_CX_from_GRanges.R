@@ -37,10 +37,16 @@ chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_
 
 ###################################################################
 
-ChrPlots_CX <- function(comparison_name, meth_var_list, meth_names, cntx, y_max = 1, y_mid = NULL, y_min = 0, italic_legend_names = TRUE, output_dir = ".") {
+ChrPlots_CX <- function(comparison_name, meth_var_list, meth_names, cntx, y_max = 1, y_mid = NULL, y_min = 0, italic_legend_names = TRUE, ylab_suffix = NULL, output_dir = ".") {
   ### color palette
   n.pal <- ifelse(length(meth_var_list) < 3, 3, length(meth_var_list))
   col_vec <- c("#00000090", "#bf682890", paste0(RColorBrewer::brewer.pal(n = n.pal, name = "Set1")[-5], "90"))
+
+  ### ylab suffix - in addition to 'CNTX methylation'
+  ### add 'ylab_suffix=(delta)' to get 'CG methylation (delta)'
+  if (!is.null(ylab_suffix)) {
+    ylab_suffix <- paste0(" ", ylab_suffix)
+  }
 
   ### change seqnames for plot
   meth_vars_trimmed <- lapply(meth_var_list, function(m) renameSeqlevels(m, gsub("Chr", "", seqlevels(m))))
@@ -58,7 +64,7 @@ ChrPlots_CX <- function(comparison_name, meth_var_list, meth_names, cntx, y_max 
   par(fig = c(0, 2, 0, 10) / 10)
   plot(runif(10), runif(10),
     xlim = c(0, 0.01),
-    ylim = c(y_min, y_max), axes = FALSE, type = "n", ylab = paste(cntx, " methylation"), xlab = ""
+    ylim = c(y_min, y_max), axes = FALSE, type = "n", ylab = paste0(cntx, " methylation", ylab_suffix), xlab = ""
   )
   y_mid <- ifelse(is.null(y_mid), (y_max + y_min) / 2, y_mid)
   axis(2, c(y_min, y_mid, y_max), lty = 1, labels = c(y_min, y_mid, y_max))
