@@ -36,13 +36,13 @@ chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_
         main = "", frame.plot = FALSE
     )
     if (cntx != "TE") {
-        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray", tck = 0.05)
+        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray40", tck = 0.025)
     } else {
         # color bellow the lines
         polygon(c(pos, rev(pos)),
         c(methylationProfiles[[1]]$Proportion, rep(y_min, length(pos))),
         col = adjustcolor(col[1], alpha.f = 0.2), border = NA)
-        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray10", tck = 0.075)
+        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray20", tck = 0.1)
     }
     if (length(methylationProfiles) > 1) {
         for (i in 2:length(methylationProfiles)) {
