@@ -45,7 +45,7 @@ library(ggplot2)
 library(dplyr)
 library(GenomicRanges)
 
-output_dir <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/mutants_figs"
+output_dir <- "PATH/TO/mutants_figs"
 
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/windowSize_for_GRanges_mcol.r")
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/ChrPlots_CX_yo.R")
