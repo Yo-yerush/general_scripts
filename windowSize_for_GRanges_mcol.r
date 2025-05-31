@@ -1,4 +1,4 @@
-windowSize <- function(x, mcol_name, windowSize = 5e5) {
+windowSize <- function(x, mcol_name, windowSize = 1.5e5) {
 
     # chromosome lengths
     seqlens <- vapply(split(end(x), seqnames(x)), max, numeric(1))
