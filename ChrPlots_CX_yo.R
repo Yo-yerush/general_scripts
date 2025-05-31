@@ -166,7 +166,7 @@ ChrPlots_CX_all <- function(
                 adj = ifelse(y_min_cntx == 0, 0.5, 0), #
                 line = 0.65,
                 col = "gray25",
-                cex = 0.7
+                cex = 0.5
             )
             mtext(
                 side = 2,
@@ -175,7 +175,7 @@ ChrPlots_CX_all <- function(
                 adj = 0.5, #
                 line = 0.65,
                 col = "gray25",
-                cex = 0.7
+                cex = 0.5
             )
             mtext(
                 side = 2,
@@ -184,7 +184,7 @@ ChrPlots_CX_all <- function(
                 adj = ifelse(y_max_cntx == 0, 0.5, 0.9), #
                 line = 0.65,
                 col = "gray25",
-                cex = 0.7
+                cex = 0.5
             )
 
             ## chromosome
