@@ -42,12 +42,12 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 ```
 
 Run Bismark to get only '**.CX_report.txt**' file
-* *Can run without '--cx' option to get all output files*
+* *run without '--cx' option to get all output files*
 ```
 .run_bismark_yo.sh -s ./dml3_NS/bismark_dml3_samples.txt -g /PATH/TO/TAIR10_chr_all.fas.gz -o ./dml3_NS/bismark_results -n 32 -m 16G --cx
 ```
 
-#### * Use [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
+#### Use [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
 ```
 
 ```
@@ -61,7 +61,7 @@ This will save '**.csv**' files of the total-methylation delta (mutants compared
 In this example, *mto1* mutant '**.csv**' file created by '**.CX_report.txt**' file, using '[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_CX_report_script.r)' script.
 
 #### Then to create **ChrPlots** use the following script
-*  *use 'TE_as_gr = NULL' argument to remove TE density from the plot*
+*  *use <TE_as_gr = NULL> argument to remove TE density from the plot*
 ```
 library(ggplot2)
 library(dplyr)
