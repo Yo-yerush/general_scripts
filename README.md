@@ -33,11 +33,11 @@ can run without '--cx' option to get all output files
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
-# Calculate and plot '*delta*' methylation levels from '*.wig*' files
+# Calculate and plot '*delta*' methylation levels
 *[Stroud et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23313553/). (SRA experiment: [SRP014726](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP014726&o=biosample_s%3Aa%3Bacc_s%3Aa))*
-#### * Use [mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_wig_script.r) script
-This will save '.csv' files of the total-methylation delta (mutants compare to WT)
-in this example, *mto1* mutant '.csv' file created by [mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_CX_report_script.r) script.
+#### Download '[*Stroud et al. (2013)*](https://pubmed.ncbi.nlm.nih.gov/23313553/)' SRA files  (*SRA experiment: [SRP014726](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP014726&o=biosample_s%3Aa%3Bacc_s%3Aa)*) and use [mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_wig_script.r) script
+This will save '**.csv**' files of the total-methylation delta (mutants compared to WT)
+in this example, *mto1* mutant '.csv' file created by '**.CX_report.txt**' file, using [mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_CX_report_script.r) script.
 
 #### * Then to create a ChrPlot use the following script
 ```
