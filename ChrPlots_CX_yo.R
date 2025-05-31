@@ -42,7 +42,7 @@ chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_
         polygon(c(pos, rev(pos)),
         c(methylationProfiles[[1]]$Proportion, rep(y_min, length(pos))),
         col = adjustcolor(col[1], alpha.f = 0.2), border = NA)
-        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray10", tck = 0.05)
+        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray10", tck = 0.075)
     }
     if (length(methylationProfiles) > 1) {
         for (i in 2:length(methylationProfiles)) {
@@ -142,7 +142,7 @@ ChrPlots_CX_all <- function(
 
         if (cntx != "TE") {
             ## y-axis
-            y_title <- paste0(cntx, " methylation ", ylab_suffix)
+            y_title <- paste0(cntx, " methylation", ylab_suffix)
             y_max_cntx <- ifelse(cntx == "CG", y_max_cg, ifelse(cntx == "CHG", y_max_chg, y_max_chh))
             y_mid_cntx <- ifelse(cntx == "CG", y_mid_cg, ifelse(cntx == "CHG", y_mid_chg, y_mid_chh))
             y_min_cntx <- ifelse(cntx == "CG", y_min_cg, ifelse(cntx == "CHG", y_min_chg, y_min_chh))
@@ -163,7 +163,7 @@ ChrPlots_CX_all <- function(
                 side = 2,
                 text = y_min_cntx,
                 at = y_min_cntx,
-                adj = 0, #
+                adj = ifelse(y_min_cntx == 0, 0.5, 0), #
                 line = 0.65,
                 col = "gray25",
                 cex = 0.7
@@ -181,7 +181,7 @@ ChrPlots_CX_all <- function(
                 side = 2,
                 text = y_max_cntx,
                 at = y_max_cntx,
-                adj = 0.9, #
+                adj = ifelse(y_max_cntx == 0, 0.5, 0.9), #
                 line = 0.65,
                 col = "gray25",
                 cex = 0.7
@@ -224,13 +224,15 @@ ChrPlots_CX_all <- function(
     legend("top",
         legend = meth_names,
         text.font = ifelse(italic_legend_names, 3, 1),
-        lty = 1, col = col_vec, bty = "n", cex = 1.2, lwd = 3
+        col = sub(".{2}$", "", col_vec), # remove the last two characters (e.g., "90")
+        lty = 1, bty = "n", cex = 1.2, lwd = 2
     )
 }
 
 ###################################################################
 
-upload_te <- function(te_file = "C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/annotation_files/TAIR10_Transposable_Elements.txt") {
+upload_te <- function() {
+    te_file <- "C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/annotation_files/TAIR10_Transposable_Elements.txt"
     source("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/scripts/trimm_and_rename_seq.R")
     source("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/scripts/edit_TE_file.R")
 
@@ -238,13 +240,13 @@ upload_te <- function(te_file = "C:/Users/YonatanY/Migal/Rachel Amir Team - Gene
         circlize::genomicDensity(window.size = 0.5e6) %>%
         makeGRangesFromDataFrame(keep.extra.columns = TRUE)
 
-    TE_4_dens <- renameSeqlevels(TE_4_dens, gsub("Chr", "", seqlevels(TE_4_dens)))
-    names(mcols(TE_4_dens)) <- "Proportion"
-
     return(TE_4_dens)
 }
 
 te_plot_conf <- function(te_gr) {
+    te_gr <- renameSeqlevels(te_gr, gsub("Chr|chr|chromosome", "", seqlevels(te_gr)))
+    names(mcols(te_gr)) <- "Proportion"
+
     y_max_te <- 1 # max(te_gr$Proportion)
     y_mid_te <- 0.5 # y_max_te / 2
     y_min_te <- 0
