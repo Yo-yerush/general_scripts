@@ -1,10 +1,17 @@
 Workflows:
+
 1. Download SRA files (as '*.fastq*')
-2. WGBS pipeline - using  [Bismark software](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.) and [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
-3. Calculate and plot '*delta*' methylation levels
+2. WGBS pipeline - using  [Bismark software](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.)
+3. [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
+
+4. Plot **delta** methylation levels from '*.wig*' or .'*CX_report.txt*' files
+
+5. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data
+6. Classify into gene groups (epigenetic, metabolism, stress-related, etc.)
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
+
 ## Download fastq files from SRA
 #### * Download fastq files from SRA and run [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
 ```
