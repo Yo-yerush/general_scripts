@@ -14,29 +14,15 @@ Workflows:
 -----------------------------------------------------------------
 
 ## WGBS pipeline
-run [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
+#### Run [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
 
- Download Arabidopsis reference genome (TAIR10):
- -----------------------------------------------
- $ cd /PATH/TO
- $ wget -O TAIR10_chr_all.fas.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
- 
- Create a sample table file (example):
- -------------------------------------
- mt_1    PATH/TO/FILE/mt1_R1.fastq
- mt_1    PATH/TO/FILE/mt1_R2.fastq
- mt_2    PATH/TO/FILE/mt2_R1.fastq
- mt_2    PATH/TO/FILE/mt2_R2.fastq
- wt_1    PATH/TO/FILE/wt1_R1.fastq
- wt_1    PATH/TO/FILE/wt1_R2.fastq
- wt_2    PATH/TO/FILE/wt2_R1.fastq
- wt_2    PATH/TO/FILE/wt2_R2.fastq
- 
- Run:
- ----
- $ ./run_bismark_yo.sh -s samples_table.txt -g TAIR10_chr_all.fas.gz --cx
- 
-##### Create a sample table file (*tab* delimiter)
+ Download *Arabidopsis* reference genome ([TAIR10](https://www.arabidopsis.org/))
+ ```
+ cd /PATH/TO
+ wget -O TAIR10_chr_all.fas.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
+ ```
+
+Create a sample table file (*tab* delimiter)
 ```
 dml3_1    PATH/TO/FILE/dml3_1_R1.fastq
 dml3_1    PATH/TO/FILE/dml3_1_R2.fastq
@@ -47,6 +33,12 @@ wt_1    PATH/TO/FILE/wt1_R2.fastq
 wt_2    PATH/TO/FILE/wt2_R1.fastq
 wt_2    PATH/TO/FILE/wt2_R2.fastq
 ```
+ 
+ Run:
+```
+ ./run_bismark_yo.sh -s samples_table.txt -g TAIR10_chr_all.fas.gz --cx
+ ```
+
 ##### * Run Bismark to get only '**.CX_report.txt**' file
 Can run without '--cx' option to get all output files
 ```
@@ -63,11 +55,11 @@ Can run without '--cx' option to get all output files
 
 ## Calculate and plot '*delta*' methylation levels
 #### Download '[*Stroud et al. (2013)*](https://pubmed.ncbi.nlm.nih.gov/23313553/)' '**.wig**' files  (*SRA experiment: '[SRP014726](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP014726&o=biosample_s%3Aa%3Bacc_s%3Aa)'*) and use '[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_wig_script.r)' script
-This will save '**.csv**' files of the total-methylation delta (mutants compared to WT)
-in this example, *mto1* mutant '**.csv**' file created by '**.CX_report.txt**' file, using '[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_CX_report_script.r)' script.
+This will save '**.csv**' files of the total-methylation delta (mutants compared to WT).
+In this example, *mto1* mutant '**.csv**' file created by '**.CX_report.txt**' file, using '[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_CX_report_script.r)' script.
 
 #### Then to create **ChrPlots** use the following script
-*  use 'TE_as_gr = NULL' argument ro remove TE density from teh plot
+*  *use 'TE_as_gr = NULL' argument to remove TE density from the plot*
 ```
 library(ggplot2)
 library(dplyr)
@@ -117,7 +109,7 @@ ChrPlots_CX_all(
     )
 dev.off()
 ```
-#### ChrPlots:
+#### example output
 ![fig](https://github.com/Yo-yerush/general_scripts/blob/main/ChrPlot_test_stroud_all.svg)
 
 -----------------------------------------------------------------
