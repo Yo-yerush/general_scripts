@@ -119,6 +119,10 @@ mapfile -t R2_fastq_path < <(awk '$2 ~ /(_R2|_2\.f)/ {print $2}' "$sample_table"
 
 paired_end_sequence=true
 ((${#R2_fastq_path[@]} == 0)) && paired_end_sequence=false
+if [[ "$paired_end_sequence" == "false" ]]; then
+    # For single-end, use all rows in the samples table as read file paths
+    mapfile -t R1_fastq_path < <(awk '{print $2}' "$sample_table")
+fi
 
 ####################
 
