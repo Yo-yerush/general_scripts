@@ -1,4 +1,5 @@
 #!/bin/bash
+
 usage_yo="
 ###############################################################################
  YO - 260525
@@ -131,12 +132,12 @@ fi
 ####################
 
 ori_path=$(pwd)
-mkdir $output_path
+mkdir -p $output_path
 cd $output_path
 output_path=$(pwd)
 
 ### tmp file for analysis
-mkdir $output_path/tmp
+mkdir -p $output_path/tmp
 cd $output_path/tmp
 
 ### Generate log file with a timestamp
