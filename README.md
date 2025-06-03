@@ -5,12 +5,21 @@ Workflows:
 3. [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
 
 4. Plot **delta** methylation levels from '*.wig*' or '*.CX_report.txt*' files
-   
-5. RNAseq pipeline - using [RSEM software](https://github.com/deweylab/RSEM)
-6. RNAseq downstream pipeline
-   
-7. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data
-8. Classify into gene groups (epigenetic, metabolism, stress-related, etc.)
+5. genePlots
+6. long/short TEs
+7. sub-context analysis
+
+8. RNAseq pipeline - using [RSEM software](https://github.com/deweylab/RSEM)
+9. RNAseq downstream pipeline
+
+10. DMRs-DEGs correlations
+11. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data
+12. Classify into gene groups (epigenetic, metabolism, stress-related, etc.)
+13. TEs near DEGs
+
+14. KEGG pathways - enrichment and viewPlots
+15. GO analysis
+16. REVIGO scripts
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
