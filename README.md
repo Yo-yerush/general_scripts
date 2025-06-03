@@ -15,7 +15,7 @@ Workflows:
 10. DMRs-DEGs correlations
 11. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data
 12. Classify into gene groups (epigenetic, metabolism, stress-related, etc.)
-13. TEs near DEGs
+13. Methylated TEs near DEGs
 
 14. KEGG pathways - enrichment and viewPlots
 15. GO analysis
