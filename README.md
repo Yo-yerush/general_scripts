@@ -42,7 +42,7 @@ Workflows:
  ```
 
 Create a sample table file (*tab* delimiter)
-```bash
+```txt
 dml3_1    PATH/TO/FILE/dml3_1_R1.fastq
 dml3_1    PATH/TO/FILE/dml3_1_R2.fastq
 dml3_2    PATH/TO/FILE/dml3_2_R1.fastq
