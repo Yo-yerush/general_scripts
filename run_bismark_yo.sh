@@ -217,12 +217,12 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
 
         mv  $output_path/"$i"/methylation_extractor/*.CX_report.txt $output_path
 
-        # check if CX_report file exists
-        if [[ -f "$output_path/"$i"_*.CX_report.txt" ]]; then
-            echo "CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt'" >> "$log_file"
-        else
-            echo "Error: CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt' does not exist." >> "$log_file"
-        fi
+        ## check if CX_report file exists
+        #if [[ -f "$output_path/"$i"_*.CX_report.txt" ]]; then
+        #    echo "CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt'" >> "$log_file"
+        #else
+        #    echo "Error: CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt' does not exist." >> "$log_file"
+        #fi
 
         rm -r $output_path/"$i"
 
