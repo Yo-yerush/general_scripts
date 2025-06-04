@@ -36,13 +36,13 @@ Workflows:
 #### Run [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
 
  Download *Arabidopsis* reference genome ([TAIR10](https://www.arabidopsis.org/))
- ```
+ ```bash
  cd /PATH/TO
  wget -O TAIR10_chr_all.fas.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
  ```
 
 Create a sample table file (*tab* delimiter)
-```
+```bash
 dml3_1    PATH/TO/FILE/dml3_1_R1.fastq
 dml3_1    PATH/TO/FILE/dml3_1_R2.fastq
 dml3_2    PATH/TO/FILE/dml3_2_R1.fastq
@@ -55,7 +55,7 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 
 Run Bismark to get only '**.CX_report.txt**' file
 * *run without '--cx' option to get all output files*
-```
+```bash
 .run_bismark_yo.sh -s ./dml3_NS/bismark_dml3_samples.txt -g /PATH/TO/TAIR10_chr_all.fas.gz -o ./dml3_NS/bismark_results -n 32 -m 16G --cx
 ```
 
