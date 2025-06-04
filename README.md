@@ -26,7 +26,7 @@ Workflows:
 
 ## Download fastq files from SRA
 #### Download fastq files from SRA and run [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
-```
+```bash
 ./download_fastq_from_SRA_short.sh "SRR7848067 SRR7848068 SRR7848069 SRR7848070" "/PATH/TO/dml3_NS"
 ```
 -----------------------------------------------------------------
@@ -74,7 +74,7 @@ In this example, *mto1* mutant '**.csv**' file created by '**.CX_report.txt**' f
 
 #### Then to create **ChrPlots** use the following script
 *  *use <TE_as_gr = NULL> argument to remove TE density from the plot*
-```
+```r
 library(ggplot2)
 library(dplyr)
 library(GenomicRanges)
