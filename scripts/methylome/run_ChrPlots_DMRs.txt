@@ -1,0 +1,12 @@
+source("ChrPlots_DMRs.R")
+
+  for (context in c("CG","CHG","CHH")) {
+    var1 = "wt"
+    var2 = "mto3"
+    comparison_name = paste0(var2,"_vs_",var1)
+    DMRs_df_0 = read.csv(paste0("P:/yonatan/methionine/methylome_23/BSseq_results_161123/",comparison_name,"/DMRs_",context,"_",comparison_name,".csv"))
+    DMRs_df = GRanges(seqnames = DMRs_df_0$seqnames, ranges = IRanges(DMRs_df_0$start,DMRs_df_0$end))
+    DMRs_df$pValue = DMRs_df_0$pValue
+    DMRs_df$regionType = DMRs_df_0$regionType
+    ChrPlots_DMRs(comparison_name,DMRs_df,var1,var2,context)
+  }
