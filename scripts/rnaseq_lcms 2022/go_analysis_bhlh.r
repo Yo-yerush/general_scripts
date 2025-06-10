@@ -1,0 +1,147 @@
+
+library(topGO)
+library(Rgraphviz)
+library(dplyr)
+
+treatment = "bHLH94_Vs_EV"
+dir = ("/GOanalysis/")
+
+uniprot_pome = read.csv("P:/yonatan/RNAseq_yonatan_2021/DESeq2/uniprot/uniprot-pomegranate.csv")[,c(1,3)]
+uniprot_2_pro = read.csv("P:/yonatan/RNAseq_yonatan_2021/DESeq2/uniprot/make.description.and.GO/uni.by.XP.csv")[,-c(2:4)]
+pro_2_GO = merge.data.frame(uniprot_2_pro, uniprot_pome, all.x = T)[,-1]
+pro_2_GO = pro_2_GO[!pro_2_GO$Gene.ontology.IDs == "",]
+pro_2_GO$Gene.ontology.IDs = gsub("; ",",",pro_2_GO$Gene.ontology.IDs)
+pro_2_GO$protein_id = noquote(pro_2_GO$protein_id)
+
+trnscript_GO_id = read.csv("P:/yonatan/RNAseq_yonatan_2021/DESeq2/transgenic/statistics/bHLH94-like_VS_EV/transgenic.all.bHLH94-like_VS_EV.DE.csv")
+trnscript_GO_id = trnscript_GO_id[trnscript_GO_id$padj <= 0.05,]
+trnscript_GO_id = na.omit(trnscript_GO_id)
+#trnscript_GO_id = trnscript_GO_id[trnscript_GO_id$log2FoldChange >= 0.5,]
+
+diff_exp_pro = trnscript_GO_id[,2]
+
+write.table(pro_2_GO, "P:/pomegranate RNAseq 2022/GO files/remove_1.txt", 
+            row.names = F, col.names = F,quote = 2, sep = "\t")
+write.table(diff_exp_pro,
+            "P:/pomegranate RNAseq 2022/GO files/remove_2.txt",
+            row.names = F, col.names = F, quote = F)
+
+geneID2GO <- readMappings(file = "P:/pomegranate RNAseq 2022/GO files/remove_1.txt")   
+geneUniverse <- names(geneID2GO)   
+genesOfInteres <- read.table(file = "P:/pomegranate RNAseq 2022/GO files/remove_2.txt", header = F)
+genesOfInteres <- as.character(genesOfInteres$V1)
+geneList<- factor(as.integer(geneUniverse %in% genesOfInteres))
+names(geneList) <- geneUniverse
+
+file.remove(c("P:/pomegranate RNAseq 2022/GO files/remove_1.txt",
+            "P:/pomegranate RNAseq 2022/GO files/remove_2.txt"))
+
+
+
+#### BP Ontology  ####
+myGOdataBP <- new("topGOdata", ontology= "BP", allGenes=geneList, 
+                  annot= annFUN.gene2GO, gene2GO= geneID2GO, nodeSize = 5)
+
+sgBP <- sigGenes(myGOdataBP)
+str(sgBP)
+numSigGenes(myGOdataBP)
+
+resultFisherBP <- runTest(myGOdataBP, algorithm = "weight01", statistic = "fisher")
+allResBP <- GenTable(myGOdataBP, weightFisher= resultFisherBP, 
+                     orderBy= "weightFisher", ranksOf= "weightFisher", topNodes= 10)
+allResBP$weightFisher = as.numeric(allResBP$weightFisher)
+
+
+???showSigOfNodes(myGOdataBP, score(resultFisherBP), firstSigNodes =2, useInfo = "all")
+showSigOfNodes(myGOdataBP, score(resultFisherBP), firstSigNodes =2, useInfo = "def")
+
+#setwd(paste0(treatment,dir,treatment))
+printGraph(myGOdataBP, resultFisherBP, 
+           firstSigNodes = 5, fn.prefix= paste0(treatment,"_BP"), useInfo="all", pdfSW= T)
+#printGraph(myGOdataBP, resultFisherBP, 
+#           firstSigNodes = 5, fn.prefix= paste0(treatment,"_BP"), useInfo="def", pdfSW= T)
+
+
+
+
+#### CC Ontology ####
+myGOdataCC <- new("topGOdata", ontology= "CC", allGenes=geneList, 
+                  annot= annFUN.gene2GO, gene2GO= geneID2GO, nodeSize = 5)
+sgCC <- sigGenes(myGOdataCC)
+str(sgCC)
+numSigGenes(myGOdataCC)
+
+
+resultFisherCC <- runTest(myGOdataCC, algorithm = "weight01", statistic = "fisher")
+allResCC <- GenTable(myGOdataCC, weightFisher= resultFisherCC, 
+                     orderBy= "weightFisher", ranksOf= "weightFisher", topNodes= 200)
+allResCC$weightFisher = as.numeric(allResCC$weightFisher)
+#write.table(allResCC, paste0(treatment,dir,treatment,"topGO_CC200.csv"),
+#           sep = "\t", quote = F, row.names = F)
+
+
+showSigOfNodes(myGOdataCC, score(resultFisherCC), firstSigNodes =5, useInfo = "all")
+showSigOfNodes(myGOdataCC, score(resultFisherCC), firstSigNodes =5, useInfo = "def")
+
+printGraph(myGOdataCC, resultFisherCC, firstSigNodes = 5, fn.prefix= paste0(treatment,"_CC"), 
+           useInfo="all", pdfSW= T)
+printGraph(myGOdataCC, resultFisherCC, firstSigNodes = 5, fn.prefix= paste0(treatment,"_CC"), 
+           useInfo="def", pdfSW= T)
+
+
+### MF Ontolopy  ###
+myGOdataMF <- new("topGOdata", ontology= "MF", allGenes=geneList, annot= annFUN.gene2GO,
+                  gene2GO= geneID2GO, nodeSize= 5)
+sgMF <- sigGenes(myGOdataMF)
+str(sgMF)
+numSigGenes(myGOdataMF)
+
+
+resultFisherMF <- runTest(myGOdataMF, algorithm = "weight01", statistic = "fisher")
+allResMF <- GenTable(myGOdataMF, weightFisher= resultFisherMF, orderBy= "weightFisher",
+                     ranksOf= "weightFisher", topNodes= 200)
+allResMF$weightFisher = as.numeric(allResMF$weightFisher)
+#write.table(allRes, paste0(treatment,dir,treatment,"topGO_MF.csv"),
+#           sep = "\t", quote = F, row.names = F)
+
+
+showSigOfNodes(myGOdataMF, score(resultFisherMF), firstSigNodes =5, useInfo = "all")
+showSigOfNodes(myGOdataMF, score(resultFisherMF), firstSigNodes =5, useInfo = "def")
+
+printGraph(myGOdataMF, resultFisherMF, firstSigNodes = 5, fn.prefix= paste0(treatment,"_MF"),
+           useInfo="all", pdfSW= T)
+printGraph(myGOdataMF, resultFisherMF, firstSigNodes = 5, fn.prefix= paste0(treatment,"_MF"),
+           useInfo="def", pdfSW= T)
+
+
+
+# Extract all sig genes from GO 
+myterms <- allResBP[allResBP$Significant >= 3,1]
+
+mygenes <- genesInTerm(myGOdataBP, myterms)
+
+for (i in 1:length(myterms))
+{
+  myterm <- myterms[i]
+  mygenesforterm <- mygenes[myterm][[1]]
+  mygenesforterm <- paste(mygenesforterm, collapse=',')
+  print(paste("Term",myterm,"genes:",mygenesforterm)) 
+}
+
+
+for (GoTerm in myterms) {
+  print(GoTerm)
+  a = unlist(mygenes[[GoTerm]])
+  print(a)
+  a_df = data.frame(gene_id = as.vector(a), 
+                    GO_id = replicate(length(as.vector(a)), GoTerm))
+  file_name = paste0("///",GoTerm,".csv")
+  write.csv()
+}
+
+
+
+tmp.t<- bind_rows(GO_0048511, GO_0009908, GO_0048579, GO_0009649, 
+                  GO_0042752, GO_0008360, GO_0048586, GO_1901796)
+write.table(tmp.t, paste0(treatment,dir,treatment,"gene_list_for_topGOBP"), quote = F, sep = "\t", 
+            row.names = F)

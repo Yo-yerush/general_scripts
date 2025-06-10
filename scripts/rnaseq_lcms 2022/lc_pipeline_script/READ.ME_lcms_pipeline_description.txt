@@ -1,0 +1,99 @@
+# 1
+at lcms software you export the data in Excel file.
+save as CSV file.
+
+
+# 2
+preper a table with unique compund names and their related pathway for your lcms data.
+
+first, to merge your compund names with our library-file, use the function "merge_with_library"*.
+
+than keep searching for outher compunds to fill your merged table (your new CSV file).
+fill only compunds that interesting you - like HTs, flavonoids, lignins and outher shikimte-pathway-related metabolites.
+
+in "papers" folder you can find two papers that can help you with compounds classification.
+
+dont forget to add your new compound names and their related pathway to our library-file.
+keep the names unique please.
+
+
+# 3
+prepare files for analysis in "metaboanalyst".
+use the function "prepare_metabo_tables".
+
+* to not remove files by mistake -  if you will create new file with the same name and path to old file, it will ask you if to continue
+
+* all functions scripts are saved in "P:/pomegranate RNAseq 2022/lcms files/pipeline_script/"
+
+* library-file
+path and file name: "P:/pomegranate RNAseq 2022/lcms files/pom_library_updated.xlsx"
+description: column_B is the compund-pathway-related name.
+             column_C is outher description like HTs type and phenol type. (G=gallotannins, E=ellagitannins, EE=ellagitannins with ellagic acid core)
+
+
+#####
+
+* run "merge_with_library"
+
+to upload the function use the command:
+source("P:/pomegranate RNAseq 2022/lcms files/pipeline_script/lc.fun_merge_comp.name_and_pathway_with_library.R")
+
+lc_merge_with_library(table.from.lcms.software,
+                      path.for.saving.file,
+                      path.to.library.file = "P:/pomegranate RNAseq 2022/lcms files/pom_library_updated.xlsx"
+                      )
+
+### table.from.lcms.software
+### raw data from lcms (excel file in csv format from lcms in Tel-Hai)
+#     example: table.from.lcms.software = "P:/yonatan/RNAseq_yonatan_2021/lcms/data.from.lcms/All_Compounds_pom_T_060722.csv"
+
+# path for the saved file directory
+#   example: path.for.saving.file = "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/transgenic/transgenic_files"
+
+
+
+######################
+
+
+* run "prepare_metabo_tables"
+
+to upload the function use the command:
+source("P:/pomegranate RNAseq 2022/lcms files/pipeline_script/lc.fun_prepare_metabo_tables.R")
+
+prepare_metabo_tables(table.from.lcms.software,
+                      library.merged.file,
+                      lcms.samples.file,
+                      path.for.saving.files, 
+                      first_row_phenotype,
+                      sample_order_name = F,
+                      Tags = T
+                      )
+
+  
+  ### table.from.lcms.software
+  # full path to raw data file from lcms (csv file from lcms software in Tel-Hai)
+  #   example: table.from.lcms.software = "P:/yonatan/RNAseq_yonatan_2021/lcms/data.from.lcms/All_Compounds_pom_P_060722.csv"
+  
+  ### library.merged.file
+  # full path to the merged library file you created last step with the "lc_merge_with_library" function
+  
+  ### lcms.samples.file
+  # full path to samples file (csv) in order of lcms running, with BLK and QC
+  #   example: lcms.samples.file = "P:/yonatan/RNAseq_yonatan_2021/lcms/data.from.lcms/LCMS_rnaseq_samples/LCMS_rnaseq.samples_190122.csv"
+  
+  ### path.for.saving.files 
+  # path for the saved files directory
+  #   example: path.for.saving.files = "P:/yonatan/RNAseq_yonatan_2021/lcms/csv_files_for_metabo/comp.with.pathway.P/" 
+  
+  ### first_row_phenotype
+  # group description for metaboanalyst analysis
+  #   example for 30 samples and 3 groups: 
+  # first_row_phenotype = c("OE_plants", rep("wild.type",10), rep("mt.line1",10), rep("mt.line2",10))
+  
+  ### sample_order_name 
+  # to get sample names easily, run script with: 
+  #   all  non-default arguments except <first_row_phenotype> and with <sample_order_name = T>
+  #   *no file will saved
+  
+  ### Tags
+  # logical, if used "Tags" column for filtering at the lcms software in Tel-Hai

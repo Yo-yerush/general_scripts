@@ -1,0 +1,44 @@
+```{r}
+rm(list = ls()) # clear objects from the workspace
+
+
+
+# raw data from lcms (excel file in csv format from lcms in Tel-Hai)
+csv_1 = "P:/yonatan/RNAseq_yonatan_2021/lcms/data.from.lcms/All_Compounds_pom_P_060722.csv"
+
+
+
+# path for the saved file directory
+# dont  put "/"  in the end of that path row
+path.for.saving.file = "P:/pomegranate RNAseq 2022/lcms files"
+date = "110722"
+```
+
+
+```{r}
+lc.data = read.csv(csv_1)
+lc.mzcl = lc.data[!lc.data$ן..Tags == "",]
+lc = data.frame(lc.mzcl$Name)
+names(lc) = "Name"
+lc$Name = gsub("std", "STD", lc$Name)
+lc = unique(lc, by = "Name")
+
+
+name2pathway = read.csv("P:/pomegranate RNAseq 2022/lcms files/pom_library_comp.and.pathway_updated.csv")
+names(name2pathway)[1] = "Name"
+
+##### only if there is X in names, like: "phenol_X7"
+#name2pathway$Name = gsub("_X.*","",name2pathway$Name)   
+#name2pathway$comp.pathway = gsub("_X.*","",name2pathway$comp.pathway)
+#####
+name2pathway = unique(name2pathway, by = "Name")
+
+
+new.comp.and.pathway.list = merge.data.frame(lc, name2pathway, by = "Name", all.x = T)
+
+write.csv(new.comp.and.pathway.list,
+            paste(path.for.saving.file,"/merge_comp_with_library.",date,".csv", sep = ""),
+            row.names = F, na = "")
+print("file name: merge_comp_with_library")
+```
+

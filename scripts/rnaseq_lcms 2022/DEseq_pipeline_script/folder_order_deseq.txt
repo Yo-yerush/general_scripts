@@ -1,0 +1,10 @@
+                     ## folder order:
+                     #                     
+                     # DEseq
+                     # ├── transcript_id.and.description.csv
+                     # └── experiment
+                     #     ├── coldata.*.txt
+                     #     ├── gene.results.files
+                     #     │   └── *.genes.RESULTS
+                     #     └── statistics
+                     #         └── <<<DEseq2 and venn diagram results>>>

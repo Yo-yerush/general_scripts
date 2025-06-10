@@ -1,0 +1,65 @@
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggsignif)
+library(tidyr)
+library(stringr)
+library(multcompView)
+library(rlang)
+```
+```{r}
+
+ ###  copy to the terminal!  ###
+ 
+roots.data = read.csv("doron.peels.F2.csv")
+roots=gsub("-","/",roots.data$Plant)
+roots.data$Plant=roots
+
+peel.decr = roots.data[order(roots.data$punicalagin..ppm., decreasing = T),]
+
+high=roots.data[roots.data$ן..Punicalagin.content=="High",]
+low=roots.data[roots.data$ן..Punicalagin.content=="Low",]
+roots.seq = roots.data[c(5,7:9,11,13:15),]
+
+```
+
+```{r}
+data=peel.decr
+
+X = 'Plant'
+X.character = "Plant"
+data.X = data$Plant
+
+Y = 'Monomeric.anthocyanin.pigment..mg.L.'
+Y.character = "Monomeric.anthocyanin.pigment..mg.L."
+data.Y = data$Monomeric.anthocyanin.pigment..mg.L.
+
+title_x = "Plant"
+title_y = "Total Anthocyanins (mg/L)"
+title_main = ""
+
+#level.order = c("4/87", "4/97", "4/108", "5/5", "4/69", "4/115", "5/7", "5/13")
+
+level.order = data$Plant
+```
+
+```{r}
+
+  data %>%
+#ggplot(aes(x = !!sym(X.character), y = !!sym(Y.character))) +
+  ggplot(aes(x=factor(x = !!sym(X.character), level=level.order), y = !!sym(Y.character))) +
+    geom_bar(stat = "summary",color="black" , fun.y = "mean", fill="grey50", width=0.35) +
+    theme_classic() +
+    theme(axis.title.x = element_text(size = 12, face = "bold"),
+          axis.title.y = element_text(size = 12, face="bold", margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4, size = 10, face="bold"),
+          axis.text.y = element_text(size = 10, face="bold"),
+          axis.line.x = element_line(size = 1.1),
+          axis.line.y = element_line(size = 1.1),
+          axis.ticks = element_line(size = 1.1) , 
+          axis.ticks.length = unit(0.2, "cm")) +
+    labs(title = title_main, x = title_x, y = title_y) +
+   scale_y_continuous(expand = c(0,0), limits = c(0,max(data.Y))) ### change y.axis hight - limits = c(0,hit))
+
+     
+```

@@ -1,0 +1,45 @@
+```{r}
+source("P:/pomegranate RNAseq 2022/lcms files/pipeline_script/lc.fun_merge_with_library.R")
+
+merge_with_library(table.from.lcms.software = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/transgenic/All_Compounds_pom_T_060722.csv",
+                      path.for.saving.file = "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/transgenic/transgenic_files/")
+
+merge_with_library(table.from.lcms.software = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/clone/All_Compounds_pom_C_060722.csv",
+                      path.for.saving.file = "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/clone/clone_files/")
+
+merge_with_library(table.from.lcms.software = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/peel/All_Compounds_pom_P_060722.csv",
+                      path.for.saving.file = "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/peel/peel_files/")
+
+```
+
+
+```{r}
+merged_file_date = "18072022"
+
+source("P:/pomegranate RNAseq 2022/lcms files/pipeline_script/lc.fun_prepare_metabo_tables.R")
+
+prepare_metabo_tables(table.from.lcms.software = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/transgenic/All_Compounds_pom_T_060722.csv",
+                      library.merged.file = paste( "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/transgenic/transgenic_files/merge.comp.with.library.",merged_file_date,".csv", sep = ""),
+                      lcms.samples.file = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/LCMS_rnaseq.samples_190122.csv",
+                      path.for.saving.files = "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/transgenic/transgenic_files/",
+                      first_row_phenotype = c("OE", rep("BHLH",5), rep("EV",5), rep("MYB6",4), rep("MYB8b",5)),
+                      sample_order_name = F, Tags = F)
+
+
+prepare_metabo_tables(table.from.lcms.software = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/clone/All_Compounds_pom_C_060722.csv",
+                      library.merged.file = paste( "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/clone/clone_files/merge.comp.with.library.",merged_file_date,".csv", sep = ""),
+                      lcms.samples.file = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/LCMS_rnaseq.samples_190122.csv",
+                      path.for.saving.files = "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/clone/clone_files/",
+                      first_row_phenotype = c("Puni.marker", rep("high",8), rep("low",9)),
+                      sample_order_name = F, Tags = F)
+
+
+prepare_metabo_tables(table.from.lcms.software = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/peel/All_Compounds_pom_P_060722.csv",
+                      library.merged.file = paste( "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/peel/peel_files/merge.comp.with.library.",merged_file_date,".csv", sep = ""),
+                      lcms.samples.file = "P:/pomegranate RNAseq 2022/lcms files/lc_software_files/LCMS_rnaseq.samples_190122.csv",
+                      path.for.saving.files = "P:/yonatan/RNAseq_yonatan_2021/lcms/lcms_results_060722/peel/peel_files/",
+                      first_row_phenotype = c("Puni.marker", rep("high",15), rep("low",15)),
+                      sample_order_name = F, Tags = F)
+
+```
+
