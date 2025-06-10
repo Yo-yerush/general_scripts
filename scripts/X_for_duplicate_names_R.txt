@@ -1,0 +1,16 @@
+# lc.for.met is a table. "Name" is column of names (like "comp.names")
+
+string = lc.for.met$Name
+mstring <- make.unique(as.character(string), sep=" X" )
+tmp <- !duplicated(string)
+for (i in 1:length(mstring[tmp])){
+  mstring[tmp][i]<-ifelse(string[tmp][i] %in% string[duplicated(string)]
+                          , gsub("(.*)","\\1 X0", mstring[tmp][i])
+                          , mstring[tmp][i]
+  )
+}
+end <- sub(".* X([0-9]+)","\\1",grep(" X([0-9]*)$",mstring,value=T) )
+beg <- sub("(.* X)[0-9]+","\\1",grep(" X([0-9]*)$",mstring,value=T) )
+newend <- as.numeric(end)+1
+mstring[grep(" X([0-9]*)$",mstring)] <- paste0(beg,newend)
+lc.for.met$Name = mstring 

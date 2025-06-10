@@ -1,0 +1,23 @@
+# separate to a new raw by pattern
+
+# befor:
+#     A0A140GM60    7.1.1.-
+#     A0A182B7V1    2.4.1.-
+#     A0A193AU77  2.4.1.120;2.4.1.136  
+
+# after:
+#     A0A140GM60    7.1.1.-
+#     A0A182B7V1    2.4.1.-
+#     A0A193AU77  2.4.1.120
+#     A0A193AU77  2.4.1.136
+
+as.data.frame(do.call(rbind, apply(df, 1, function(x) {
+  do.call(expand.grid, strsplit(x, ";"))
+})))
+
+
+
+or:
+
+df <- df %>%
+  separate_rows(col_name, sep = ";")

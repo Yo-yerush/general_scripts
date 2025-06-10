@@ -1,0 +1,3 @@
+  date = gsub(" ","",format(Sys.time(), "%d %m %y"))
+  time = gsub(" ","",format(Sys.time(), "%H %M"))
+  date_time = paste(date, time, sep = "_")

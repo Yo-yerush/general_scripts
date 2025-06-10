@@ -1,0 +1,32 @@
+### create files of merged tables --> proteinID of enz EC-2.3.1 group and peel_deseq2
+source("P:/yonatan/scripts/rnaseq_lcms 2022/peel.deseq.ec.merge.fun.010622.r")
+lapply(list.files("../../DESeq2/peel/statistics/")[1:20], ec_deseq_merge)
+
+
+### save gragh pics. you need to create gene_XM_list (transcript IDs vector)
+source("P:/yonatan/scripts/rnaseq_lcms 2022/peel.gene.exp.migalPC.for.save.pic.r")
+lapply(gene_XM_list, peel.gene.exp.save)
+
+
+
+### gragh of gene exp  from all expririments
+source("P:/yonatan/scripts/rnaseq_lcms 2022/rnaseq.all.gene.exp.r")
+rnaseq.all.gene.exp("XM_031546541.1")
+
+### for peel
+source("P:/yonatan/scripts/rnaseq_lcms 2022/peel.gene.exp.r")
+peel.gene.exp("XM_031533432.1")
+
+### for clone
+source("p:/yonatan/scripts/rnaseq_lcms 2022/clone.gene.exp.r")
+clone.gene.exp("XM_031546046.1")
+
+### for bHLH94 file
+source("p:/yonatan/scripts/rnaseq_lcms 2022/bhlh94.gene.exp.r")
+bhlh94.gene.exp("XM_031515559.1")
+
+
+###### get seq from NCBI by accession id *list* and save in FASTA file
+yo = rentrez::entrez_fetch(db = "protein", id = list, 
+                      rettype = "fasta")
+write.table(yo,"P:/yonatan/RNAseq_yonatan_2021/SDH_variants_RNAseq_yonatan/SDH_ncbi_protein.fasta", quote = F, row.names = F)
