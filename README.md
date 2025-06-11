@@ -105,8 +105,8 @@ ddm1 <- read_mut_file("ddm1")
 
 svg(paste0(output_dir, "/ChrPlot_test_stroud_all.svg"), width = 7, height = 4, family = "serif")
 ChrPlots_CX_all(
-    meth_var_list = "test_stroud_all",
-    meth_names = list(mto1,met1,cmt2,cmt3,ddm1), c("mto1","met1","cmt2","cmt3","ddm1"),
+    meth_var_list = list(mto1,met1,cmt2,cmt3,ddm1),
+    meth_names = c("mto1","met1","cmt2","cmt3","ddm1"),
     y_max_cg = 0,
     y_max_chg = 0.2,
     y_max_chh = 0.05,
