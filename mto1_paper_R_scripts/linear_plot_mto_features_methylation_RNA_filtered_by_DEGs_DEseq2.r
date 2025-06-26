@@ -76,21 +76,23 @@ gene_list_name <- DEGs_genes_list$gene_list_name
 
 
 #########################
-#### theta and R^2 values (to plot after all)
+#### theta, R^2 and p values (to plot after all)
 theta_df <- data.frame(annotation = rep(edit_ann_names(annotation_type_names), 3), theta_value = NA, theta_se = NA, context = c(rep("CG", annotation_type_length), rep("CHG", annotation_type_length), rep("CHH", annotation_type_length)))
 Rsqr_df <- data.frame(annotation = rep(edit_ann_names(annotation_type_names), 3), Rsqr_value = NA, context = c(rep("CG", annotation_type_length), rep("CHG", annotation_type_length), rep("CHH", annotation_type_length)))
 ps_Rsqr_df <- data.frame(annotation = rep(edit_ann_names(annotation_type_names), 3), Rsqr_value = NA, context = c(rep("CG", annotation_type_length), rep("CHG", annotation_type_length), rep("CHH", annotation_type_length)))
+p_df <- data.frame(annotation = rep(edit_ann_names(annotation_type_names), 3), Meth = NA, genotype = NA, context = c(rep("CG", annotation_type_length), rep("CHG", annotation_type_length), rep("CHH", annotation_type_length)))
+
+i_perc <- 1
+total_perc <- 18
 
 for (context in c("CG", "CHG", "CHH")) {
   for (annotation_type in annotation_type_names) {
     path_2_save.0 <- main_output_directory
     path_2_save.1 <- paste0(path_2_save.0, gene_list_name, "/")
     path_2_save.2 <- paste0(path_2_save.1, treatment, "/")
-    path_2_save.3 <- paste0(path_2_save.2, context, "/")
     dir.create(path_2_save.0, showWarnings = F)
     dir.create(path_2_save.1, showWarnings = F)
     dir.create(path_2_save.2, showWarnings = F)
-    dir.create(path_2_save.3, showWarnings = F)
 
     # Load the methylation files of the promoters of interestL
     meth_matrix <- read.csv(paste0(average_meth_results_directory, context, "/meth.", annotation_type, ".", context, ".", treatment, "_vs_wt.csv"))
@@ -185,6 +187,10 @@ for (context in c("CG", "CHG", "CHH")) {
         #####################################################
 
         ann_cntx_row_number <- which(Rsqr_df$annotation == edit_ann_names(annotation_type) & Rsqr_df$context == context)
+
+        #### p value ####
+        p_df[ann_cntx_row_number, ]$Meth <- lm_model$coefficients["Meth", 4]
+        p_df[ann_cntx_row_number, ]$genotype <- lm_model$coefficients["genotypewt", 4]
 
         #### R^2 value ####
         res_dev <- lm_model_0$deviance
@@ -343,7 +349,7 @@ for (context in c("CG", "CHG", "CHH")) {
             y = "Residuals"
           )
 
-        message(paste0("created plot to - '", annotation_type, "' annotations in '", context, "' context successfully"))
+        # message(paste0("created plot to - '", annotation_type, "' annotations in '", context, "' context successfully"))
       },
       error = function(e) {
         message(paste0("\ncan't use 'glm.nb' and create plot to - ", annotation_type, " annotations in ", context, " context\n\n", e))
@@ -355,6 +361,8 @@ for (context in c("CG", "CHG", "CHH")) {
           theme_void()
       }
     )
+    cat(paste0("\r", treatment, ": ", round((i_perc / total_perc) * 100, 0), "%  "))
+    i_perc <- i_perc + 1
   }
 
   #### legend ####
@@ -387,16 +395,17 @@ for (context in c("CG", "CHG", "CHH")) {
   all_cntx_regression[[context]] <- annotation_regression_plot_list
   all_cntx_residuals[[context]] <- residuals_plots_list
 }
+cat("\n")
 
 #### save all plot as one, for each context ####
 ### main plot - with points
-png(paste0("lm.stats.plot.", treatment, ".points.png"), width = 18, height = 7.5, units = "in", res = 300, family = "serif")
+png(paste0(path_2_save.2, "lm.stats.plot.", treatment, ".points.png"), width = 18, height = 7.5, units = "in", res = 300, family = "serif")
 do.call(multiplot, c(
   c(all_cntx_points$CG, all_cntx_points$CHG, all_cntx_points$CHH),
   list(
     layout = matrix(1:18, nrow = 3, ncol = 6, byrow = TRUE),
-  heights = c(1, 0.9, 1),
-  widths = c(1, 0.8, 0.8, 0.8, 0.8, 0.9)
+    heights = c(1, 0.9, 1),
+    widths = c(1, 0.8, 0.8, 0.8, 0.8, 0.9)
   )
 ))
 dev.off()
@@ -404,6 +413,79 @@ dev.off()
 
 ################################################################
 ################################################################
+
+### p values data frame
+write.csv(p_df, paste0(path_2_save.2, "p_values_", treatment, ".csv"), row.names = FALSE)
+
+### theta bar plot
+theta_df$annotation <- factor(theta_df$annotation, levels = unique(theta_df$annotation))
+theta_bar_plot <- ggplot(theta_df, aes(x = annotation, y = theta_value, fill = context)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.6, color = "black") +
+  geom_errorbar(aes(ymin = theta_value - theta_se, ymax = theta_value + theta_se), width = 0.2, position = position_dodge(0.8)) +
+  scale_fill_brewer(palette = "Set3") +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "ϴ",
+    fill = "Context"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"))
+
+svg(paste0(path_2_save.2, "theta_values_", treatment, ".svg"), width = 5, height = 3, family = "serif")
+print(theta_bar_plot)
+dev.off()
+
+### R^2 bar plot
+Rsqr_df$annotation <- factor(Rsqr_df$annotation, levels = unique(Rsqr_df$annotation))
+end_brk_1 <- max(Rsqr_df[Rsqr_df$annotation != "TEGs", ]$Rsqr_value)
+start_brk_2 <- min(c(Rsqr_df[Rsqr_df$annotation == "TEGs", ]$Rsqr_value))
+
+Rsqr_bar_plot <- ggplot(Rsqr_df, aes(x = annotation, y = Rsqr_value, fill = context)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.6, color = "black") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "R²",
+    fill = "Context"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold")) +
+  ggbreak::scale_y_break(
+    c(end_brk_1 * 1.075, start_brk_2 * 0.925),
+    space = 0.055,
+    scales = 0.5
+  )
+
+svg(paste0(path_2_save.2, "Rsqr_values_", treatment, ".svg"), width = 5, height = 3, family = "serif")
+print(Rsqr_bar_plot)
+dev.off()
+
+### Pseudo-R^2 bar plot
+ps_Rsqr_df$annotation <- factor(ps_Rsqr_df$annotation, levels = unique(ps_Rsqr_df$annotation))
+end_brk_1 <- max(ps_Rsqr_df[ps_Rsqr_df$annotation != "TEGs", ]$Rsqr_value)
+start_brk_2 <- min(c(ps_Rsqr_df[ps_Rsqr_df$annotation == "TEGs", ]$Rsqr_value))
+
+ps_Rsqr_bar_plot <- ggplot(ps_Rsqr_df, aes(x = annotation, y = Rsqr_value, fill = context)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.6, color = "black") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "Pseudo-R²",
+    fill = "Context"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold")) +
+  ggbreak::scale_y_break(
+    c(end_brk_1 * 1.075, start_brk_2 * 0.925),
+    space = 0.055,
+    scales = 0.5
+  )
+
+svg(paste0(path_2_save.2, "Pseudo_Rsqr_values_", treatment, ".svg"), width = 5, height = 3, family = "serif")
+print(ps_Rsqr_bar_plot)
+dev.off()
+
+
 ################################################################
 ################################################################
 ################################################################
@@ -428,20 +510,20 @@ dev.off()
 
 
 #### main plot - with points
-#svg(paste0(path_2_save.3, "lm.stats.plot.", context, ".", treatment, ".points.svg"), width = 16, height = 2.5, family = "serif")
-#multiplot(
+# svg(paste0(path_2_save.3, "lm.stats.plot.", context, ".", treatment, ".points.svg"), width = 16, height = 2.5, family = "serif")
+# multiplot(
 #  all_cntx_points$CG,
 #  all_cntx_points$CHG,
 #  all_cntx_points$CHH,
 #  # legend_p,
 #  cols = 6,
 #  rows = 3
-#)
-#dev.off()
+# )
+# dev.off()
 #
 #### main plot - regression
-#svg(paste0(path_2_save.3, "lm.stats.plot.", context, ".", treatment, ".regression.svg"), width = 16, height = 2.5, family = "serif") # width = 12, height = 5
-#multiplot(
+# svg(paste0(path_2_save.3, "lm.stats.plot.", context, ".", treatment, ".regression.svg"), width = 16, height = 2.5, family = "serif") # width = 12, height = 5
+# multiplot(
 #  annotation_regression_plot_list[[1]],
 #  annotation_regression_plot_list[[2]],
 #  annotation_regression_plot_list[[3]],
@@ -451,12 +533,12 @@ dev.off()
 #  # annotation_regression_plot_list[[7]],
 #  # legend_p,
 #  cols = 6
-#)
-#dev.off()
+# )
+# dev.off()
 #
 #### residuals plot
-#svg(paste0(path_2_save.3, "lm.residuals.plot.", context, ".", treatment, ".svg"), width = 16, height = 2.5, family = "serif")
-#multiplot(
+# svg(paste0(path_2_save.3, "lm.residuals.plot.", context, ".", treatment, ".svg"), width = 16, height = 2.5, family = "serif")
+# multiplot(
 #  residuals_plots_list[[1]],
 #  residuals_plots_list[[2]],
 #  residuals_plots_list[[3]],
@@ -466,74 +548,7 @@ dev.off()
 #  # residuals_plots_list[[7]],
 #  # legend_p,
 #  cols = 6
-#)
-#dev.off()
+# )
+# dev.off()
 #
-#### theta bar plot
-#theta_df$annotation <- factor(theta_df$annotation, levels = unique(theta_df$annotation))
-#theta_bar_plot <- ggplot(theta_df, aes(x = annotation, y = theta_value, fill = context)) +
-#  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.6, color = "black") +
-#  geom_errorbar(aes(ymin = theta_value - theta_se, ymax = theta_value + theta_se), width = 0.2, position = position_dodge(0.8)) +
-#  scale_fill_brewer(palette = "Set3") +
-#  theme_bw() +
-#  labs(
-#    x = "",
-#    y = "ϴ",
-#    fill = "Context"
-#  ) +
-#  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"))
-#
-#svg(paste0(path_2_save.2, "theta_values_", treatment, ".svg"), width = 5, height = 3, family = "serif")
-#print(theta_bar_plot)
-#dev.off()
-#
-#### R^2 bar plot
-#Rsqr_df$annotation <- factor(Rsqr_df$annotation, levels = unique(Rsqr_df$annotation))
-#end_brk_1 <- max(Rsqr_df[Rsqr_df$annotation != "TEGs", ]$Rsqr_value)
-#start_brk_2 <- min(c(Rsqr_df[Rsqr_df$annotation == "TEGs", ]$Rsqr_value))
-#
-#Rsqr_bar_plot <- ggplot(Rsqr_df, aes(x = annotation, y = Rsqr_value, fill = context)) +
-#  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.6, color = "black") +
-#  scale_fill_brewer(palette = "Set3") +
-#  theme_bw() +
-#  labs(
-#    x = "",
-#    y = "R²",
-#    fill = "Context"
-#  ) +
-#  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold")) +
-#  ggbreak::scale_y_break(
-#    c(end_brk_1 * 1.075, start_brk_2 * 0.925),
-#    space = 0.055,
-#    scales = 0.5
-#  )
-#
-#svg(paste0(path_2_save.2, "Rsqr_values_", treatment, ".svg"), width = 5, height = 3, family = "serif")
-#print(Rsqr_bar_plot)
-#dev.off()
-#
-#### Pseudo-R^2 bar plot
-#ps_Rsqr_df$annotation <- factor(ps_Rsqr_df$annotation, levels = unique(ps_Rsqr_df$annotation))
-#end_brk_1 <- max(ps_Rsqr_df[ps_Rsqr_df$annotation != "TEGs", ]$Rsqr_value)
-#start_brk_2 <- min(c(ps_Rsqr_df[ps_Rsqr_df$annotation == "TEGs", ]$Rsqr_value))
-#
-#ps_Rsqr_bar_plot <- ggplot(ps_Rsqr_df, aes(x = annotation, y = Rsqr_value, fill = context)) +
-#  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.6, color = "black") +
-#  scale_fill_brewer(palette = "Set3") +
-#  theme_bw() +
-#  labs(
-#    x = "",
-#    y = "Pseudo-R²",
-#    fill = "Context"
-#  ) +
-#  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold")) +
-#  ggbreak::scale_y_break(
-#    c(end_brk_1 * 1.075, start_brk_2 * 0.925),
-#    space = 0.055,
-#    scales = 0.5
-#  )
-#
-#svg(paste0(path_2_save.2, "Pseudo_Rsqr_values_", treatment, ".svg"), width = 5, height = 3, family = "serif")
-#print(ps_Rsqr_bar_plot)
-#dev.off()
-#
+
