@@ -409,18 +409,19 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     }
     ################
     xl_headers <- names(xl_list[[1]])
-    numeric_cols <- grep("RNA_|CG_|CHG_|CHH_", xl_headers)
+    numeric_cols <- grep("RNA_", xl_headers) # |CG_|CHG_|CHH_
     p_cols <- grep("RNA_p", xl_headers)
-    lfc_cols <- grep("RNA_log2FC|CG_|CHG_|CHH_", xl_headers)
-    other_cols <- (grep("CHH_Promoters", xl_headers) + 2):length(xl_headers)
+    lfc_rna_cols <- grep("RNA_log2FC", xl_headers)
+    lfc_dmr_cols <- grep("CG_|CHG_|CHH_", xl_headers)
+    other_cols <- (grep("CHH_Promoters", xl_headers) + 1):length(xl_headers)
     ################
     # save and edit EXCEL
     wb <- createWorkbook()
     # Define styles
-    style_up <- createStyle(fontName = "Times New Roman", bgFill = "#f59d98")
-    style_down <- createStyle(fontName = "Times New Roman", bgFill = "#c3ccf7")
-    style_p <- createStyle(fontName = "Times New Roman", bgFill = "#f7deb0")
-    style_other <- createStyle(fontName = "Times New Roman", bgFill = "#daf7d7")
+    style_up <- createStyle(fontName = "Times New Roman", bgFill = "#f59d98", fgFill = "#f59d98", border = "TopBottomLeftRight", borderColour = "black")
+    style_down <- createStyle(fontName = "Times New Roman", bgFill = "#c3ccf7", fgFill = "#c3ccf7", border = "TopBottomLeftRight", borderColour = "black")
+    style_p <- createStyle(fontName = "Times New Roman", bgFill = "#f7deb0", border = "TopBottomLeftRight", borderColour = "black")
+    style_other <- createStyle(fontName = "Times New Roman", bgFill = "#daf7d7", fgFill = "#daf7d7", border = "TopBottomLeftRight", borderColour = "black")
     cell_n_font_style <- createStyle(fontName = "Times New Roman", border = "TopBottomLeftRight", borderColour = "black")
     header_style <- createStyle(fontName = "Times New Roman", textDecoration = "bold", border = "TopBottomLeftRight", borderStyle = "double")
 
@@ -442,15 +443,48 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       conditionalFormatting(wb, sheet_name, cols = p_cols[1], rows = 2:(nrow(df) + 1), rule = "<0.05", style = style_p)
       conditionalFormatting(wb, sheet_name, cols = p_cols[2], rows = 2:(nrow(df) + 1), rule = "<0.05", style = style_p)
 
-      for (col in lfc_cols) {
+    for (col in lfc_rna_cols) {
         conditionalFormatting(wb, sheet_name, cols = col, rows = 2:(nrow(df) + 1), rule = ">0", style = style_up)
         conditionalFormatting(wb, sheet_name, cols = col, rows = 2:(nrow(df) + 1), rule = "<0", style = style_down)
-      }
+    }
 
-      for (col in other_cols[other_cols %% 2 == 0]) {
+    # colors for DMRs values (minus as blue as plus as red)
+    for (i.c in lfc_dmr_cols) {
+        for (i.r in 1:nrow(df)) { # first row in excel is the headers
+            # for cells with both plus and minus direction
+            if (length(grep("^-.*, [0-9]", df[i.r, i.c])) != 0 | length(grep("^[0-9].*, -[0-9]", df[i.r, i.c])) != 0) {
+                addStyle(wb, sheet_name,
+                    style = style_other,
+                    rows = i.r + 1,
+                    cols = i.c,
+                    gridExpand = TRUE
+                )
+
+                # for cells with minus direction
+            } else if (length(grep("-", df[i.r, i.c])) != 0) {
+                addStyle(wb, sheet_name,
+                    style = style_down,
+                    rows = i.r + 1,
+                    cols = i.c,
+                    gridExpand = TRUE
+                )
+
+                # for cells with plus direction
+            } else if (length(grep("^[0-9]", df[i.r, i.c])) != 0) {
+                addStyle(wb, sheet_name,
+                    style = style_up,
+                    rows = i.r + 1,
+                    cols = i.c,
+                    gridExpand = TRUE
+                )
+            }
+        }
+    }
+
+    for (col in other_cols[other_cols %% 2 == 0]) {
         conditionalFormatting(wb, sheet_name, style = style_other, rule = "!=0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
         conditionalFormatting(wb, sheet_name, style = style_other, rule = "==0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
-      }
+    }
       cat(".")
     }
     saveWorkbook(wb, paste0(output_res, treatment, unique_or_not, "_groups.xlsx"), overwrite = T)

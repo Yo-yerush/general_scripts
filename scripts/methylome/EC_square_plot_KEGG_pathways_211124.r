@@ -2,9 +2,7 @@ library(scales)
 library(ggplot2)
 library(dplyr)
 
-
-
-ec_squere_plots <- function(treatment=NULL, by_folder="by_DEseq2") {
+ec_squere_plots <- function(treatment = NULL, by_folder = "by_DEseq2") {
     res_dir <- paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/rnaseq_23/EC_kegg_maps/", by_folder, "/with_EC")
 
 
@@ -36,8 +34,8 @@ ec_squere_plots <- function(treatment=NULL, by_folder="by_DEseq2") {
         "00620"
     )
 
-    for (n.map in map_ids) {
-        pathway_name <- paste0("ath", n.map)
+    for (n.map in 1:length(map_ids)) {
+        pathway_name <- paste0("ath", map_ids[n.map])
 
         file_full_name <- list.files(
             path = paste0(res_dir, "/", treatment),
@@ -72,7 +70,7 @@ ec_squere_plots <- function(treatment=NULL, by_folder="by_DEseq2") {
                 )
 
                 p <- ggplot(log2fc_df, aes(x = xx, y = 1)) +
-                    geom_tile(aes(fill = I(zz)), color = "black", size = 1) +
+                    geom_tile(aes(fill = I(zz)), color = "black", linewidth = 1) +
                     theme_void() +
                     theme(
                         legend.position = "none",
@@ -88,7 +86,9 @@ ec_squere_plots <- function(treatment=NULL, by_folder="by_DEseq2") {
                 dev.off()
             }
         }
+        cat(paste0("\r", treatment, ": ", round((n.map / length(map_ids)) * 100, 0), "% "))
     }
+    cat("\n")
 }
 
 ec_squere_plots("mto1")
@@ -96,7 +96,7 @@ ec_squere_plots("mto3")
 ec_squere_plots("dCGS")
 ec_squere_plots("SSE_high")
 ec_squere_plots("SSE_low")
-ec_squere_plots("high_vs_low")
+ec_squere_plots("SSE_high_vs_SSE_low")
 
 
 ######################### old color_fun shit
