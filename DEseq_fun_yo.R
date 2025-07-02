@@ -125,17 +125,20 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
       pca_data[pca_data$Genotype == control, ],
       pca_data[pca_data$Genotype == exp.treatment, ]
     )
+    pca_data$col[pca_data$Genotype == control] <- "gray40"
+    pca_data$col[pca_data$Genotype == exp.treatment] <- "#4a833a"
+
   } else if (!any(is.na(group.A))) {
     pca_data <- rbind(
       pca_data[pca_data$group.for.stat == "B", ],
       pca_data[pca_data$group.for.stat == "A", ]
     )
+    pca_data$col[pca_data$group.for.stat == "B"] <- "gray40"
+    uni_A <- pca_data$Genotype[pca_data$group.for.stat == "A"]
+    pca_data$col[pca_data$group.for.stat == "A"] <- brewer.pal(length(unique(uni_A)), "Dark2")[as.numeric(as.factor(pca_data$Genotype[pca_data$group.for.stat == "A"]))]
   }
 
   write.csv(pca_data, paste0(new_path_2, "/PCA_table_", A.B_VS_c, ".csv"), row.names = F)
-
-  pca_data$col[pca_data$Genotype == control] <- "gray40"
-  pca_data$col[pca_data$Genotype == exp.treatment] <- "#4a833a"
 
   pca_p <- ggplot(data = pca_data, aes(x = PC1, y = PC2)) +
     geom_point(aes(color = Genotype), size = 3.5, alpha = 0.85) +
