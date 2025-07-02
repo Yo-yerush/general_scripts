@@ -21,14 +21,17 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
   #################################
 
-  library(dplyr)
-  library(DESeq2)
-  library(apeglm)
-  library(ggplot2)
-  library(tximport)
-  library("RColorBrewer")
-  library(pheatmap)
-  library(ggplot2)
+  # upload libraries
+lib_packages <- c(
+    "dplyr", "DESeq2", "apeglm", "ggplot2", "tximport", "RColorBrewer", "pheatmap"
+)
+for (n.pkg in seq(lib_packages)) {
+    suppressMessages(library(lib_packages[n.pkg], character.only = TRUE))
+    perc_val <- (n.pkg / length(lib_packages)) * 100
+    cat(paste0("\rloading libraries [", round(perc_val, 1), "%] "))
+}
+cat("\n")
+
 
   # coldata file
   info <- read.table(paste0(path, "/coldata.", experiment, ".txt"), header = T, sep = "\t")
@@ -99,7 +102,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
   x_max_pos <- ifelse(x_max > 15, 15, x_max)
   y_max_pos <- max(-log10(df_merge$padj))
 
-  source("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/scripts/volcano.R")
+  source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
   volcano_plot <- plot_volcano(res, xlim_both_sides = x_max_pos, ylim_up = y_max_pos, alpha.yo = 1)
 
   svg(paste0(new_path_2, "/volcano_plot_", A.B_VS_c, ".svg"), width = 3.5, height = 2, family = "serif")
