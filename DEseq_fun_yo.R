@@ -6,7 +6,6 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
                      group.A = NA, # samples row number for treated samples from 'col.data' file
                      path, # path for DEseq folder
                      description_file) {
-                      
   if (is.na(group.A)[1] == T) {
     if (is.na(exp.treatment) == T) {
       stop("experiment treatment name from coldata file: <exp.treatment> VS <control> (mut1 VS WT)")
@@ -22,15 +21,15 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
   #################################
 
   # upload libraries
-lib_packages <- c(
+  lib_packages <- c(
     "dplyr", "DESeq2", "apeglm", "ggplot2", "tximport", "RColorBrewer", "pheatmap"
-)
-for (n.pkg in seq(lib_packages)) {
+  )
+  for (n.pkg in seq(lib_packages)) {
     suppressMessages(library(lib_packages[n.pkg], character.only = TRUE))
     perc_val <- (n.pkg / length(lib_packages)) * 100
     cat(paste0("\rloading libraries [", round(perc_val, 1), "%] "))
-}
-cat("\n")
+  }
+  cat("\n")
 
 
   # coldata file
@@ -120,10 +119,19 @@ cat("\n")
   percentVar <- round(100 * attr(pca_data, "percentVar"))
 
   pca_data$Genotype <- info$exp[match(pca_data$name, info$x)]
-  pca_data <- rbind(
-    pca_data[pca_data$Genotype == control, ],
-    pca_data[pca_data$Genotype == exp.treatment, ]
-  )
+
+  if (!is.na(control) & !is.na(exp.treatment)) {
+    pca_data <- rbind(
+      pca_data[pca_data$Genotype == control, ],
+      pca_data[pca_data$Genotype == exp.treatment, ]
+    )
+  } else if (!any(is.na(group.A))) {
+    pca_data <- rbind(
+      pca_data[pca_data$group.for.stat == "B", ],
+      pca_data[pca_data$group.for.stat == "A", ]
+    )
+  }
+
   write.csv(pca_data, paste0(new_path_2, "/PCA_table_", A.B_VS_c, ".csv"), row.names = F)
 
   pca_data$col[pca_data$Genotype == control] <- "gray40"
