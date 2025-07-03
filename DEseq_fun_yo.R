@@ -104,7 +104,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
   source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
   volcano_plot <- plot_volcano(res, xlim_both_sides = x_max_pos, ylim_up = y_max_pos, alpha.yo = 1)
 
-  png(paste0(new_path_2, "/volcano_plot_", A.B_VS_c, ".png"), width = 3.5, height = 2, units = "in", res = 300)
+  png(paste0(new_path_2, "/volcano_plot_", A.B_VS_c, ".png"), width = 3.5, height = 2, units = "in", res = 300, family = "serif")
   print(volcano_plot)
   dev.off()
 
