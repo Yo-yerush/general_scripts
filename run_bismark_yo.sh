@@ -215,6 +215,7 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
         # run 'methylation_extractor' and keep 'CX_report' file only
         bismark_methylation_extractor --cytosine_report --CX --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
 
+        gzip $output_path/"$i"/methylation_extractor/*.CX_report.txt
         mv  $output_path/"$i"/methylation_extractor/*.CX_report.txt $output_path
 
         ## check if CX_report file exists
