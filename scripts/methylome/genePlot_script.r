@@ -15,18 +15,24 @@
 
 # -------------------------------------------------------------
 
-genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotations, methylome_at_results, output_path) {
+genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotations, methylome_at_results, output_path, n_cores = 1) {
   library(DMRcaller)
   library(GenomicFeatures)
   library(dplyr)
   library(parallel)
 
   ###################################
+  if (n_cores >= length(c(var1_path, var2_path))) {
+    ncores_par <- n_cores
+  } else {
+    ncores_par <- 1
+  }
 
-  var1 <- mclapply(var1_path, readBismark, mc.cores = 2)
+  vars_files <- mclapply(c(var1_path, var2_path), readBismark, mc.cores = ncores_par)
+  var1 <- vars_files[1:length(var1_path)]
+  var2 <- vars_files[1:length(var2_path)]
+
   var1_pool <- poolMethylationDatasets(GRangesList(var1))
-
-  var2 <- mclapply(var2_path, readBismark, mc.cores = 3)
   var2_pool <- poolMethylationDatasets(GRangesList(var2))
 
   var1_pool <- rename_seq(var1_pool)
@@ -34,10 +40,10 @@ genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotat
 
   ###################################
 
-  ann_file <- read.csv(paste0(methylome_at_annotations, "/annotation_files/Methylome.At_annotations.csv.gz")) %>%
+  ann_file <- read.csv(paste0(methylome_at_annotations, "/Methylome.At_annotations.csv.gz")) %>%
     select(-width)
 
-  TE_file <- read.csv(paste0(methylome_at_annotations, "/annotation_files/TAIR10_Transposable_Elements.txt"), sep = "\t") %>%
+  TE_file <- read.csv(paste0(methylome_at_annotations, "/TAIR10_Transposable_Elements.txt"), sep = "\t") %>%
     mutate(seqnames = NA) %>% # Add a new column with NA values
     mutate(type = "transposable_element", gene_model_type = "transposable_element") %>%
     dplyr::select(seqnames, Transposon_min_Start, Transposon_max_End, orientation_is_5prime, type, Transposon_Name, gene_model_type) %>%

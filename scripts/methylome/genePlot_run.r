@@ -1,10 +1,11 @@
 
 tair_id <- "AT3G01120"
-methylome_at_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At"
-methylome_at_results <- NULL
-methylome_at_results <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At/results/mto1_vs_wt"
+methylome_at_annotations <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At/annotation_files"
 
-output_path <- "/home/yoyerush/yo/genePlot_101124"
+methylome_at_results <- NULL
+# methylome_at_results <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At/results/mto1_vs_wt"
+
+output_path <- "/home/yoyerush/yo/genePlot_080725"
 
 # upload CX files
 var1_path <- c(
