@@ -1,7 +1,7 @@
 
 tair_id <- "AT3G01120"
-expitiment_name <- ""
 methylome_at_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At"
+methylome_at_results <- NULL
 methylome_at_results <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At/results/mto1_vs_wt"
 
 output_path <- "/home/yoyerush/yo/genePlot_101124"
@@ -21,4 +21,4 @@ var2_path <- c(
 ###################################
 
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/genePlot_script.r")
-genePlot_fun(tair_id, var1_path, var2_path, methylome_at_annotations, methylome_at_results = NULL)
+genePlot_fun(tair_id, var1_path, var2_path, methylome_at_annotations, methylome_at_results, output_path)

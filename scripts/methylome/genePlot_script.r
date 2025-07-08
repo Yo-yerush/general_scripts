@@ -15,7 +15,7 @@
 
 # -------------------------------------------------------------
 
-genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotations, methylome_at_results) {
+genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotations, methylome_at_results, output_path) {
   library(DMRcaller)
   library(GenomicFeatures)
   library(dplyr)
