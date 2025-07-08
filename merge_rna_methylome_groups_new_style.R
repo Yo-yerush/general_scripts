@@ -39,11 +39,12 @@ grep_position <- function(x) {
 for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", "SSE_low_vs_EV", "SSE_high_vs_SSE_low")) {
   for (make_it_unique in c(F)) {
     unique_or_not <- ifelse(make_it_unique, "_unique", "")
+    cat(paste0("\r",treatment, "... [0%]  "))
 
     all_res <- as.data.frame(readxl::read_xlsx("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/NGS_merged_results/merged_results_mtos_all_genes.xlsx", sheet = treatment, progress = FALSE))
     # all_res = all_res[,-ncol(all_res)] # %>% relocate("transcript_id", .after = "gene_id"
 
-    cat(paste0(treatment, "..."))
+    cat(paste0("\r",treatment, "... [10%] "))
     ################
     # RdDM pathway
     rddm <- rbind(
@@ -76,7 +77,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     HLM_mto1 <- merge.data.frame(HLM, all_res, by = "gene_id") %>%
       arrange(RNA_padj)
     ################
-    cat(".")
+    cat(paste0("\r",treatment, "... [20%] "))
     ################
     # Royal Family Proteins
     RF <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/Royal Family proteins/At_Agenet_Tudor_family.txt",
@@ -96,6 +97,14 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     histone_deMTs <- all_res[grep("LDL|FLD|ELF|IBM|JMJ|REF", all_res$Symbol), ] %>%
       distinct(gene_id, .keep_all = T) %>%
       arrange(RNA_padj)
+      
+    ################
+    # REM Transcription Factor Family (https://www.arabidopsis.org/browse/gene_family/REM)
+    # added VDD () and VAL (AT5G60140)
+    REM_TFs <- all_res[grep("AT4G31610|AT2G24700|AT2G24690|AT2G24680|AT2G24650|AT2G24630|AT4G33280|AT1G26680|AT2G46730|AT1G49480|AT4G31620|AT3G53310|AT3G06220|AT3G46770|AT5G09780|AT4G31630|AT4G31640|AT4G31650|AT4G31660|AT4G31680|AT4G31690|AT5G18000|AT5G60140", all_res$gene_id), ] %>%
+      distinct(gene_id, .keep_all = T) %>%
+      arrange(RNA_padj)
+      
     ################
     # Ash leaf
     Ash_leaf <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Girija_23 methylation Plant Physiol/Ash_leaves.txt",
@@ -128,20 +137,20 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     sse$gene_id <- toupper(sse$gene_id)
     sse_merged <- merge.data.frame(sse, all_res, by = "gene_id") %>% dplyr::select(-Title)
     ################
-    cat(".")
+    cat(paste0("\r",treatment, "... [30%] "))
     # GO term offsprings
     # child_terms_epigenetic <- offspring_fun("GO:0040029") # epigenetic regulation of_gene expression
     child_terms_chromatin_org <- offspring_fun("GO:0006325") # chromatin organization
     child_terms_chromatin_rem <- offspring_fun("GO:0006338") # chromatin remodeling
-    cat(".")
+    cat(paste0("\r",treatment, "... [40%] "))
     child_terms_defence <- offspring_fun("GO:0006952") # defense response
     child_terms_stress <- offspring_fun("GO:0006950") # response to stress
-    cat(".")
+    cat(paste0("\r",treatment, "... [50%] "))
     child_terms_biotic <- offspring_fun("GO:0009607") # response to biotic stimulus
     child_terms_abiotic <- offspring_fun("GO:0009628") # response to abiotic stimulus
 
     ################
-    cat(".")
+    cat(paste0("\r",treatment, "... [60%] "))
     xl_0_list <- list(
       DNA_methyltransferase = rbind(
         all_res[grep("^2\\.1\\.1\\.37", all_res$EC), ], # EC_2.1.1.37
@@ -164,6 +173,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       Royal_Family_Proteins = RF_mto1, # %>% dplyr::filter(RNA_pvalue < 0.05),
       DNA_deMTs = DNA_deMTs,
       histone_deMTs = histone_deMTs,
+      REM_TFs = REM_TFs,
 
       chromatin_remodeling = rbind(
         all_res[grep("chromatin remodeling|chromatin remodeler", tolower(all_res$GO.biological.process)), ], # %>% dplyr::filter(RNA_pvalue < 0.05), # chromatin_remodeling_BP
@@ -231,7 +241,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
         dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters)))
     )
 
-    cat(".")
+    cat(paste0("\r",treatment, "... [70%] "))
 
     # empty df with correct headers
     tmp_df <- data.frame(matrix(ncol = length(names(xl_0_list[[1]])), nrow = 0))
@@ -253,7 +263,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       tmp_df <- rbind(tmp_df, tmp_loop_df)
     }
 
-    cat(".")
+    cat(paste0("\r",treatment, "... [80%] "))
 
     if (make_it_unique) {
       tmp_df <- tmp_df %>%
@@ -266,7 +276,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     xl_list <- xl_list[unique(tmp_df$tmp1)] # order it as suppose to be...
 
     ################################################################################
-    cat(".")
+    cat(paste0("\r",treatment, "... [90%] "))
     ################################################################################
     remove_dup_DMR <- function(y) {
       y <- as.character(unique(unlist(strsplit(y, ","))))
@@ -485,9 +495,9 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
         conditionalFormatting(wb, sheet_name, style = style_other, rule = "!=0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
         conditionalFormatting(wb, sheet_name, style = style_other, rule = "==0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
     }
-      cat(".")
+      cat(paste0("\r",treatment, "... [100%]"))
     }
     saveWorkbook(wb, paste0(output_res, treatment, unique_or_not, "_groups.xlsx"), overwrite = T)
   }
-  cat(" done\n")
+  cat("\tdone\n")
 }
