@@ -62,7 +62,7 @@ genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotat
   ###################################
 
   # get gene position from the gff3 file
-  gene_gr <- as.data.frame(gff3) %>%
+  gene_gr <- as.data.frame(gff3_file) %>%
     filter(type == "gene") %>%
     filter(gene_id == tair_id) %>%
     makeGRangesFromDataFrame(., keep.extra.columns = TRUE)
@@ -141,7 +141,7 @@ genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotat
     gene_gr,
     DMRsList,
     conditionsNames = c("WT", "mto1"),
-    gff3,
+    gff3_file,
     windowSize = 1000,
     context = c("CG", "CHG", "CHH"),
     main = main_title,
