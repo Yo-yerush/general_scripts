@@ -229,12 +229,12 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
     else
         # run 'methylation_extractor' and keep all files (without 'CX_report')
         bismark_methylation_extractor --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
-        echo "output files: '$output_path/"$i"/methylation_extractor/'" >> "$log_file"
+        #echo "output files: '$output_path/"$i"/methylation_extractor/'" >> "$log_file"
 
         # sort bam files (can use in IGV software)
         if [[ "$sort_bam" == "true" ]]; then
-            samtools sort $output_path/"$i"/"$i"_*.bam -o $output_path/"$i"/"$i"_*_sorted.bam
-            samtools index $output_path/"$i"/"$i"_*_sorted.bam
+            samtools sort $output_path/"$i"/"$i"_*.bam -o $output_path/"$i"/"$i"_sorted.bam
+            samtools index $output_path/"$i"/"$i"_sorted.bam
         fi
     fi
 
