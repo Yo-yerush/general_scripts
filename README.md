@@ -129,3 +129,60 @@ dev.off()
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
+## genePlots of methylations over gene and its 2kb upstream region
+#### This script use 'CX_report' files as input. can add DMRs results (using 'Methylome.At' pipeline results)
+#### To create **genePlots** use the following script
+```r
+# DMRcaller package-based functions
+# Catoni, Marco, Tsang, MF J, Greco, P A, Zabet, Radu N (2018). “DMRcaller: a versatile R/Bioconductor package for detection and visualization of differentially methylated regions in CpG and non-CpG contexts.” Nucleic Acids Research. doi:10.1093/nar/gky602.
+# https://www.bioconductor.org/packages/release/bioc/html/DMRcaller.html
+
+library(DMRcaller)
+library(GenomicFeatures)
+library(dplyr)
+library(parallel)
+
+tair_id <- "AT3G01120"
+methylome_at_annotations <- "/PATH/TO/Methylome.At/annotation_files"
+
+#methylome_at_results <- NULL
+methylome_at_results <- "/PATH/TO/Methylome.At/results/mto1_vs_wt"
+
+output_path <- "/PATH/TO/output_directory"
+
+# upload CX files
+var1_path <- c(
+  "/PATH/TO/wt_1_pe.CX_report.txt",
+  "/PATH/TO/wt_1_pe.CX_report.txt"
+)
+
+var2_path <- c(
+  "/PATH/TO/mto1_1_pe.CX_report.txt",
+  "/PATH/TO/mto1_2_pe.CX_report.txt",
+  "/PATH/TO/mto1_3_pe.CX_report.txt"
+)
+
+###################################
+
+var1_name <- "WT"
+var2_name <- "mto1"
+
+n_cores <- 5 # choose as your samples count
+
+vars_files <- mclapply(c(var1_path, var2_path), readBismark, mc.cores = n_cores)
+var1 <- vars_files[1:length(var1_path)]
+var2 <- vars_files[1:length(var2_path)]
+
+var1_pool <- poolMethylationDatasets(GRangesList(var1))
+var2_pool <- poolMethylationDatasets(GRangesList(var2))
+
+var1_pool <- rename_seq(var1_pool)
+var2_pool <- rename_seq(var2_pool)
+
+###################################
+
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/genePlot_script.r")
+genePlot_fun(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_annotations, methylome_at_results, output_path)
+```
+
+
