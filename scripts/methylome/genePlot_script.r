@@ -15,36 +15,36 @@
 
 # -------------------------------------------------------------
 
-genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotations, methylome_at_results, output_path=".", n_cores = 1) {
+genePlot_fun <- function(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_results = NULL, output_path = ".") {
   library(DMRcaller)
   library(GenomicFeatures)
   library(dplyr)
-  library(parallel)
-
-  ###################################
-  if (n_cores >= length(c(var1_path, var2_path))) {
-    ncores_par <- n_cores
-  } else {
-    ncores_par <- 1
-  }
-
-  vars_files <- mclapply(c(var1_path, var2_path), readBismark, mc.cores = ncores_par)
-  var1 <- vars_files[1:length(var1_path)]
-  var2 <- vars_files[1:length(var2_path)]
-
-  var1_pool <- poolMethylationDatasets(GRangesList(var1))
-  var2_pool <- poolMethylationDatasets(GRangesList(var2))
-
-  var1_pool <- rename_seq(var1_pool)
-  var2_pool <- rename_seq(var2_pool)
 
   ###################################
 
-  ann_file <- read.csv(paste0(methylome_at_annotations, "/Methylome.At_annotations.csv.gz")) %>%
+  cat("\rupload annotation files...     ")
+  annotations_url <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/Methylome.At_annotations.csv.gz"
+  description_url <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/Methylome.At_description_file.csv.gz"
+  transposons_url <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt"
+
+  ann_file <- read.csv(
+    gzcon(url(annotations_url, open = "rb"), text = TRUE),
+    encoding = "UTF-8"
+  ) %>%
     select(-width)
 
-  TE_file <- read.csv(paste0(methylome_at_annotations, "/TAIR10_Transposable_Elements.txt"), sep = "\t") %>%
-    mutate(seqnames = NA) %>% # Add a new column with NA values
+  desc_file <- read.csv(
+    gzcon(url(description_url, open = "rb"), text = TRUE),
+    encoding = "UTF-8"
+  ) %>%
+    select(gene_id, Symbol)
+
+  TE_file <- read.csv(
+    gzcon(url(transposons_url, open = "rb"), text = TRUE),
+    encoding = "UTF-8",
+    sep = "\t"
+  ) %>%
+    mutate(seqnames = NA) %>%
     mutate(type = "transposable_element", gene_model_type = "transposable_element") %>%
     dplyr::select(seqnames, Transposon_min_Start, Transposon_max_End, orientation_is_5prime, type, Transposon_Name, gene_model_type) %>%
     dplyr::rename(gene_id = Transposon_Name)
@@ -55,10 +55,11 @@ genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotat
   TE_file$orientation_is_5prime <- gsub("false", "-", TE_file$orientation_is_5prime)
   names(TE_file)[1:4] <- c("seqnames", "start", "end", "strand")
 
-
   gff3_file <- rbind(ann_file, TE_file) %>%
     makeGRangesFromDataFrame(., keep.extra.columns = TRUE)
 
+  cat("\rupload annotation files... done")
+  cat("\n\n")
   ###################################
 
   # get gene position from the gff3 file
@@ -81,8 +82,8 @@ genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotat
 
 
   # Filter var_pool by the positions of chr_name, start_pos, and end_pos
-  filtered_var1_pool <- var1_pool_f[seqnames(var1_pool_f) == chr_name & start(var1_pool_f) >= start_pos & end(var1_pool_f) <= end_pos]
-  filtered_var2_pool <- var2_pool_f[seqnames(var2_pool_f) == chr_name & start(var2_pool_f) >= start_pos & end(var2_pool_f) <= end_pos]
+  filtered_var1_pool <- var1_pool[seqnames(var1_pool) == chr_name & start(var1_pool) >= start_pos & end(var1_pool) <= end_pos]
+  filtered_var2_pool <- var2_pool[seqnames(var2_pool) == chr_name & start(var2_pool) >= start_pos & end(var2_pool) <= end_pos]
   ###################################
 
   ###################################
@@ -119,34 +120,31 @@ genePlot_fun <- function(tair_id, var1_pool_f, var2_pool_f, methylome_at_annotat
   }
   ###################################
 
-  id2symbol <- data.frame(
-    id = c(cg$gene_id, chg$gene_id, chh$gene_id),
-    symbol = c(cg$Symbol, chg$Symbol, chh$Symbol)
-  ) %>%
-    filter(id == tair_id) %>%
-    distinct(., .keep_all = TRUE)
+  id2symbol <- filter(desc_file, gene_id == tair_id)
 
   main_title <- ifelse(
-    id2symbol$symbol == "",
-    id2symbol$id,
-    paste0(id2symbol$id, " (", id2symbol$symbol, ")")
+    is.na(id2symbol$Symbol),
+    id2symbol$gene_id,
+    paste0(id2symbol$gene_id, " (", id2symbol$Symbol, ")")
   )
+  file_suffix <- gsub("\\(|\\)", "", main_title)
+  file_suffix <- gsub(" ", "_", main_title)
   ###################################
 
   dir.create(output_path, showWarnings = FALSE)
 
-  svg(paste0(output_path, "/genePlot_", main_title, ".svg"), width = 4.75, height = 2.75, family = "serif")
+  svg(paste0(output_path, "/genePlot_", file_suffix, ".svg"), width = 4.75, height = 2.75, family = "serif")
   plotLocalMethylationProfile_yo(filtered_var1_pool,
     filtered_var2_pool,
     gene_gr,
     DMRsList,
-    conditionsNames = c("WT", "mto1"),
+    conditionsNames = c(var1_name, var2_name),
     gff3_file,
     windowSize = 1000,
     context = c("CG", "CHG", "CHH"),
     main = main_title,
     col = c(
-      "gray25", "#bf6828", "#000000", "#afad43",
+      "#40404080", "#bf682880", "#000000", "#afad43",
       "#009E73", "#0072B2", "#CC79A7", "#D55E00", "#999999"
     )
   )
