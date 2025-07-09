@@ -185,5 +185,5 @@ source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts
 genePlot_fun(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_annotations, methylome_at_results, output_path)
 ```
 #### example output
-![fig]('https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120 (MTO1).svg')
+![fig](https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120_(MTO1).svg)
 
