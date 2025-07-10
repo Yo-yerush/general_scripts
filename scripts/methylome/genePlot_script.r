@@ -1,5 +1,5 @@
 # Yo - 080725
-
+#
 # -------------------------------------------------------------
 
 # DMRcaller packge based functions
@@ -9,16 +9,35 @@
 # https://www.bioconductor.org/packages/release/bioc/html/DMRcaller.html
 
 # -------------------------------------------------------------
-
+#
+# script to plot methylation level over gene body and promoter
+# insters TAIR ID(s), pooled CX_reports and variable names
+#
 # 'methylome_at_annotations' in default use TAIR10 annotations (both genes and TEs)
-# use 'methylome_at_results' varible if you want to add DMRs results in this genePlot
+# use 'methylome_at_results' variable (full path) if you want to add DMRs results in this genePlot
 
 # -------------------------------------------------------------
 
-genePlot_fun <- function(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_results = NULL, output_path = ".") {
+genePlot_fun <- function(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_results = NULL, output_path = ".", n_cores = 6, create_legend = TRUE) {
   library(DMRcaller)
   library(GenomicFeatures)
   library(dplyr)
+  library(parallel)
+
+  ###################################
+
+  # upload CX report files
+  s_length <- length(c(var1_path, var2_path))
+  n_cores_par <- ifelse(n_cores < s_length, n_cores, s_length)
+  vars_files <- mclapply(c(var1_path, var2_path), readBismark, mc.cores = n_cores_par)
+  var1_file <- vars_files[1:length(var1_path)]
+  var2_file <- vars_files[1:length(var2_path)]
+
+  var1_pool <- poolMethylationDatasets(GRangesList(var1_file))
+  var2_pool <- poolMethylationDatasets(GRangesList(var2_file))
+
+  var1_pool <- rename_seq(var1_pool)
+  var2_pool <- rename_seq(var2_pool)
 
   ###################################
 
@@ -62,10 +81,10 @@ genePlot_fun <- function(tair_id, var1_pool, var2_pool, var1_name, var2_name, me
   cat("\n\n")
   ###################################
 
-    # DMRs file
+  # upload DMRs files
   if (!is.null(methylome_at_results)) {
     columnNames <- c("seqnames", "start", "end", "width", "strand", "sumReadsM1", "sumReadsN1", "proportion1", "sumReadsM2", "sumReadsN2", "proportion2", "cytosinesCount", "context", "direction", "pValue", "regionType", "gene_id", "Symbol")
-    # DMRs = rbind(
+
     cg <- rbind(
       read.csv(paste0(methylome_at_results, "/genome_annotation/CG/Genes_CG_genom_annotations.csv")),
       read.csv(paste0(methylome_at_results, "/genome_annotation/CG/Promoters_CG_genom_annotations.csv"))
@@ -86,71 +105,74 @@ genePlot_fun <- function(tair_id, var1_pool, var2_pool, var1_name, var2_name, me
     ) %>%
       select(all_of(columnNames)) %>%
       makeGRangesFromDataFrame(., keep.extra.columns = TRUE)
-    # ) %>%
 
-    # DMRsList <- list("DMRs" = DMRs)
     DMRsList <- list("CG" = cg, "CHG" = chg, "CHH" = chh)
+
+    if (create_legend) {
+      legend_genePlot(output_path)
+    }
   } else {
     DMRsList <- NULL
   }
-  
-  ###################################
-
-  # get gene position from the gff3 file
-  gene_gr <- as.data.frame(gff3_file) %>%
-    filter(type == "gene") %>%
-    filter(gene_id == tair_id) %>%
-    makeGRangesFromDataFrame(., keep.extra.columns = TRUE)
-
-  if (as.character(strand(gene_gr)) == "+") {
-    start(gene_gr) <- start(gene_gr) - 2000
-    end(gene_gr) <- end(gene_gr)
-  } else {
-    start(gene_gr) <- start(gene_gr)
-    end(gene_gr) <- end(gene_gr) + 2000
-  }
-
-  chr_name <- as.character(gene_gr@seqnames@values[1])
-  start_pos <- start(gene_gr)
-  end_pos <- end(gene_gr)
-
-
-  # Filter var_pool by the positions of chr_name, start_pos, and end_pos
-  filtered_var1_pool <- var1_pool[seqnames(var1_pool) == chr_name & start(var1_pool) >= start_pos & end(var1_pool) <= end_pos]
-  filtered_var2_pool <- var2_pool[seqnames(var2_pool) == chr_name & start(var2_pool) >= start_pos & end(var2_pool) <= end_pos]
-  ###################################
 
   ###################################
 
-  id2symbol <- filter(desc_file, gene_id == tair_id)
+  for (t_id in tair_id) {
+    # get gene position from the gff3 file
+    gene_gr <- as.data.frame(gff3_file) %>%
+      filter(type == "gene") %>%
+      filter(gene_id == t_id) %>%
+      makeGRangesFromDataFrame(., keep.extra.columns = TRUE)
 
-  main_title <- ifelse(
-    is.na(id2symbol$Symbol),
-    id2symbol$gene_id,
-    paste0(id2symbol$gene_id, " (", id2symbol$Symbol, ")")
-  )
-  file_suffix <- gsub("\\(|\\)", "", main_title)
-  file_suffix <- gsub(" ", "_", main_title)
-  ###################################
+    if (as.character(strand(gene_gr)) == "+") {
+      start(gene_gr) <- start(gene_gr) - 2000
+      end(gene_gr) <- end(gene_gr)
+    } else {
+      start(gene_gr) <- start(gene_gr)
+      end(gene_gr) <- end(gene_gr) + 2000
+    }
 
-  dir.create(output_path, showWarnings = FALSE)
+    chr_name <- as.character(gene_gr@seqnames@values[1])
+    start_pos <- start(gene_gr)
+    end_pos <- end(gene_gr)
 
-  svg(paste0(output_path, "/genePlot_", file_suffix, ".svg"), width = 4.75, height = 2.75, family = "serif")
-  plotLocalMethylationProfile_yo(filtered_var1_pool,
-    filtered_var2_pool,
-    gene_gr,
-    DMRsList,
-    conditionsNames = c(var1_name, var2_name),
-    gff3_file,
-    windowSize = 1000,
-    context = c("CG", "CHG", "CHH"),
-    main = main_title,
-    col = c(
-      "#40404080", "#bf682880", "#000000", "#afad43",
-      "#009E73", "#0072B2", "#CC79A7", "#D55E00", "#999999"
+    # Filter var_pool by the positions of chr_name, start_pos, and end_pos
+    filtered_var1_pool <- var1_pool[seqnames(var1_pool) == chr_name & start(var1_pool) >= start_pos & end(var1_pool) <= end_pos]
+    filtered_var2_pool <- var2_pool[seqnames(var2_pool) == chr_name & start(var2_pool) >= start_pos & end(var2_pool) <= end_pos]
+
+    ###################################
+
+    id2symbol <- filter(desc_file, gene_id == t_id)
+
+    main_title <- ifelse(
+      is.na(id2symbol$Symbol),
+      id2symbol$gene_id,
+      paste0(id2symbol$gene_id, " (", id2symbol$Symbol, ")")
     )
-  )
-  dev.off()
+    file_suffix <- gsub("\\(|\\)", "", main_title)
+    file_suffix <- gsub(" ", "_", main_title)
+    ###################################
+
+    dir.create(output_path, showWarnings = FALSE)
+
+    svg(paste0(output_path, "/genePlot_", file_suffix, ".svg"), width = 4.75, height = 2.75, family = "serif")
+    plotLocalMethylationProfile_yo(
+      filtered_var1_pool,
+      filtered_var2_pool,
+      gene_gr,
+      DMRsList,
+      conditionsNames = c(var1_name, var2_name),
+      gff3_file,
+      windowSize = 1000,
+      context = c("CG", "CHG", "CHH"),
+      main = main_title,
+      col = c(
+        "#40404080", "#bf682880", "#000000", "#afad43",
+        "#009E73", "#0072B2", "#CC79A7", "#D55E00", "#999999"
+      )
+    )
+    dev.off()
+  }
 }
 
 ##########################################
@@ -312,6 +334,7 @@ plotLocalMethylationProfile_yo <- function(
   TEColor <- col[4]
   DMRsColor <- col[5:length(col)]
 
+  chr_name <- as.character(region@seqnames@values[1])
   seqname <- seqnames(region)
   minPos <- start(region)
   maxPos <- end(region)
@@ -346,7 +369,7 @@ plotLocalMethylationProfile_yo <- function(
       1], pch = 16, cex = 0.6, xlim = c(minPos, maxPos), ylim = c(
       -0.2,
       1.2 + numberOfDMRs * 0.1
-    ), xlab = "genomic coordinate", ylab = "methylation proportion",
+    ), xlab = paste0("Genomic coordinate ", chr_name), ylab = "Methylation level",
     yaxt = "n", main = NULL, type = "n"
   )
   axis(2, c(0, 0.5, 1))
@@ -509,11 +532,11 @@ plotLocalMethylationProfile_yo <- function(
 ###
 
 #### legend
-if (F) {
+legend_genePlot <- function(x_path) {
   x.cord <- 0.25
   y.cord <- 0.9
 
-  svg(paste0(output_path, "/legend.svg"), width = 2.75, height = 2, family = "serif")
+  svg(paste0(x_path, "/genePlot_legend.svg"), width = 2.75, height = 2, family = "serif")
 
   par(mar = c(0, 0, 0, 0))
   plot.new()
