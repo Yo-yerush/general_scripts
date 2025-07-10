@@ -133,23 +133,22 @@ dev.off()
 #### One or multiple TAIR ID(s)
 #### This script use 'CX_report' files as input
 * *can add DMRs results (using 'Methylome.At' pipeline results)*
+#### Run in multiple cores are avilable for CX_repots reading files. in default: n_cores => total samples number 
 #### To create **genePlots** use the following script
 ```r
 # DMRcaller package-based functions
 # Catoni, Marco, Tsang, MF J, Greco, P A, Zabet, Radu N (2018). “DMRcaller: a versatile R/Bioconductor package for detection and visualization of differentially methylated regions in CpG and non-CpG contexts.” Nucleic Acids Research. doi:10.1093/nar/gky602.
 # https://www.bioconductor.org/packages/release/bioc/html/DMRcaller.html
+# ----------------------------------------------------------------------
 
-library(DMRcaller)
-library(GenomicFeatures)
-library(dplyr)
-library(parallel)
-
-# multiple TAIR ID(s)
+# TAIR ID(s) to plot
 tair_id <- c("AT3G01120", "AT3G17390", "AT1G53480")
 
-# use 'NULL' if there is no 'Methylome.At' results output
-methylome_at_results <- "/PATH/TO/Methylome.At/results/mto1_vs_wt"
+# variable names
+var1_name <- "WT" # control
+var2_name <- "mto1"
 
+# output path (will create if not exist)
 output_path <- "/PATH/TO/output_directory"
 
 # CX files path
@@ -164,27 +163,15 @@ var2_path <- c(
   "/PATH/TO/mto1_3_pe.CX_report.txt"
 )
 
-###################################
+n_cores <- length(c(var1_path, var2_path))
 
-var1_name <- "WT"
-var2_name <- "mto1"
+# DMRs results
+# use 'NULL' if there is no 'Methylome.At' results output
+methylome_at_results <- "/PATH/TO/Methylome.At/results/mto1_vs_wt"
 
-n_cores <- 5 # choose as your samples count
-
-vars_files <- mclapply(c(var1_path, var2_path), readBismark, mc.cores = n_cores)
-var1 <- vars_files[1:length(var1_path)]
-var2 <- vars_files[1:length(var2_path)]
-
-var1_pool <- poolMethylationDatasets(GRangesList(var1))
-var2_pool <- poolMethylationDatasets(GRangesList(var2))
-
-var1_pool <- rename_seq(var1_pool)
-var2_pool <- rename_seq(var2_pool)
-
-###################################
-
+# run genePlots scripts
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/genePlot_script.r")
-genePlot_fun(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_results, output_path)
+genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_results, output_path, n_cores, create_legend = TRUE)
 ```
 #### example output
 ![fig](https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120.svg)
