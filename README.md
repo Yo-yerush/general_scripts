@@ -61,18 +61,28 @@ Run Bismark to get only '**.CX_report.txt**' file
 
 #### Use [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
 ```
+git clone https://github.com/Yo-yerush/Methylome.At.git
+cd ./Methylome.At
+chmod +x ./setup_env.sh
+./setup_env.sh
 
+# create sample table with two columns (tab delimiter):
+# SAMPLE PATH
+
+# run pipelines
+./Methylome.At.sh PATH/TO/samples_table.txt
+./Methylome.At_metaPlots.sh PATH/TO/samples_table.txt
 ```
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
 ## Calculate and plot '*delta*' methylation levels
-#### Download '[*Stroud et al. (2013)*](https://pubmed.ncbi.nlm.nih.gov/23313553/)' '**.wig**' files  (*SRA experiment: '[SRP014726](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP014726&o=biosample_s%3Aa%3Bacc_s%3Aa)'*) and use '[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_wig_script.r)' script
+Download '[*Stroud et al. (2013)*](https://pubmed.ncbi.nlm.nih.gov/23313553/)' '**.wig**' files  (*SRA experiment: '[SRP014726](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP014726&o=biosample_s%3Aa%3Bacc_s%3Aa)'*) and use '[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_wig_script.r)' script.
 This will save '**.csv**' files of the total-methylation delta (mutants compared to WT).
-In this example, *mto1* mutant '**.csv**' file created by '**.CX_report.txt**' file, using '[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_CX_report_script.r)' script.
+In this example, *mto1* mutant '**.csv**' file created by '**.CX_report.txt**' (output from Bismark).
 
-#### Then to create **ChrPlots** use the following script
+#### Then to create **ChrPlots** run the following commands
 *  *use <TE_as_gr = NULL> argument to remove TE density from the plot*
 ```r
 library(ggplot2)
@@ -129,27 +139,29 @@ dev.off()
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
-## genePlots of methylations over gene and its 2kb upstream region
-#### This script use 'CX_report' files as input. can add DMRs results (using 'Methylome.At' pipeline results)
+## genePlots of methylations over the gene body and its 2kb upstream region
+#### One or multiple TAIR ID(s)
+#### This script use 'CX_report' files as input
+* *can add DMRs results (using 'Methylome.At' pipeline results)*
+#### Run in multiple cores are avilable for CX_repots reading files. in default: n_cores => total samples number 
 #### To create **genePlots** use the following script
 ```r
 # DMRcaller package-based functions
 # Catoni, Marco, Tsang, MF J, Greco, P A, Zabet, Radu N (2018). “DMRcaller: a versatile R/Bioconductor package for detection and visualization of differentially methylated regions in CpG and non-CpG contexts.” Nucleic Acids Research. doi:10.1093/nar/gky602.
 # https://www.bioconductor.org/packages/release/bioc/html/DMRcaller.html
+# ----------------------------------------------------------------------
 
-library(DMRcaller)
-library(GenomicFeatures)
-library(dplyr)
-library(parallel)
+# TAIR ID(s) to plot
+tair_id <- c("AT3G01120", "AT3G17390", "AT1G53480")
 
-tair_id <- "AT3G01120"
+# variable names
+var1_name <- "WT" # control
+var2_name <- "mto1"
 
-# methylome_at_results <- NULL
-methylome_at_results <- "/PATH/TO/Methylome.At/results/mto1_vs_wt"
-
+# output path (will create if not exist)
 output_path <- "/PATH/TO/output_directory"
 
-# upload CX files
+# CX files path
 var1_path <- c(
   "/PATH/TO/wt_1_pe.CX_report.txt",
   "/PATH/TO/wt_1_pe.CX_report.txt"
@@ -161,27 +173,15 @@ var2_path <- c(
   "/PATH/TO/mto1_3_pe.CX_report.txt"
 )
 
-###################################
+n_cores <- length(c(var1_path, var2_path))
 
-var1_name <- "WT"
-var2_name <- "mto1"
+# DMRs results
+# use 'NULL' if there is no 'Methylome.At' results output
+methylome_at_results <- "/PATH/TO/Methylome.At/results/mto1_vs_wt"
 
-n_cores <- 5 # choose as your samples count
-
-vars_files <- mclapply(c(var1_path, var2_path), readBismark, mc.cores = n_cores)
-var1 <- vars_files[1:length(var1_path)]
-var2 <- vars_files[1:length(var2_path)]
-
-var1_pool <- poolMethylationDatasets(GRangesList(var1))
-var2_pool <- poolMethylationDatasets(GRangesList(var2))
-
-var1_pool <- rename_seq(var1_pool)
-var2_pool <- rename_seq(var2_pool)
-
-###################################
-
+# run genePlots scripts
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/genePlot_script.r")
-genePlot_fun(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_results, output_path)
+genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_results, output_path, n_cores, create_legend = TRUE)
 ```
 #### example output
 ![fig](https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120.svg)
