@@ -165,7 +165,7 @@ Revigo_plots <- function(GO_df_up, GO_df_down,
       
       ggplot2::scale_color_manual(values = unique(df$hex_col), guide = "none") + 
       ggplot2::geom_point(ggplot2::aes(plot_X, plot_Y, size = value), 
-                          shape = 21, fill = "transparent", colour = I(ggplot2::alpha ("black", 0.6)),
+                          shape = 21, fill = "transparent", colour = I(ggplot2::alpha("black", 0.6)),
                           show.legend = FALSE) + 
       
       ggplot2::theme_classic() + 

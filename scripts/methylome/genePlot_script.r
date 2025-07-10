@@ -62,32 +62,7 @@ genePlot_fun <- function(tair_id, var1_pool, var2_pool, var1_name, var2_name, me
   cat("\n\n")
   ###################################
 
-  # get gene position from the gff3 file
-  gene_gr <- as.data.frame(gff3_file) %>%
-    filter(type == "gene") %>%
-    filter(gene_id == tair_id) %>%
-    makeGRangesFromDataFrame(., keep.extra.columns = TRUE)
-
-  if (as.character(strand(gene_gr)) == "+") {
-    start(gene_gr) <- start(gene_gr) - 2000
-    end(gene_gr) <- end(gene_gr)
-  } else {
-    start(gene_gr) <- start(gene_gr)
-    end(gene_gr) <- end(gene_gr) + 2000
-  }
-
-  chr_name <- as.character(gene_gr@seqnames@values[1])
-  start_pos <- start(gene_gr)
-  end_pos <- end(gene_gr)
-
-
-  # Filter var_pool by the positions of chr_name, start_pos, and end_pos
-  filtered_var1_pool <- var1_pool[seqnames(var1_pool) == chr_name & start(var1_pool) >= start_pos & end(var1_pool) <= end_pos]
-  filtered_var2_pool <- var2_pool[seqnames(var2_pool) == chr_name & start(var2_pool) >= start_pos & end(var2_pool) <= end_pos]
-  ###################################
-
-  ###################################
-  # DMRs file
+    # DMRs file
   if (!is.null(methylome_at_results)) {
     columnNames <- c("seqnames", "start", "end", "width", "strand", "sumReadsM1", "sumReadsN1", "proportion1", "sumReadsM2", "sumReadsN2", "proportion2", "cytosinesCount", "context", "direction", "pValue", "regionType", "gene_id", "Symbol")
     # DMRs = rbind(
@@ -118,6 +93,33 @@ genePlot_fun <- function(tair_id, var1_pool, var2_pool, var1_name, var2_name, me
   } else {
     DMRsList <- NULL
   }
+  
+  ###################################
+
+  # get gene position from the gff3 file
+  gene_gr <- as.data.frame(gff3_file) %>%
+    filter(type == "gene") %>%
+    filter(gene_id == tair_id) %>%
+    makeGRangesFromDataFrame(., keep.extra.columns = TRUE)
+
+  if (as.character(strand(gene_gr)) == "+") {
+    start(gene_gr) <- start(gene_gr) - 2000
+    end(gene_gr) <- end(gene_gr)
+  } else {
+    start(gene_gr) <- start(gene_gr)
+    end(gene_gr) <- end(gene_gr) + 2000
+  }
+
+  chr_name <- as.character(gene_gr@seqnames@values[1])
+  start_pos <- start(gene_gr)
+  end_pos <- end(gene_gr)
+
+
+  # Filter var_pool by the positions of chr_name, start_pos, and end_pos
+  filtered_var1_pool <- var1_pool[seqnames(var1_pool) == chr_name & start(var1_pool) >= start_pos & end(var1_pool) <= end_pos]
+  filtered_var2_pool <- var2_pool[seqnames(var2_pool) == chr_name & start(var2_pool) >= start_pos & end(var2_pool) <= end_pos]
+  ###################################
+
   ###################################
 
   id2symbol <- filter(desc_file, gene_id == tair_id)
