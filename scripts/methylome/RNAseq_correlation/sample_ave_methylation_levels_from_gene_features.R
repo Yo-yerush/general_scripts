@@ -8,11 +8,12 @@ average_methylation_over_gene_features <- function(sample_file_path, output_path
     library(parallel)
     library(dplyr)
 
-    source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/load_replicates.R")
-    source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/trimm_and_rename_seq.R")
+    methylomeAT_url <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/"
+    source(paste0(methylomeAT_url, "scripts/load_replicates.R"))
+    source(paste0(methylomeAT_url, "scripts/trimm_and_rename_seq.R"))
 
     # read annotation file from github
-    annotations_url <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/Methylome.At_annotations.csv.gz"
+    annotations_url <- paste0(methylomeAT_url, "annotation_files/Methylome.At_annotations.csv.gz")
     annotation_file <- read.csv(
         gzcon(url(annotations_url, open = "rb"), text = TRUE),
         encoding = "UTF-8"
@@ -31,9 +32,8 @@ average_methylation_over_gene_features <- function(sample_file_path, output_path
         list(path = var2_path, name = var2_name)
     )
 
-    # load
-    n_cores_in_fun <- max(c(length(var1_path), length(var2_path)))
-    load_vars <- mclapply(var_args, function(x) load_replicates(x$path, n_cores_in_fun, x$name),
+    # load (n.cores within the function must be '>2'. this is why it get '3')
+    load_vars <- mclapply(var_args, function(x) load_replicates(x$path, 5, x$name),
         mc.cores = 2
     )
 
