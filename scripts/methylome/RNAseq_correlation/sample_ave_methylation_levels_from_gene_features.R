@@ -128,7 +128,7 @@ average_methylation_over_gene_features <- function(sample_file_path, output_path
                         na.rm = TRUE
                     )
                 }
-                cat(i.l, "/", max(seq_along(split_gr)), "\n")
+            #    cat(i.l, "/", max(seq_along(split_gr)), "\n")
             }
             return(meth.0)
         }
