@@ -185,4 +185,16 @@ genePlot_fun(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_r
 ```
 #### example output
 ![fig](https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120.svg)
+-----------------------------------------------------------------
+-----------------------------------------------------------------
 
+## DMRs-DEGs correlations
+First, make average methylation level for each sample, in each context, and for each gene feature (promoter, CDS, etc.)
+```r
+sample_file_path <- "/PATH/TO/samples_table.txt"
+output_path <- "/PATH/TO/OUTPUT/DIRECTORY/"
+n.cores <- 20
+
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/RNAseq_correlation/sample_ave_methylation_levels_from_gene_features.R")
+average_methylation_over_gene_features(sample_file_path, output_path, n.cores)
+```
