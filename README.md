@@ -143,9 +143,8 @@ library(dplyr)
 library(parallel)
 
 tair_id <- "AT3G01120"
-methylome_at_annotations <- "/PATH/TO/Methylome.At/annotation_files"
 
-#methylome_at_results <- NULL
+# methylome_at_results <- NULL
 methylome_at_results <- "/PATH/TO/Methylome.At/results/mto1_vs_wt"
 
 output_path <- "/PATH/TO/output_directory"
@@ -182,7 +181,7 @@ var2_pool <- rename_seq(var2_pool)
 ###################################
 
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/genePlot_script.r")
-genePlot_fun(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_annotations, methylome_at_results, output_path)
+genePlot_fun(tair_id, var1_pool, var2_pool, var1_name, var2_name, methylome_at_results, output_path)
 ```
 #### example output
 ![fig](https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120.svg)
