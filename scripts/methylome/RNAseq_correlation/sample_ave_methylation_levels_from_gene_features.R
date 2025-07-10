@@ -1,8 +1,9 @@
 # YO - 100725
 # average methylation within each gene features
 # this output can use for transcriptome-methylome correlation analysis
+# will run **42** jobs in parallel (max)
 
-average_methylation_over_gene_features <- function(sample_file_path, output_path = "./", n.cores = 10) {
+average_methylation_over_gene_features <- function(sample_file_path, output_path = "./") {
     library(DMRcaller)
     library(parallel)
     library(dplyr)
@@ -31,8 +32,10 @@ average_methylation_over_gene_features <- function(sample_file_path, output_path
     )
 
     # load
-    n.cores.load <- ifelse(n.cores > 1, 2, 1)
-    load_vars <- mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name), mc.cores = n.cores.load)
+    n_cores_in_fun <- max(c(length(var1_path), length(var2_path)))
+    load_vars <- mclapply(var_args, function(x) load_replicates(x$path, n_cores_in_fun, x$name),
+        mc.cores = 2
+    )
 
     load_var1 <- trimm_and_rename(load_vars[[1]]$methylationDataReplicates)
     load_var2 <- trimm_and_rename(load_vars[[2]]$methylationDataReplicates)
@@ -56,7 +59,8 @@ average_methylation_over_gene_features <- function(sample_file_path, output_path
 
     ##########################################
 
-    ave.meth.genes.levels <- function(meth_ctrl, meth_trmt, treatment, cntx) {
+    ave.meth.genes.levels <- function(meth_ctrl, meth_trmt, ctrl_name, trmt_name, cntx) {
+        treatment <- paste0(trmt_name, "_vs_", ctrl_name)
         path.0 <- output_path
         path.1 <- paste0(path.0, "average.meth.genes.levels")
         path.2 <- paste0(path.1, "/", treatment)
@@ -68,8 +72,8 @@ average_methylation_over_gene_features <- function(sample_file_path, output_path
         meth_ctrl_cntx <- meth_ctrl[which(meth_ctrl$context == cntx)]
         meth_trmt_cntx <- meth_trmt[which(meth_trmt$context == cntx)]
 
-        meth_ctrl_cntx <- meth_ctrl_cntx[, grep("wt", names(meth_ctrl_cntx@elementMetadata))]
-        meth_trmt_cntx <- meth_trmt_cntx[, grep(strsplit(treatment, "_")[[1]], names(meth_trmt_cntx@elementMetadata))]
+        meth_ctrl_cntx <- meth_ctrl_cntx[, grep(ctrl_name, names(meth_ctrl_cntx@elementMetadata))]
+        meth_trmt_cntx <- meth_trmt_cntx[, grep(strsplit(trmt_name, "_")[[1]], names(meth_trmt_cntx@elementMetadata))]
 
         # Specify the annotation types
         annotation_types <- c("promoter", "gene", "CDS", "intron", "five_prime_UTR", "three_prime_UTR", "transposable_element_gene")
@@ -138,7 +142,6 @@ average_methylation_over_gene_features <- function(sample_file_path, output_path
         }, mc.cores = length(dmrs_list))
 
         # final loop:
-
         for (i in seq_along(annotation_types)) {
             region <- annotation_types[i]
 
@@ -165,6 +168,6 @@ average_methylation_over_gene_features <- function(sample_file_path, output_path
 
 
     inner_results <- mclapply(c("CG", "CHG", "CHH"), function(cntx.loop) {
-        ave.meth.genes.levels(meth_GRlist[[var1_name]], meth_GRlist[[var2_name]], paste0(var2_name, "_vs_", var1_name), cntx.loop)
+        ave.meth.genes.levels(meth_GRlist[[var1_name]], meth_GRlist[[var2_name]], var1_name, var2_name, cntx.loop)
     }, mc.cores = 3)
 }
