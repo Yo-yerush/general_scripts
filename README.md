@@ -129,8 +129,10 @@ dev.off()
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
-## genePlots of methylations over gene and its 2kb upstream region
-#### This script use 'CX_report' files as input. can add DMRs results (using 'Methylome.At' pipeline results)
+## genePlots of methylations over the gene body and its 2kb upstream region
+#### One or multiple TAIR ID(s)
+#### This script use 'CX_report' files as input
+* *can add DMRs results (using 'Methylome.At' pipeline results)*
 #### To create **genePlots** use the following script
 ```r
 # DMRcaller package-based functions
@@ -142,14 +144,15 @@ library(GenomicFeatures)
 library(dplyr)
 library(parallel)
 
-tair_id <- "AT3G01120"
+# multiple TAIR ID(s)
+tair_id <- c("AT3G01120", "AT3G17390", "AT1G53480")
 
-# methylome_at_results <- NULL
+# use 'NULL' if there is no 'Methylome.At' results output
 methylome_at_results <- "/PATH/TO/Methylome.At/results/mto1_vs_wt"
 
 output_path <- "/PATH/TO/output_directory"
 
-# upload CX files
+# CX files path
 var1_path <- c(
   "/PATH/TO/wt_1_pe.CX_report.txt",
   "/PATH/TO/wt_1_pe.CX_report.txt"
