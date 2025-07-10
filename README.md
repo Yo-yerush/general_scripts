@@ -61,7 +61,17 @@ Run Bismark to get only '**.CX_report.txt**' file
 
 #### Use [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
 ```
+git clone https://github.com/Yo-yerush/Methylome.At.git
+cd ./Methylome.At
+chmod +x ./setup_env.sh
+./setup_env.sh
 
+# create sample table with two columns (tab delimiter):
+# SAMPLE PATH
+
+# run pipelines
+./Methylome.At.sh PATH/TO/samples_table.txt
+./Methylome.At_metaPlots.sh PATH/TO/samples_table.txt
 ```
 
 -----------------------------------------------------------------
