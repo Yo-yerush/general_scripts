@@ -246,5 +246,5 @@ linear_plot_meth_rna(
 <img
   src="https://github.com/Yo-yerush/general_scripts/blob/main/lm.stats.plot.mto1.png"
   alt="fig"
-  width="65%"
+  width="100%"
 />
