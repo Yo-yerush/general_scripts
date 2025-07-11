@@ -134,7 +134,11 @@ ChrPlots_CX_all(
 dev.off()
 ```
 #### example output
-![fig](https://github.com/Yo-yerush/general_scripts/blob/main/ChrPlot_test_stroud_all.svg)
+<img
+  src="https://github.com/Yo-yerush/general_scripts/blob/main/ChrPlot_test_stroud_all.svg"
+  alt="fig"
+  width="100%"
+/>
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
@@ -184,7 +188,6 @@ source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts
 genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_results, output_path, n_cores, create_legend = TRUE)
 ```
 #### example output
-
 <img
   src="https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120.svg"
   alt="fig"
@@ -242,7 +245,6 @@ linear_plot_meth_rna(
 )
 ```
 #### example output
-
 <img
   src="https://github.com/Yo-yerush/general_scripts/blob/main/lm.stats.plot.mto1.png"
   alt="fig"
