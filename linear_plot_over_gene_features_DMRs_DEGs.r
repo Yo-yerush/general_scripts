@@ -214,12 +214,17 @@ linear_plot_meth_rna <- function(
 
                     if (context == "CG") {
                         title_var <- element_text(size = 16)
+                        context_label_hj <- 1.1
+                        context_label_vj <- 11
                     } else {
                         title_var <- element_blank()
+                        context_label_hj <- 1.04
+                        context_label_vj <- 11.4
                     }
 
                     if (context == "CHH") {
                         xaxis_var <- element_text(size = 16)
+                        context_label_vj <- 11.5
                     } else {
                         xaxis_var <- element_blank()
                     }
@@ -256,7 +261,7 @@ linear_plot_meth_rna <- function(
                         ) +
                         scale_color_manual(values = c("#bf6828", "gray50")) +
                         # context text (on Chr1)
-                        annotate("text", x = Inf, y = -Inf, label = context_label, hjust = 1.25, vjust = 0, size = 6) +
+                        annotate("text", x = Inf, y = Inf, label = context_label, hjust = context_label_hj, vjust = context_label_vj, size = 6) +
                         # 'M' and 'G' text
                         annotate("text", x = Inf, y = Inf, label = "M", hjust = 4, vjust = 2, size = 3.5) +
                         annotate("text", x = Inf, y = Inf, label = "G", hjust = 4.75, vjust = 4, size = 3.5) +
@@ -336,7 +341,7 @@ linear_plot_meth_rna <- function(
                         theme_void()
                 }
             )
-            cat(paste0("\rcreate plots: ", round((i_perc / total_perc) * 100, 0), "%  "))
+            cat(paste0("\rcreate main plot: ", round((i_perc / total_perc) * 100, 0), "%  "))
             i_perc <- i_perc + 1
         }
 
@@ -482,4 +487,5 @@ linear_plot_meth_rna <- function(
         ### p values data frame
         write.csv(p_df, paste0(path_2_save.2, "p_values_", var2_name, ".csv"), row.names = FALSE)
     }
+    cat("\n\n")
 }
