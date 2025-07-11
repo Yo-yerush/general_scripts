@@ -149,7 +149,7 @@ dev.off()
 # DMRcaller package-based functions
 # Catoni, Marco, Tsang, MF J, Greco, P A, Zabet, Radu N (2018). “DMRcaller: a versatile R/Bioconductor package for detection and visualization of differentially methylated regions in CpG and non-CpG contexts.” Nucleic Acids Research. doi:10.1093/nar/gky602.
 # https://www.bioconductor.org/packages/release/bioc/html/DMRcaller.html
-# ----------------------------------------------------------------------
+# ---------------------------------------------------------------------#
 
 # TAIR ID(s) to plot
 tair_id <- c("AT3G01120", "AT3G17390", "AT1G53480")
@@ -197,4 +197,41 @@ output_path <- "/PATH/TO/OUTPUT/DIRECTORY/"
 
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/RNAseq_correlation/sample_ave_methylation_levels_from_gene_features.R")
 average_methylation_over_gene_features(sample_file_path, output_path)
+```
+
+Create a linear plot using **Negative Binomial Regression**.
+need to load:
+* average methylation over gene features
+* DMRs results deirectory (if run Methylome.At pipeline)
+* RNA-seq results directoey (both statistic results and norm.Count files). *better use RNAseq downstream pipeline*
+```r
+var1_name <- "wt"
+var2_name <- "SSE_high"
+var1_rnaseq_names <- c("met20", "met21", "met22")
+var2_rnaseq_names <- c("met14", "met15", "met16")
+
+average_meth_results_directory <- "/PATH/TO/average.meth.genes.levels/mto1_vs_wt/"
+DMRs_results_directory <- "/PATH/TO/Methylome.At/results/mto1_vs_wt/genome_annotation/"
+RNAseq_results_directory <- "/PATH/TO/met23/mto1_vs_wt/"
+main_output_directory <- "/PATH/TO/Linear_correlation/"
+
+#-------------------------------------------------------------------#
+
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/multiplot_ggplot2.R")
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/yo_theme_base_ggplot2.r")
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/linear_plot_over_gene_features_DMRs_DEGs.r")
+
+linear_plot_meth_rna(
+    var1_name = var1_name,
+    var2_name = var2_name,
+    var1_rnaseq_names = var1_rnaseq_names,
+    var2_rnaseq_names = var2_rnaseq_names,
+    average_meth_results_directory = average_meth_results_directory,
+    DMRs_results_directory = DMRs_results_directory,
+    RNAseq_results_directory = RNAseq_results_directory,
+    genes_2_keep = "filtered_by_DEGs",
+    main_output_directory = main_output_directory,
+    additional_plots = TRUE,
+    pValues_table = TRUE
+)
 ```
