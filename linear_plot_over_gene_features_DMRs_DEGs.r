@@ -9,7 +9,7 @@ linear_plot_meth_rna <- function(
     genes_2_keep = "filtered_by_DEGs", # can be "all_genes", "filtered_by_DMRs", "filtered_by_DEGs" or a custom gene list ---> c("AT3G01120", "AT3G17390", "AT1G53480")
     main_output_directory = "./Linear_correlation/",
     additional_plots = TRUE,
-    pValues_table = FALSE) {
+    pValues_table = TRUE) {
     library(plyr)
     library(dplyr)
     library(corrplot)
