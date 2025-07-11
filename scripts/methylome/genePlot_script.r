@@ -79,6 +79,11 @@ genePlot_fun <- function(tair_id, var1_path, var2_path, var1_name, var2_name, me
 
   cat("\rupload annotation files... done")
   cat("\n\n")
+
+  ###################################
+  # if all works well, create output directory
+  dir.create(output_path, showWarnings = FALSE)
+
   ###################################
 
   # upload DMRs files
@@ -151,9 +156,8 @@ genePlot_fun <- function(tair_id, var1_path, var2_path, var1_name, var2_name, me
     )
     file_suffix <- gsub("\\(|\\)", "", main_title)
     file_suffix <- gsub(" ", "_", main_title)
-    ###################################
 
-    dir.create(output_path, showWarnings = FALSE)
+    ###################################
 
     svg(paste0(output_path, "/genePlot_", file_suffix, ".svg"), width = 4.75, height = 2.75, family = "serif")
     plotLocalMethylationProfile_yo(
