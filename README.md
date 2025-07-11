@@ -188,7 +188,7 @@ genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_r
 <img
   src="https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120.svg"
   alt="fig"
-  width="75%"
+  width="50%"
 />
 
 -----------------------------------------------------------------
@@ -246,5 +246,5 @@ linear_plot_meth_rna(
 <img
   src="https://github.com/Yo-yerush/general_scripts/blob/main/lm.stats.plot.mto1.png"
   alt="fig"
-  width="30%"
+  width="65%"
 />
