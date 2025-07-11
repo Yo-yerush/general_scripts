@@ -184,7 +184,13 @@ source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts
 genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_results, output_path, n_cores, create_legend = TRUE)
 ```
 #### example output
-![fig](https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120.svg)
+
+<img
+  src="https://github.com/Yo-yerush/general_scripts/blob/main/genePlot_AT3G01120.svg"
+  alt="fig"
+  width="75%"
+/>
+
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
@@ -236,4 +242,9 @@ linear_plot_meth_rna(
 )
 ```
 #### example output
-![fig](https://github.com/Yo-yerush/general_scripts/blob/main/lm.stats.plot.mto1.png)
+
+<img
+  src="https://github.com/Yo-yerush/general_scripts/blob/main/lm.stats.plot.mto1.png"
+  alt="fig"
+  width="30%"
+/>
