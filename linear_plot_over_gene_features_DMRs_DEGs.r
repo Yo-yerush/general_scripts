@@ -9,7 +9,10 @@ linear_plot_meth_rna <- function(
     genes_2_keep = "filtered_by_DEGs", # can be "all_genes", "filtered_by_DMRs", "filtered_by_DEGs" or a custom gene list ---> c("AT3G01120", "AT3G17390", "AT1G53480")
     main_output_directory = "./Linear_correlation/",
     additional_plots = TRUE,
-    pValues_table = TRUE) {
+    pValues_table = TRUE,
+    var1_col = "gray50",
+    var2_col = "#bf6828") {
+
     library(plyr)
     library(dplyr)
     library(corrplot)
@@ -259,7 +262,7 @@ linear_plot_meth_rna <- function(
                                 ifelse(x < 10000, label_number()(x), label_scientific(digits = 0)(x))
                             }
                         ) +
-                        scale_color_manual(values = c("#bf6828", "gray50")) +
+                        scale_color_manual(values = c(var2_col, var1_col)) +
                         # context text (on Chr1)
                         annotate("text", x = Inf, y = Inf, label = context_label, hjust = context_label_hj, vjust = context_label_vj, size = 6) +
                         # 'M' and 'G' text
@@ -287,7 +290,7 @@ linear_plot_meth_rna <- function(
 
                     p_regression <- p + stat_smooth(method = "glm.nb", formula = y ~ x) +
                         scale_y_continuous(trans = scales::log1p_trans()) +
-                        scale_color_manual(values = c("#bf6828", "gray50")) +
+                        scale_color_manual(values = c(var2_col, var1_col)) +
                         # 'M' and 'G' text
                         # annotate("text", x = Inf, y = Inf, label = "M", hjust = 4, vjust = 2, size = 3.5) +
                         # annotate("text", x = Inf, y = Inf, label = "G", hjust = 4.75, vjust = 4, size = 3.5) +
@@ -320,7 +323,7 @@ linear_plot_meth_rna <- function(
                         # ggrastr::geom_point_rast(alpha = 0.075, size = 0.25) +
                         geom_point(alpha = 0.1, size = 0.25) +
                         # geom_smooth() +
-                        scale_color_manual(values = c("#bf6828", "gray50")) +
+                        scale_color_manual(values = c(var2_col, var1_col)) +
                         yo_theme_base() +
                         theme(legend.position = "none") +
                         labs(
@@ -393,7 +396,7 @@ linear_plot_meth_rna <- function(
     p_lg <- ggplot(legend_plot_df, aes(x = Meth, y = normCounts, fill = genotype)) +
         geom_point(alpha = 1, size = 6.5, shape = 21, stroke = 0.5, color = "black") +
         scale_fill_manual(
-            values = c("#bf6828", "gray50"),
+            values = c(var2_col, var1_col),
             breaks = c(var2_name, var1_name) # , labels = c(expression(italic(var1_name)), var1_name)
         ) +
         ggthemes::theme_base() +
