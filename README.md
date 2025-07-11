@@ -235,3 +235,5 @@ linear_plot_meth_rna(
     pValues_table = TRUE
 )
 ```
+#### example output
+![fig](https://github.com/Yo-yerush/general_scripts/blob/main/lm.stats.plot.mto1.png)
