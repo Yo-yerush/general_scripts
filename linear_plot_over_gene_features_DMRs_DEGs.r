@@ -345,31 +345,6 @@ linear_plot_meth_rna <- function(
             i_perc <- i_perc + 1
         }
 
-        #### legend ####
-        legend_plot_df <- data.frame(
-            Meth = runif(100, min = 0, max = 1),
-            normCounts = rnorm(100, mean = 10, sd = 2),
-            genotype = sample(c(var1_name, var2_name), 100, replace = TRUE)
-        )
-        p <- ggplot(legend_plot_df, aes(x = Meth, y = normCounts, fill = genotype)) +
-            geom_point(alpha = 1, size = 6.5, shape = 21, stroke = 0.5, color = "black") +
-            scale_fill_manual(
-                values = c("#bf6828", "gray50"),
-                breaks = c(var2_name, var1_name) # , labels = c(expression(italic(var1_name)), var1_name)
-            ) +
-            ggthemes::theme_base() +
-            theme(
-                legend.text = element_text(size = 16),
-                legend.position = "left"
-            ) + # Increase legend text size and position it at the top left
-            labs(fill = "")
-
-        legend_p_0 <- ggplotGrob(p)$grobs[[which(sapply(ggplotGrob(p)$grobs, function(x) x$name) == "guide-box")]]
-        legend_p <- ggplot() +
-            theme_void() +
-            annotation_custom(legend_p_0, xmin = 0, xmax = 0.5, ymin = 0.5, ymax = 1)
-        # legend_p = grid::grid.draw(legend_p)
-
         ### list of all plots from contexts ###
         all_cntx_points[[context]] <- annotation_point_plots_list
         all_cntx_regression[[context]] <- annotation_regression_plot_list
@@ -408,6 +383,36 @@ linear_plot_meth_rna <- function(
     cat(paste0("\rsave plots: [", 2, "/", total_plots, "]"))
 
     ################################################################
+
+    #### legend ####
+    legend_plot_df <- data.frame(
+        Meth = runif(100, min = 0, max = 1),
+        normCounts = rnorm(100, mean = 10, sd = 2),
+        genotype = sample(c(var1_name, var2_name), 100, replace = TRUE)
+    )
+    p_lg <- ggplot(legend_plot_df, aes(x = Meth, y = normCounts, fill = genotype)) +
+        geom_point(alpha = 1, size = 6.5, shape = 21, stroke = 0.5, color = "black") +
+        scale_fill_manual(
+            values = c("#bf6828", "gray50"),
+            breaks = c(var2_name, var1_name) # , labels = c(expression(italic(var1_name)), var1_name)
+        ) +
+        ggthemes::theme_base() +
+        theme(
+            legend.text = element_text(size = 16),
+            legend.position = "left"
+        ) + # Increase legend text size and position it at the top left
+        labs(fill = "")
+
+    legend_p_0 <- ggplotGrob(p_lg)$grobs[[which(sapply(ggplotGrob(p_lg)$grobs, function(x) x$name) == "guide-box")]]
+    legend_p <- ggplot() +
+        theme_void() +
+        annotation_custom(legend_p_0, xmin = 0.1, xmax = 0.65, ymin = 0.5, ymax = 1)
+    # legend_p = grid::grid.draw(legend_p)
+
+    svg(paste0(path_2_save.2, "legend_lm_plots_", var2_name, ".svg"), width = 2, height = 1, family = "serif")
+    print(legend_p)
+    dev.off()
+
     ################################################################
     if (additional_plots) {
         ### theta bar plot
