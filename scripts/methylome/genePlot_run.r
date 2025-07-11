@@ -1,13 +1,12 @@
-#############3333
+#############
 # test run to check it!!!!!!!!!!
-
-
 
 # variable names
 var1_name <- "WT" # control
 var2_name <- "mto1"
 
-tair_id <- "AT3G01120"
+# TAIR ID(s) to plot
+tair_id <- c("AT3G01120", "AT3G17390", "AT1G53480")
 
 # methylome_at_results <- NULL
 methylome_at_results <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_240325/Methylome.At/results/mto1_vs_wt"
