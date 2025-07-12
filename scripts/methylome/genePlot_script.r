@@ -155,7 +155,7 @@ genePlot_fun <- function(tair_id, var1_path, var2_path, var1_name, var2_name, me
       paste0(id2symbol$gene_id, " (", id2symbol$Symbol, ")")
     )
     file_suffix <- gsub("\\(|\\)", "", main_title)
-    file_suffix <- gsub(" ", "_", main_title)
+    file_suffix <- gsub(" ", "_", file_suffix)
 
     ###################################
 
@@ -171,7 +171,7 @@ genePlot_fun <- function(tair_id, var1_path, var2_path, var1_name, var2_name, me
       context = c("CG", "CHG", "CHH"),
       main = main_title,
       col = c(
-        "#40404080", "#bf682880", "#000000", "#afad43",
+        "#404040", "#bf6828", "#000000", "#afad43",
         "#009E73", "#0072B2", "#CC79A7", "#D55E00", "#999999"
       )
     )
@@ -373,7 +373,9 @@ plotLocalMethylationProfile_yo <- function(
       1], pch = 16, cex = 0.6, xlim = c(minPos, maxPos), ylim = c(
       -0.2,
       1.2 + numberOfDMRs * 0.1
-    ), xlab = paste0("Genomic coordinate ", chr_name), ylab = "Methylation level",
+    ),
+    xlab = paste0("Genomic coordinate (", gsub("Chr","chromosome ",chr_name), ")"),
+    ylab = "Methylation level",
     yaxt = "n", main = NULL, type = "n"
   )
   axis(2, c(0, 0.5, 1))
