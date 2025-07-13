@@ -18,7 +18,7 @@
 
 # -------------------------------------------------------------
 
-genePlot_fun <- function(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_results = NULL, output_path = ".", n_cores = 6, create_legend = TRUE) {
+genePlot_fun <- function(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_results = NULL, output_path = ".", n_cores = 6, create_legend = TRUE, n_bp_upstream = 2000, n_bp_downstream = 1000) {
   library(DMRcaller)
   library(GenomicFeatures)
   library(dplyr)
@@ -130,11 +130,11 @@ genePlot_fun <- function(tair_id, var1_path, var2_path, var1_name, var2_name, me
       makeGRangesFromDataFrame(., keep.extra.columns = TRUE)
 
     if (as.character(strand(gene_gr)) == "+") {
-      start(gene_gr) <- start(gene_gr) - 2000
-      end(gene_gr) <- end(gene_gr)
+      start(gene_gr) <- start(gene_gr) - n_bp_upstream
+      end(gene_gr) <- end(gene_gr) + n_bp_downstream
     } else {
-      start(gene_gr) <- start(gene_gr)
-      end(gene_gr) <- end(gene_gr) + 2000
+      start(gene_gr) <- start(gene_gr) - n_bp_downstream
+      end(gene_gr) <- end(gene_gr) + n_bp_upstream
     }
 
     chr_name <- as.character(gene_gr@seqnames@values[1])
