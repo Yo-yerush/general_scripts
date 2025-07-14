@@ -2,49 +2,24 @@
 
 usage_yo="
 ###############################################################################
- YO - 260525
- Bismark WGBS pipeline
- 
- ------------------------------------------------------------
-  
- Usage:
- ------
- run_bismark_yo.sh [-s <required>] [-g <required>] [options]
- 
- Options:
- --------
- -s, --samples       Tab-delimited two-column file: sample-name <TAB> fastq-path
- -g, --genome        FASTA of the reference genome (will be indexed)
- -o, --outdir        Output directory [default: ./bismark_results]
- -n, --ncores        Number of cores (max). multiples of 4 recommended. [default: 16]
- -m, --mem           Buffer size for 'bismark_methylation_extractor' [default: 8G]
-     --cx            Produce and keep only '*.CX_report.txt' file
-     --sort          Sort & index BAM files (applies only if --cx is off)
-     --help
+YO - 140725
+Bismark WGBS pipeline for T-DNA (~2.5kb)
 
- ------------------------------------------------------------
+------------------------------------------------------------
 
- Example:
- --------
- Download Arabidopsis reference genome (TAIR10):
- -----------------------------------------------
- $ cd /PATH/TO
- $ wget -O TAIR10_chr_all.fas.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
- 
- Create a sample table file (example):
- -------------------------------------
- mt_1    PATH/TO/FILE/mt1_R1.fastq
- mt_1    PATH/TO/FILE/mt1_R2.fastq
- mt_2    PATH/TO/FILE/mt2_R1.fastq
- mt_2    PATH/TO/FILE/mt2_R2.fastq
- wt_1    PATH/TO/FILE/wt1_R1.fastq
- wt_1    PATH/TO/FILE/wt1_R2.fastq
- wt_2    PATH/TO/FILE/wt2_R1.fastq
- wt_2    PATH/TO/FILE/wt2_R2.fastq
- 
- Run:
- ----
- $ ./run_bismark_yo.sh -s samples_table.txt -g TAIR10_chr_all.fas.gz --cx
+Usage:
+------
+run_bismark_tdna_yo.sh [-s <required>] [-g <required>] [options]
+
+Options:
+--------
+-s, --samples       Tab-delimited two-column file: sample-name <TAB> fastq-path
+-g, --genome        FASTA of the reference genome (will be indexed)
+-o, --outdir        Output directory [default: ./bismark_results]
+-n, --ncores        Number of cores (max). multiples of 4 recommended. [default: 16]
+-m, --mem           Buffer size for 'bismark_methylation_extractor' [default: 8G]
+--help
+
 ###############################################################################
 "
 
@@ -55,8 +30,6 @@ output_path="./bismark_results"
 output_suffix="wgbs_bismark_$(date +%d%m%y)"
 n_cores=16
 buffer_size=8G
-keep_cx=false
-sort_bam=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -79,14 +52,6 @@ while [[ $# -gt 0 ]]; do
         -m | --mem)
             buffer_size=$2
             shift 2
-        ;;
-        --cx)
-            keep_cx=true
-            shift
-        ;;
-        --sort)
-            sort_bam=true
-            shift
         ;;
         -h | --help)
             echo "$usage_yo"
@@ -147,14 +112,8 @@ cd $output_path/tmp
 ### Generate log file with a timestamp
 log_file="../${output_suffix}.log"
 echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
+echo "**  T-DNA alignment script" >> "$log_file"
 echo "**  samples: ${sample_name[@]}" >> "$log_file"
-#echo "paired-end sequence: $paired_end_sequence" >> "$log_file"
-if [[ "$keep_cx" == "true" ]]; then
-    echo "**  keep just 'CX_report' file" >> "$log_file"
-fi
-if [[ "$sort_bam" == "true" ]]; then
-    echo "**  sort bam file" >> "$log_file"
-fi
 
 echo "" >> "$log_file"
 
@@ -195,13 +154,13 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
         Rs_type="se"
         echo "mapping to genome for single-end sequence:" >> "$log_file"
         echo "read1 file: $R1_i" >> "$log_file"
-        bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx "$R1_i" -o $output_path/"$i" --prefix "$i" # --basename
+        bismark --bowtie2 --parallel "$n_cores_2" -p 8 --local -L 15 -N 1 --score_min G,20,8 $output_path/genome_indx "$R1_i" -o $output_path/"$i" --prefix "$i"
     else
         Rs_type="pe"
         echo "mapping to genome for paired-end sequence:" >> "$log_file"
         echo "* read1 file: '$(basename "$R1_i")'" >> "$log_file"
         echo "* read2 file: '$(basename "$R2_i")'" >> "$log_file"
-        bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx -1 "$R1_i" -2 "$R2_i" -o $output_path/"$i" --prefix "$i" # --basename
+        bismark --bowtie2 --parallel "$n_cores_2" -p 8 --local -L 15 -N 1 --score_min G,20,8 --maxins 1200 --dovetail $output_path/genome_indx -1 "$R1_i" -2 "$R2_i" -o $output_path/"$i" --prefix "$i"
     fi
     mv $output_path/"$i"/"$i"*.bam $output_path/"$i"/"$i"_bismark_"$Rs_type".bam # rename
     mv $output_path/"$i"/"$i"*_report.txt $output_path/"$i"/"$i"_bismark_"$Rs_type"_report.txt # rename
@@ -211,41 +170,15 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
     echo "methylation calling..." >> "$log_file"
     mkdir -p $output_path/"$i"/methylation_extractor
 
-    if [[ "$keep_cx" == "true" ]]; then
-        # run 'methylation_extractor' and keep 'CX_report' file only
-        bismark_methylation_extractor --cytosine_report --CX --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
+    bismark_methylation_extractor --cytosine_report --CX --bedGraph --parallel "$n_cores_2" -p 8 --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
 
-        gzip $output_path/"$i"/methylation_extractor/*.CX_report.txt
-        mv  $output_path/"$i"/methylation_extractor/*.CX_report.txt $output_path
-
-        ## check if CX_report file exists
-        #if [[ -f "$output_path/"$i"_*.CX_report.txt" ]]; then
-        #    echo "CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt'" >> "$log_file"
-        #else
-        #    echo "Error: CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt' does not exist." >> "$log_file"
-        #fi
-
-        rm -r $output_path/"$i"
-
-    else
-        # run 'methylation_extractor' and keep all files (without 'CX_report')
-        bismark_methylation_extractor --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
-        #echo "output files: '$output_path/"$i"/methylation_extractor/'" >> "$log_file"
-
-        # sort bam files (can use in IGV software)
-        if [[ "$sort_bam" == "true" ]]; then
-            samtools sort $output_path/"$i"/"$i"_*.bam -o $output_path/"$i"/"$i"_sorted.bam
-            samtools index $output_path/"$i"/"$i"_sorted.bam
-        fi
-    fi
+    # sort bam files (can use in IGV software)
+    samtools sort $output_path/"$i"/"$i"_*.bam -o $output_path/"$i"/"$i"_sorted.bam
+    samtools index $output_path/"$i"/"$i"_sorted.bam
 
     echo "" >> "$log_file"
     echo "-----------------------------------" >> "$log_file"
 done
-
-if [[ "$keep_cx" == "true" ]]; then
-    rm -r $output_path/genome_indx
-fi
 
 echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
 cd $ori_path
