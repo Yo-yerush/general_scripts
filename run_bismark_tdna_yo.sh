@@ -154,13 +154,13 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
         Rs_type="se"
         echo "mapping to genome for single-end sequence:" >> "$log_file"
         echo "read1 file: $R1_i" >> "$log_file"
-        bismark --bowtie2 --parallel "$n_cores_2" -p 8 --local -L 15 -N 1 --score_min G,20,8 $output_path/genome_indx "$R1_i" -o $output_path/"$i" --prefix "$i"
+        bismark --bowtie2 --parallel "$n_cores_2" -p 4 --local -L 15 -N 1 --score_min G,20,8 $output_path/genome_indx "$R1_i" -o $output_path/"$i" --prefix "$i"
     else
         Rs_type="pe"
         echo "mapping to genome for paired-end sequence:" >> "$log_file"
         echo "* read1 file: '$(basename "$R1_i")'" >> "$log_file"
         echo "* read2 file: '$(basename "$R2_i")'" >> "$log_file"
-        bismark --bowtie2 --parallel "$n_cores_2" -p 8 --local -L 15 -N 1 --score_min G,20,8 --maxins 1200 --dovetail $output_path/genome_indx -1 "$R1_i" -2 "$R2_i" -o $output_path/"$i" --prefix "$i"
+        bismark --bowtie2 --parallel "$n_cores_2" -p 4 --local -L 15 -N 1 --score_min G,20,8 --maxins 1200 --dovetail $output_path/genome_indx -1 "$R1_i" -2 "$R2_i" -o $output_path/"$i" --prefix "$i"
     fi
     mv $output_path/"$i"/"$i"*.bam $output_path/"$i"/"$i"_bismark_"$Rs_type".bam # rename
     mv $output_path/"$i"/"$i"*_report.txt $output_path/"$i"/"$i"_bismark_"$Rs_type"_report.txt # rename
@@ -170,7 +170,7 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
     echo "methylation calling..." >> "$log_file"
     mkdir -p $output_path/"$i"/methylation_extractor
 
-    bismark_methylation_extractor --cytosine_report --CX --bedGraph --parallel "$n_cores_2" -p 8 --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
+    bismark_methylation_extractor --cytosine_report --CX --bedGraph --parallel "${n_cores_2}" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor "${output_path}/${i}/${i}_bismark_${Rs_type}.bam"
 
     # sort bam files (can use in IGV software)
     samtools sort $output_path/"$i"/"$i"_*.bam -o $output_path/"$i"/"$i"_sorted.bam
