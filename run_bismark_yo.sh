@@ -18,8 +18,9 @@ usage_yo="
  -o, --outdir        Output directory [default: ./bismark_results]
  -n, --ncores        Number of cores (max). multiples of 4 recommended. [default: 16]
  -m, --mem           Buffer size for 'bismark_methylation_extractor' [default: 8G]
-     --cx            Produce and keep only '*.CX_report.txt' file
+     --cx            Produce and keep only '*.CX_report.txt.gz' file
      --sort          Sort & index BAM files (applies only if --cx is off)
+     --all           Produce, sort and keep all files (will ignore --cx or --sort arguments)
      --help
 
  ------------------------------------------------------------
@@ -48,6 +49,7 @@ usage_yo="
 ###############################################################################
 "
 
+####################
 ### default values
 sample_table=
 genome_file_full_path=
@@ -57,6 +59,7 @@ n_cores=16
 buffer_size=8G
 keep_cx=false
 sort_bam=false
+keep_all=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -88,6 +91,10 @@ while [[ $# -gt 0 ]]; do
             sort_bam=true
             shift
         ;;
+        --all)
+            keep_all=true
+            shift
+        ;;
         -h | --help)
             echo "$usage_yo"
             exit 0
@@ -106,12 +113,27 @@ if [[ ! -f "$sample_table" ]]; then
     echo "Error: Sample table file '$sample_table' does not exist."
     exit 1
 fi
+
 # check if 'genome_file_full_path' file exists
 if [[ ! -f "$genome_file_full_path" ]]; then
     echo "Error: Genome file '$genome_file_full_path' does not exist."
     exit 1
 fi
 
+# check for duplicate arguments
+if [[ "$sort_bam" == "true" && "$keep_cx" == "true" ]]; then
+    echo "Error: Can't use both '--cx' and '--sort' arguments"
+    exit 1
+fi
+
+# n-cores for bismark
+if [ $n_cores -gt 2 ]; then
+    n_cores_2=$((n_cores / 4))
+else
+    n_cores_2=1
+fi
+
+####################
 ### read sample names and fastq file paths as an array
 mapfile -t sample_name < <(awk '!seen[$1]++ {print $1}' "$sample_table")
 mapfile -t R1_fastq_path < <(awk '$2 ~ /(_R1_|_R1\.fq|_R1\.fastq|_1\.fq|_1\.fastq)/ {print $2}' "$sample_table")
@@ -122,15 +144,6 @@ paired_end_sequence=true
 if [[ "$paired_end_sequence" == "false" ]]; then
     # For single-end, use all rows in the samples table as read file paths
     mapfile -t R1_fastq_path < <(awk '{print $2}' "$sample_table")
-fi
-
-####################
-
-### n-cores for bismark
-if [ $n_cores -gt 2 ]; then
-    n_cores_2=$((n_cores / 4))
-else
-    n_cores_2=1
 fi
 
 ####################
@@ -155,10 +168,14 @@ fi
 if [[ "$sort_bam" == "true" ]]; then
     echo "**  sort bam file" >> "$log_file"
 fi
+if [[ "$keep_all" == "true" ]]; then
+    echo "**  keep all files (CX report, bedGraph, and sorted BAM)" >> "$log_file"
+fi
 
 echo "" >> "$log_file"
 
-### index genom
+####################
+### index the genom
 genome_b_name=$(basename "$genome_file_full_path")
 genome_new_path=$output_path/genome_indx/$genome_b_name
 echo "indexing genome file: '$genome_b_name'" >> "$log_file"
@@ -178,7 +195,7 @@ echo "" >> "$log_file"
 echo "-----------------------------------" >> "$log_file"
 
 ####################
-
+# main loop
 for ((u = 0; u < ${#sample_name[@]}; u++)); do
     echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
     echo "" >> "$log_file"
@@ -190,6 +207,7 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
     echo "Processing sample: $i" >> "$log_file"
     mkdir -p "$output_path/$i"
 
+    # # # # # # # # # # # # 
     ### mapping to genome
     if [[ "$paired_end_sequence" == "false" ]]; then
         Rs_type="se"
@@ -206,46 +224,48 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
     mv $output_path/"$i"/"$i"*.bam $output_path/"$i"/"$i"_bismark_"$Rs_type".bam # rename
     mv $output_path/"$i"/"$i"*_report.txt $output_path/"$i"/"$i"_bismark_"$Rs_type"_report.txt # rename
 
+    # # # # # # # # # # # # 
     ### methylation calling
     echo "" >> "$log_file"
     echo "methylation calling..." >> "$log_file"
     mkdir -p $output_path/"$i"/methylation_extractor
 
-    if [[ "$keep_cx" == "true" ]]; then
+    if [[ "$keep_all" == "true" ]]; then
+        # run 'methylation_extractor' and keep all files
+        bismark_methylation_extractor --cytosine_report --CX --bedGraph --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
+
+        gzip $output_path/"$i"/methylation_extractor/*.CX_report.txt
+
+
+    elif [[ "$keep_cx" == "true" ]]; then
         # run 'methylation_extractor' and keep 'CX_report' file only
         bismark_methylation_extractor --cytosine_report --CX --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
 
         gzip $output_path/"$i"/methylation_extractor/*.CX_report.txt
-        mv  $output_path/"$i"/methylation_extractor/*.CX_report.txt $output_path
-
-        ## check if CX_report file exists
-        #if [[ -f "$output_path/"$i"_*.CX_report.txt" ]]; then
-        #    echo "CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt'" >> "$log_file"
-        #else
-        #    echo "Error: CX_report file: '"$i"_bismark_"$Rs_type".CX_report.txt' does not exist." >> "$log_file"
-        #fi
+        mv  $output_path/"$i"/methylation_extractor/*.CX_report.txt.gz $output_path
 
         rm -r $output_path/"$i"
 
     else
-        # run 'methylation_extractor' and keep all files (without 'CX_report')
-        bismark_methylation_extractor --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
-        #echo "output files: '$output_path/"$i"/methylation_extractor/'" >> "$log_file"
+        # run 'methylation_extractor' and keep files *without 'CX_report' file*
+        bismark_methylation_extractor --bedGraph --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
 
-        # sort bam files (can use in IGV software)
-        if [[ "$sort_bam" == "true" ]]; then
-            samtools sort $output_path/"$i"/"$i"_*.bam -o $output_path/"$i"/"$i"_sorted.bam
-            samtools index $output_path/"$i"/"$i"_sorted.bam
-        fi
+    fi
+
+    # # # # # # # # # # # # 
+    # sort bam files (can use in IGV software to watch the reads over the genome)
+    if [[ "$sort_bam" == "true" || "$keep_all" == "true" ]]; then
+        samtools sort $output_path/"$i"/"$i"_bismark_"$Rs_type".bam -o $output_path/"$i"/"$i"_sorted.bam
+        samtools index $output_path/"$i"/"$i"_sorted.bam
     fi
 
     echo "" >> "$log_file"
     echo "-----------------------------------" >> "$log_file"
 done
 
-if [[ "$keep_cx" == "true" ]]; then
-    rm -r $output_path/genome_indx
-fi
+#if [[ "$keep_cx" == "true" ]]; then
+#    rm -r $output_path/genome_indx
+#fi
 
 echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
 cd $ori_path
