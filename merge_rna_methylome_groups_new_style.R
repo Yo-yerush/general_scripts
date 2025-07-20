@@ -204,6 +204,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       gly_ser_and_threo_metabolism = all_res[grep("ath00260", all_res$KEGG_pathway), ],
       lysine_biosynthesis = all_res[grep("ath00300", all_res$KEGG_pathway), ],
       sulfur_biosynthesis = all_res[grep("ath00920", all_res$KEGG_pathway), ],
+      hormone_signal_transduction = all_res[grep("ath04075", all_res$KEGG_pathway), ],
       primary_metabolism = primary_metabolism_v,
       secondary_metabolism = secondary_metabolism_v,
       AA_transporters = rbind(
