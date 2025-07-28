@@ -23,7 +23,8 @@ map_ids <- c(
   "00290",
   "00330",
   "00250",
-  "00620" # ,
+  "00620",
+  "00966"
   # "03082", # cant find tairs by KEGGREST and org.At.tair.db
   # "03083", # cant find tairs by KEGGREST and org.At.tair.db
   # "01230", # cant find tairs by KEGGREST and org.At.tair.db
