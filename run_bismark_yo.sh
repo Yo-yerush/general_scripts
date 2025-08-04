@@ -120,6 +120,9 @@ if [[ ! -f "$sample_table" ]]; then
     exit 1
 fi
 
+# ensure sample table has unix line endings (can also try: sed -i 's/\r$//' "$sample_table")
+dos2unix "$sample_table" 2>/dev/null
+
 # check if 'genome_file_full_path' file exists
 if [[ ! -f "$genome_file_full_path" ]]; then
     echo "Error: Genome file '$genome_file_full_path' does not exist."
