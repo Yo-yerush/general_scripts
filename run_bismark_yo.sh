@@ -13,11 +13,11 @@ run_bismark_yo.sh [-s <required>] [-g <required>] [options]
 
 Options:
 --------
--s, --samples       Tab-delimited two-column file: sample-name <TAB> fastq-path
--g, --genome        FASTA of the reference genome (will be indexed)
--o, --outdir        Output directory [default: ./bismark_results]
--n, --ncores        Number of cores (max). multiples of 4 recommended. [default: 16]
--m, --mem           Buffer size for 'bismark_methylation_extractor' [default: 8G]
+-s, --samples   Tab-delimited two-column file: sample-name <TAB> fastq-path
+-g, --genome    FASTA of the reference genome (will be indexed)
+-o, --outdir    Output directory [default: ./bismark_results]
+-n, --ncores    Number of cores (max). multiples of 4 recommended. [default: 16]
+-m, --mem       Buffer size for 'bismark_methylation_extractor' [default: 8G]
 --cx            Produce and keep only '*.CX_report.txt.gz' file
 --sort          Sort & index BAM files (applies only if --cx is off)
 --all           Produce, sort and keep all files (will ignore --cx or --sort arguments)
@@ -258,7 +258,7 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
             bismark_methylation_extractor --cytosine_report --CX --bedGraph --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
             
             gzip $output_path/"$i"/methylation_extractor/*.CX_report.txt
-            
+
         elif [[ "$keep_cx" == "true" ]]; then
             # run 'methylation_extractor' and keep 'CX_report' file only
             bismark_methylation_extractor --cytosine_report --CX --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
