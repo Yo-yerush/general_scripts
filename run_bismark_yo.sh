@@ -226,9 +226,9 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
         echo "mapping to genome for single-end sequence:" >> "$log_file"
         echo "read1 file: $R1_i" >> "$log_file"
         if [[ "$keep_unmapped" == "true" ]]; then
-            bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx "$R1_i" -o $output_path/"$i" --prefix "$i" --unmapped # --basename
+            bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx "$R1_i" -o $output_path/"$i" --prefix "$i" --unmapped
         else
-            bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx "$R1_i" -o $output_path/"$i" --prefix "$i" # --basename
+            bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx "$R1_i" -o $output_path/"$i" --prefix "$i"
         fi
     else
         Rs_type="pe"
@@ -236,14 +236,21 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
         echo "* read1 file: '$(basename "$R1_i")'" >> "$log_file"
         echo "* read2 file: '$(basename "$R2_i")'" >> "$log_file"
         if [[ "$keep_unmapped" == "true" ]]; then
-            bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx -1 "$R1_i" -2 "$R2_i" -o $output_path/"$i" --prefix "$i" --unmapped  # --basename
+            bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx -1 "$R1_i" -2 "$R2_i" -o $output_path/"$i" --prefix "$i" --unmapped
         else
-            bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx -1 "$R1_i" -2 "$R2_i" -o $output_path/"$i" --prefix "$i" # --basename
+            bismark --bowtie2 --parallel "$n_cores_2" $output_path/genome_indx -1 "$R1_i" -2 "$R2_i" -o $output_path/"$i" --prefix "$i"
         fi
     fi
     if [[ "$keep_unmapped" == "true" ]]; then
         rm $output_path/"$i"/"$i"*.bam
         rm $output_path/"$i"/"$i"*_report.txt
+        if [[ "$paired_end_sequence" == "true" ]]; then
+            mv $output_path/"$i"/*unmapped_reads_1.fq.gz $output_path/"$i"/"$i"_unmapped_reads_1.fq.gz # rename
+            mv $output_path/"$i"/*unmapped_reads_2.fq.gz $output_path/"$i"/"$i"_unmapped_reads_2.fq.gz # rename
+            cat $output_path/"$i"/"$i"_unmapped_reads_1.fq.gz $output_path/"$i"/"$i"_unmapped_reads_2.fq.gz > $output_path/"$i"/"$i"_unmapped_paired_reads.fq.gz # concatenate
+        else
+            mv $output_path/"$i"/*unmapped_reads.fq.gz $output_path/"$i"/"$i"_unmapped_reads.fq.gz # rename
+        fi
     else
         mv $output_path/"$i"/"$i"*.bam $output_path/"$i"/"$i"_bismark_"$Rs_type".bam # rename
         mv $output_path/"$i"/"$i"*_report.txt $output_path/"$i"/"$i"_bismark_"$Rs_type"_report.txt # rename
