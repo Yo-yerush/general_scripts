@@ -247,7 +247,8 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
         if [[ "$paired_end_sequence" == "true" ]]; then
             mv $output_path/"$i"/*unmapped_reads_1.fq.gz $output_path/"$i"/"$i"_unmapped_reads_1.fq.gz # rename
             mv $output_path/"$i"/*unmapped_reads_2.fq.gz $output_path/"$i"/"$i"_unmapped_reads_2.fq.gz # rename
-            cat $output_path/"$i"/"$i"_unmapped_reads_1.fq.gz $output_path/"$i"/"$i"_unmapped_reads_2.fq.gz > $output_path/"$i"/"$i"_unmapped_paired_reads.fq.gz # concatenate
+            zcat $output_path/"$i"/"$i"_unmapped_reads_1.fq.gz $output_path/"$i"/"$i"_unmapped_reads_2.fq.gz > $output_path/"$i"/"$i"_unmapped_paired_reads.fq # concatenate
+            gzip $output_path/"$i"/"$i"_unmapped_paired_reads.fq
         else
             mv $output_path/"$i"/*unmapped_reads.fq.gz $output_path/"$i"/"$i"_unmapped_reads.fq.gz # rename
         fi
