@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------
-# EpiTEome tool
+# epiTEome tool
 # https://github.com/jdaron/epiTEome
 # https://doi.org/10.1186/s13059-017-1232-0
 #-------------------------------------------------------------
@@ -17,13 +17,14 @@
 #
 #-------------------------------------------------------------
 #
-# # if there is error writing: << Unknown command 'filter' >>
-# # then modify the 'bamutils' script. example in 'install_rpiTEome_env.sh' script
+# # there is error writing: << Unknown command 'filter' >>
+# # using midofied epiTEome.pl script - use samtools=1.16 instead of the 'ngsutils' package
+# # also can modify the 'bamutils' script. example in 'install_3piTEome_env.sh' script
 #
 #-------------------------------------------------------------
 
 # epiTEome scripts dir - also the output files path
-cd /home/yoyerush/yo/methylome_pipeline/transposition_activity
+main_dir=/home/yoyerush/yo/methylome_pipeline/transposition_epiTEome
 samples_name=("mto1_1" "mto1_2" "mto1_3" "wt_1" "wt_2")
 te_super_family=copia
 te_ids_list=te_lists/copia_list.txt
@@ -31,6 +32,8 @@ bismark_results=/home/yoyerush/yo/methylome_pipeline/Bismark/res_unmapped_040825
 genome_file=genome_indx/TAIR10_chr_all.epiTEome.masked.fasta
 gff_file=genome_indx/tair10TEs.gff3
 n_cores=30
+
+cd $main_dir
 
 #-------------------------------------------------------------
 
@@ -63,42 +66,53 @@ done
 
 #-------------------------------------------------------------
 
-mkdir -p results
+mkdir -p "$main_dir"/results
 
 if [[ $run_test -eq 0 ]]; then
     
     # index the genome
     if [[ $dont_indx -eq 0 ]]; then
-        perl epiteome_scripts/idxEpiTEome.pl -l 150 -gff genome_indx/tair10TEs.gff3 -t $te_ids_list -fasta genome_indx/TAIR10_chr_all.fna
+        perl "$main_dir"/epiteome_scripts/idxEpiTEome.pl -l 150 -gff "$main_dir"/$gff_file -t "$main_dir"/"$te_ids_list" -fasta "$main_dir"/$genome_file
     fi
     
-    mkdir -p unmapped_reads
+    mkdir -p "$main_dir"/unmapped_reads
     
     # Loop over samples
     for sample in "${samples_name[@]}"; do
         
         # concatenate paired unmapped reads
         if [[ $dont_concatenate -eq 0 ]]; then
-            zcat $bismark_results/"$sample"/"$sample"_unmapped_reads_1.fq.gz $bismark_results/"$sample"/"$sample"_unmapped_reads_2.fq.gz > unmapped_reads/"$sample"_unmapped_reads.fq
+            zcat $bismark_results/"$sample"/"$sample"_unmapped_reads_1.fq.gz $bismark_results/"$sample"/"$sample"_unmapped_reads_2.fq.gz > "$main_dir"/unmapped_reads/"$sample"_unmapped_reads.fq
         fi
         
-        mkdir -p results/"$sample"
-        cp unmapped_reads/"$sample"_unmapped_reads.fq results/"$sample"
-        
+        mkdir -p "$main_dir"/results/"$sample"
+        cp "$main_dir"/unmapped_reads/"$sample"_unmapped_reads.fq "$main_dir"/results/"$sample"
+        cd "$main_dir"/results/"$sample"
+
         # run epiTEome
-        perl epiteome_scripts/epiTEome_yo_2.pl -gff $gff_file -t $te_ids_list -ref $genome_file -un results/"$sample"/"$sample"_unmapped_reads.fq -p $n_cores
+        perl "$main_dir"/epiteome_scripts/epiTEome_Yo_edit.pl -gff "$main_dir"/"$gff_file" -t "$main_dir"/$te_ids_list -ref "$main_dir"/$genome_file -un "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.fq -p $n_cores
         
-        
-        mkdir -p results_"$te_super_family"
-        ### fix this shit ###
-        ### mv unmapped_reads/"$sample"unmapped.newInsertionSite.tab, unmapped.newInsertionSite.sam, unmapped.met.meta.tab and unmapped.met.row.tab
+        cd $main_dir
+
+        # mkdir -p results_"$te_super_family"
+        mkdir -p "$main_dir"/results_"$te_super_family"/"$sample"
+        mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.newInsertionSite.tab "$main_dir"/results_"$te_super_family"/"$sample"/
+        mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.newInsertionSite.sam "$main_dir"/results_"$te_super_family"/"$sample"/
+        mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.met.meta.tab "$main_dir"/results_"$te_super_family"/"$sample"/
+        mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.met.row.tab "$main_dir"/results_"$te_super_family"/"$sample"/
+    
+        echo "\n\n***\t Completed processing $sample \t***\n\n"
     done
     
 else
-    mkdir results/test_data_res
-    mkdir results/test_data_res/genome_indx_test
-    cp test_data/unmapped.fastq.bz2 results/test_data_res
-    cp test_data/Chr2.fasta results/test_data_res/genome_indx_test
-    perl epiteome_scripts/idxEpiTEome.pl -l 150 -gff genome_indx/tair10TEs.gff3 -t test_data/teid.lst -fasta results/test_data_res/genome_indx_test/Chr2.fasta
-    perl epiteome_scripts/epiTEome_yo_2.pl -gff $gff_file -t test_data/teid.lst -ref results/test_data_res/genome_indx_test/Chr2.fasta -un results/test_data_res/unmapped.fastq.bz2 -p 1
+    mkdir "$main_dir"/results/test_data_res
+    mkdir "$main_dir"/results/test_data_res/genome_indx_test
+    cp "$main_dir"/test_data/unmapped.fastq.bz2 "$main_dir"/results/test_data_res
+    cp "$main_dir"/test_data/Chr2.fasta "$main_dir"/results/test_data_res/genome_indx_test
+
+    perl "$main_dir"/epiteome_scripts/idxEpiTEome.pl -l 150 -gff "$main_dir"/genome_indx/tair10TEs.gff3 -t "$main_dir"/test_data/teid.lst -fasta "$main_dir"/results/test_data_res/genome_indx_test/Chr2.fasta
+
+    cd "$main_dir"/results/test_data_res
+    perl "$main_dir"/epiteome_scripts/epiTEome_Yo_edit.pl -gff "$main_dir"/genome_indx/tair10TEs.gff3 -t "$main_dir"/test_data/teid.lst -ref "$main_dir"/results/test_data_res/genome_indx_test/Chr2.fasta -un "$main_dir"/results/test_data_res/unmapped.fastq.bz2 -p 1
+    cd $main_dir
 fi

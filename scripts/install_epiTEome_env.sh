@@ -1,30 +1,24 @@
-
-
-################## if it worked with original samtools, write here the other installtion (with mamba and this shit
-################## also change the main script!!!!
-################## also take rpiTEome.pl from the 'no_samtools' directory. add '--threads'eith the ncores from the perl script
-################## no_samtools its mean that in the installation i didnt install samtools, i used the one in darwin. then the perl script edited just to use samtools for filtering instead of the 'ngsutils' python package
-
 #### install the damn epiTEome env
-conda create -y -n epiteome_core_mamba_py3
-conda activate epiteome_core_mamba_py3
-conda install -y -c conda-forge mamba
+conda create -y -n epiTEome_env -c conda-forge mamba
+conda activate epiTEome_env
 
 mamba install -y -c conda-forge python=3.11 perl=5.32
-mamba install -y -c bioconda samtools bedtools=2.30 segemehl=0.2.0 perl-app-cpanminus perl-bioperl perl-bio-samtools perl-set-intervaltree perl-statistics-descriptive
+mamba install -y -c bioconda bedtools=2.30 segemehl=0.2.0 perl-app-cpanminus perl-bioperl-core perl-bio-samtools perl-set-intervaltree perl-statistics-descriptive
 
-pip install ngsutils==0.5.7
-
-### change all py2 files into py3 <<< as the epiTEome deloper said: "Die Ficker!" >>>
-2to3 -w /home/yoyerush/anaconda3/envs/epiteome_core_mamba_py3/lib/python3.11/site-packages/ngsutils/
+######### use samtools <<<updated vertion - version 1.16>>> instead of the 'ngsutils' package
+# pip install ngsutils==0.5.7
+### change all py2 files into py3 <<<as the epiTEome deloper said: "Die Ficker!">>>
+# 2to3 -w /home/yoyerush/anaconda3/envs/epiTEome_env/lib/python3.11/site-packages/ngsutils/
 
 #------------------------------------------
 
-cd /home/yoyerush/yo/methylome_pipeline/transposition_activity/
+cd /home/yoyerush/yo/methylome_pipeline/transposition_epiTEome/
 
 mkdir epiteome_scripts
 cd epiteome_scripts
-wget https://raw.githubusercontent.com/jdaron/epiTEome/master/epiTEome.pl
+
+wget https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/epiTEome_Yo_edit.pl # edited for using 'samtool=1.16' instead of the 'ngsutils' package
+wget https://raw.githubusercontent.com/jdaron/epiTEome/master/epiTEome.pl # 'epiTEome.pl' original script
 wget https://raw.githubusercontent.com/jdaron/epiTEome/master/idxEpiTEome.pl
 wget https://raw.githubusercontent.com/jdaron/epiTEome/master/insertTEsintoFasta.pl
 chmod +x ./epiTEome.pl
@@ -110,18 +104,20 @@ cd ../
 
 #------------------------------------------
 
+
+########### not using this anymore, but if using 'ngsutils' this could help
 ###################################
 ## if there is error writing: << Unknown command 'filter' >>
-#  /home/yoyerush/anaconda3/envs/epiteome_core_mamba_py3/bin/bamutils
+#  /home/yoyerush/anaconda3/envs/epiTEome_env/bin/bamutils
 #  or find it with the command << which bamutils >>
 #  note: also to fastqutils
 #
 #  then make this modifications inside the bamutil file:
 
 #  #!/bin/sh
-#  REAL=/home/yoyerush/anaconda3/envs/epiteome_core_mamba_py3/lib/python3.11/site-packages/ngsutils
+#  REAL=/home/yoyerush/anaconda3/envs/epiTEome_env/lib/python3.11/site-packages/ngsutils
 #  DIR=`dirname "$REAL"`/../
-#  SUBDIR=/home/yoyerush/anaconda3/envs/epiteome_core_mamba_py3/lib/python3.11/site-packages/ngsutils/bam/
+#  SUBDIR=/home/yoyerush/anaconda3/envs/epiTEome_env/lib/python3.11/site-packages/ngsutils/bam/
 # 
 #  usage() {
 #      echo "Usage: $(basename $0) COMMAND"
@@ -182,7 +178,7 @@ cd ../
 #          usage
 #      fi
 # 
-#      action=/home/yoyerush/anaconda3/envs/epiteome_core_mamba_py3/lib/python3.11/site-packages/ngsutils/bam/filter.py
+#      action=/home/yoyerush/anaconda3/envs/epiTEome_env/lib/python3.11/site-packages/ngsutils/bam/filter.py
 # 
 #      if [ ! -e "$action" ]; then
 #          action="$DIR"/ngsutils/$SUBDIR/$2.sh
@@ -201,7 +197,7 @@ cd ../
 # 
 #  elif [ "$1" = "profile" ]; then
 #      shift
-#      action=/home/yoyerush/anaconda3/envs/epiteome_core_mamba_py3/lib/python3.11/site-packages/ngsutils/bam/filter.py
+#      action=/home/yoyerush/anaconda3/envs/epiTEome_env/lib/python3.11/site-packages/ngsutils/bam/filter.py
 # 
 #      if [ ! -e "$action" ]; then
 #          action="$DIR"/ngsutils/$SUBDIR/filter.sh
@@ -221,7 +217,7 @@ cd ../
 #      echo "Saving profile information to profile.output" 1>&2
 #      exec python -m cProfile -o profile.output "$DIR"/ngsutils/$SUBDIR/$action "$@"
 #  else
-#      action=/home/yoyerush/anaconda3/envs/epiteome_core_mamba_py3/lib/python3.11/site-packages/ngsutils/bam/filter.py
+#      action=/home/yoyerush/anaconda3/envs/epiTEome_env/lib/python3.11/site-packages/ngsutils/bam/filter.py
 # 
 #      if [ ! -e "$action" ]; then
 #          action="$DIR"/ngsutils/$SUBDIR/filter.sh
@@ -238,7 +234,7 @@ cd ../
 
 #### edit fastqutils
 #  #!/bin/bash
-#  REAL=/home/yoyerush/anaconda3/envs/epiteome_core_mamba_py3/lib/python3.11/site-packages/ngsutils
+#  REAL=/home/yoyerush/anaconda3/envs/epiTEome_env/lib/python3.11/site-packages/ngsutils
 #  DIR=`dirname "$REAL"`/../
 #  SUBDIR=$(basename $0 | sed -e 's/utils//')
 #  
