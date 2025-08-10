@@ -27,11 +27,14 @@
 main_dir=/home/yoyerush/yo/methylome_pipeline/transposition_epiTEome
 samples_name=("mto1_1" "mto1_2" "mto1_3" "wt_1" "wt_2")
 te_super_family=copia
-te_ids_list=te_lists/copia_list.txt
+te_ids_list=copia_list.txt
 bismark_results=/home/yoyerush/yo/methylome_pipeline/Bismark/res_unmapped_040825/bismark_results
-genome_file=genome_indx/TAIR10_chr_all.epiTEome.masked.fasta
-gff_file=genome_indx/tair10TEs.gff3
+genome_file=TAIR10_chr_all.fna
+gff_file=tair10TEs.gff3
 n_cores=30
+
+# genome indexed file with - '.epiTEome.masked.fasta' suffix
+genome_indx_file=$(basename "$genome_file" | sed 's/\.[^.]*$/.epiTEome.masked.fasta/')
 
 cd $main_dir
 
@@ -70,9 +73,11 @@ mkdir -p "$main_dir"/results
 
 if [[ $run_test -eq 0 ]]; then
     
+    cd $main_dir
+
     # index the genome
     if [[ $dont_indx -eq 0 ]]; then
-        perl "$main_dir"/epiteome_scripts/idxEpiTEome.pl -l 150 -gff "$main_dir"/$gff_file -t "$main_dir"/"$te_ids_list" -fasta "$main_dir"/$genome_file
+        perl epiteome_scripts/idxEpiTEome.pl -l 150 -gff genome_indx/$gff_file -t te_lists/$te_ids_list -fasta genome_indx/$genome_file
     fi
     
     mkdir -p "$main_dir"/unmapped_reads
@@ -90,18 +95,20 @@ if [[ $run_test -eq 0 ]]; then
         cd "$main_dir"/results/"$sample"
 
         # run epiTEome
-        perl "$main_dir"/epiteome_scripts/epiTEome_Yo_edit.pl -gff "$main_dir"/"$gff_file" -t "$main_dir"/$te_ids_list -ref "$main_dir"/$genome_file -un "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.fq -p $n_cores
+        perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../../genome_indx/"$gff_file" -t ../../te_lists/$te_ids_list -ref ../../genome_indx/$genome_indx_file -un "$sample"_unmapped_reads.fq -p $n_cores
         
         cd $main_dir
 
-        # mkdir -p results_"$te_super_family"
-        mkdir -p "$main_dir"/results_"$te_super_family"/"$sample"
-        mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.newInsertionSite.tab "$main_dir"/results_"$te_super_family"/"$sample"/
-        mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.newInsertionSite.sam "$main_dir"/results_"$te_super_family"/"$sample"/
-        mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.met.meta.tab "$main_dir"/results_"$te_super_family"/"$sample"/
-        mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.met.row.tab "$main_dir"/results_"$te_super_family"/"$sample"/
-    
-        echo "\n\n***\t Completed processing $sample \t***\n\n"
+        # # mkdir -p results_"$te_super_family"
+        # mkdir -p "$main_dir"/results_"$te_super_family"/"$sample"
+        # mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.newInsertionSite.tab "$main_dir"/results_"$te_super_family"/"$sample"/
+        # mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.newInsertionSite.sam "$main_dir"/results_"$te_super_family"/"$sample"/
+        # mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.met.meta.tab "$main_dir"/results_"$te_super_family"/"$sample"/
+        # mv "$main_dir"/results/"$sample"/"$sample"_unmapped_reads.met.row.tab "$main_dir"/results_"$te_super_family"/"$sample"/
+
+        echo ""
+        echo "***   Completed processing $sample    ***"
+        echo ""
     done
     
 else
@@ -110,9 +117,13 @@ else
     cp "$main_dir"/test_data/unmapped.fastq.bz2 "$main_dir"/results/test_data_res
     cp "$main_dir"/test_data/Chr2.fasta "$main_dir"/results/test_data_res/genome_indx_test
 
-    perl "$main_dir"/epiteome_scripts/idxEpiTEome.pl -l 150 -gff "$main_dir"/genome_indx/tair10TEs.gff3 -t "$main_dir"/test_data/teid.lst -fasta "$main_dir"/results/test_data_res/genome_indx_test/Chr2.fasta
+    cd "$main_dir"/results/test_data_res
+
+    perl ../../epiteome_scripts/idxEpiTEome.pl -l 150 -gff ../../genome_indx/tair10TEs.gff3 -t ../../test_data/teid.lst -fasta genome_indx_test/Chr2.fasta
 
     cd "$main_dir"/results/test_data_res
-    perl "$main_dir"/epiteome_scripts/epiTEome_Yo_edit.pl -gff "$main_dir"/genome_indx/tair10TEs.gff3 -t "$main_dir"/test_data/teid.lst -ref "$main_dir"/results/test_data_res/genome_indx_test/Chr2.fasta -un "$main_dir"/results/test_data_res/unmapped.fastq.bz2 -p 1
+
+    perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../../genome_indx/tair10TEs.gff3 -t ../../test_data/teid.lst -ref genome_indx_test/Chr2.epiTEome.masked.fasta -un unmapped.fastq.bz2 -p 1
+
     cd $main_dir
 fi

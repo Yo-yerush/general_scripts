@@ -5,27 +5,41 @@ conda activate epiTEome_env
 mamba install -y -c conda-forge python=3.11 perl=5.32
 mamba install -y -c bioconda bedtools=2.30 segemehl=0.2.0 perl-app-cpanminus perl-bioperl-core perl-bio-samtools perl-set-intervaltree perl-statistics-descriptive
 
-######### use samtools <<<updated vertion - version 1.16>>> instead of the 'ngsutils' package
 # pip install ngsutils==0.5.7
-### change all py2 files into py3 <<<as the epiTEome deloper said: "Die Ficker!">>>
+# # change all py2 files into py3 <<<as the epiTEome developer said: "Die Ficker!">>>
 # 2to3 -w /home/yoyerush/anaconda3/envs/epiTEome_env/lib/python3.11/site-packages/ngsutils/
+
+###############################################################################
+#                                                                             #
+# use samtools <<<updated - version 1.16>>> instead of the 'ngsutils' package #
+#                                                                             #
+# samtools >= 1.10 is needed!                                                 #
+# check if there is '-N' argument in the filtering section                    #
+#                                                                             #
+###############################################################################
 
 #------------------------------------------
 
+### main directory
+mkdir /home/yoyerush/yo/methylome_pipeline/transposition_epiTEome/
 cd /home/yoyerush/yo/methylome_pipeline/transposition_epiTEome/
+wget https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/mto1_paper_R_scripts/epiTEome_te_insertion_sites_script.sh
+chmod +x ./epiTEome_te_insertion_sites_script.sh
 
+### scripts
 mkdir epiteome_scripts
 cd epiteome_scripts
-
 wget https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/epiTEome_Yo_edit.pl # edited for using 'samtool=1.16' instead of the 'ngsutils' package
 wget https://raw.githubusercontent.com/jdaron/epiTEome/master/epiTEome.pl # 'epiTEome.pl' original script
 wget https://raw.githubusercontent.com/jdaron/epiTEome/master/idxEpiTEome.pl
 wget https://raw.githubusercontent.com/jdaron/epiTEome/master/insertTEsintoFasta.pl
+chmod +x ./epiTEome_Yo_edit.pl
 chmod +x ./epiTEome.pl
 chmod +x ./idxEpiTEome.pl
 chmod +x ./insertTEsintoFasta.pl
 cd ../
 
+### genome files
 mkdir genome_indx
 cd genome_indx
 wget -O TAIR10_chr_all.fna.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
@@ -33,6 +47,7 @@ gunzip TAIR10_chr_all.fna.gz
 wget https://raw.githubusercontent.com/jdaron/epiTEome/master/test/tair10TEs.gff3
 cd ../
 
+### test data
 mkdir test_data
 cd test_data
 wget https://raw.githubusercontent.com/jdaron/epiTEome/master/test/teid.lst
@@ -89,7 +104,7 @@ awk '$9 ~ /sF=LTR\/Gypsy/ {
      }
 }' ../genome_indx/tair10TEs.gff3 | sort | uniq > gypsy_list.txt
 
-# run to create LIN!/L1 superfamily list:
+# run to create LINE/L1 superfamily list:
 awk '$9 ~ /sF=LINE\/L1/ {
      split($9, arr, ";");
      for (i in arr) {
@@ -104,8 +119,9 @@ cd ../
 
 #------------------------------------------
 
+###########  another option:
+###########  don't use this anymore! but if using 'ngsutils', this could help...
 
-########### not using this anymore, but if using 'ngsutils' this could help
 ###################################
 ## if there is error writing: << Unknown command 'filter' >>
 #  /home/yoyerush/anaconda3/envs/epiTEome_env/bin/bamutils
