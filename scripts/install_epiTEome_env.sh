@@ -82,6 +82,28 @@ awk '$9 ~ /fam=ATREP9/ {
      }
 }' ../genome_indx/tair10TEs.gff3 | sort | uniq > helitron_atrep9_list.txt
 
+# run to create gypsy - "ATHILA2" family list:
+awk '$9 ~ /fam=ATHILA2/ {
+     split($9, arr, ";");
+     for (i in arr) {
+         if (arr[i] ~ /ID=/) {
+             split(arr[i], id, "=");
+             print id[2];
+         }
+     }
+}' ../genome_indx/tair10TEs.gff3 | sort | uniq > gypsy_athila2_list.txt
+
+# run to create gypsy - "ATGP3" family list:
+awk '$9 ~ /fam=ATGP3/ {
+     split($9, arr, ";");
+     for (i in arr) {
+         if (arr[i] ~ /ID=/) {
+             split(arr[i], id, "=");
+             print id[2];
+         }
+     }
+}' ../genome_indx/tair10TEs.gff3 | sort | uniq > gypsy_atgp3_list.txt
+
 # run to create copia superfamily list:
 awk '$9 ~ /sF=LTR\/Copia/ {
      split($9, arr, ";");
