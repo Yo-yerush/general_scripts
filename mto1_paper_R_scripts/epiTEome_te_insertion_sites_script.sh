@@ -26,13 +26,13 @@
 
 # epiTEome scripts dir - also the output files path
 main_dir=/home/yoyerush/yo/methylome_pipeline/transposition_epiTEome
-samples_name=("mto1_1" "mto1_2" "mto1_3" "wt_1" "wt_2")
+samples_name=("wt_1" "mto1_1" "mto1_2" "mto1_3" "wt_2")
 te_ids_list=gypsy_athila2_list.txt
 bismark_results=/home/yoyerush/yo/methylome_pipeline/Bismark/res_unmapped_040825/bismark_results
 genome_file=TAIR10_chr_all.fna
 gff_file=tair10TEs.gff3
 n_threads=30
-MAX_JOBS=5 # can use number of samples if want
+# MAX_JOBS=5 # can use number of samples if want
 
 # genome indexed file with - '.epiTEome.masked.fasta' suffix
 # genome_indx_file=$(basename "$genome_file" | sed 's/\.[^.]*$/.epiTEome.masked.fasta/')
@@ -71,7 +71,7 @@ for arg in "$@"; do
     fi
 done
 
-# '--costum_test_list' arguments
+# '--costum_test_list' arguments - fix it!!!!!!
 test_te_list=../test_data/teid.lst
 for arg in "$@"; do
     if [[ "$arg" == "--costum_test_list" ]]; then
@@ -96,53 +96,53 @@ if [[ $run_test -eq 0 ]]; then
         perl ../../epiteome_scripts/idxEpiTEome.pl -l 150 -gff ../../genome_indx/"$gff_file" -t ../../te_lists/"$te_ids_list" -fasta $genome_file
     fi
     
-    PER_JOB_THREADS=$(( n_threads / MAX_JOBS ))
-    # PER_JOB_THREADS=$((n_threads / ${#samples_name[@]})) # n_threads divide by number of samples
-    export main_dir res_suffix bismark_results gff_file te_ids_list dont_concatenate PER_JOB_THREADS
-    
-    process_one() {
-        sample="$1"
-        workdir="$main_dir/results_${res_suffix}/${sample}"
-        mkdir -p "$workdir"
-        cd "$workdir"
-        export TMPDIR="$main_dir/tmp/${sample}"
-        export SAMTOOLS_TMPDIR="$TMPDIR"
-        mkdir -p "$TMPDIR"
-        
-        if [[ $dont_concatenate -eq 0 ]]; then
-            zcat "$bismark_results/${sample}/${sample}_unmapped_reads_1.fq.gz" \
-            "$bismark_results/${sample}/${sample}_unmapped_reads_2.fq.gz" \
-            > "${sample}_unmapped_reads.fq"
-        fi
-        
-        perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../../genome_indx/"$gff_file" -t ../../te_lists/"$te_ids_list" -ref ../genome_indx_"$res_suffix"/TAIR10_chr_all.epiTEome.masked.fasta -un "${sample}_unmapped_reads.fq" -p "$PER_JOB_THREADS"
-        
-        echo -e "\n***   Completed processing ${sample}    ***\n"
-    }
-    export -f process_one
-    
-    printf "%s\n" "${samples_name[@]}" | parallel -j "$MAX_JOBS" --halt soon,fail=1 process_one {}
-    
-    # # Loop over samples
-    # for sample in "${samples_name[@]}"; do
+    # PER_JOB_THREADS=$(( n_threads / MAX_JOBS ))
+    # # PER_JOB_THREADS=$((n_threads / ${#samples_name[@]})) # n_threads divide by number of samples
+    # export main_dir res_suffix bismark_results gff_file te_ids_list dont_concatenate PER_JOB_THREADS
     #
-    #     mkdir -p "$main_dir"/results_"$res_suffix"/"$sample"
-    #     cd "$main_dir"/results_"$res_suffix"/"$sample"
+    # process_one() {
+    #     sample="$1"
+    #     workdir="$main_dir/results_${res_suffix}/${sample}"
+    #     mkdir -p "$workdir"
+    #     cd "$workdir"
+    #     export TMPDIR="$main_dir/tmp/${sample}"
+    #     export SAMTOOLS_TMPDIR="$TMPDIR"
+    #     mkdir -p "$TMPDIR"
     #
-    #     # concatenate paired unmapped reads
     #     if [[ $dont_concatenate -eq 0 ]]; then
-    #         zcat $bismark_results/"$sample"/"$sample"_unmapped_reads_1.fq.gz $bismark_results/"$sample"/"$sample"_unmapped_reads_2.fq.gz > "$sample"_unmapped_reads.fq
+    #         zcat "$bismark_results/${sample}/${sample}_unmapped_reads_1.fq.gz" \
+    #         "$bismark_results/${sample}/${sample}_unmapped_reads_2.fq.gz" \
+    #         > "${sample}_unmapped_reads.fq"
     #     fi
     #
-    #     # run epiTEome
-    #     perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../../genome_indx/"$gff_file" -t ../../te_lists/"$te_ids_list" -ref ../genome_indx_"$res_suffix"/TAIR10_chr_all.epiTEome.masked.fasta -un "$sample"_unmapped_reads.fq -p $n_threads
+    #     perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../../genome_indx/"$gff_file" -t ../../te_lists/"$te_ids_list" -ref ../genome_indx_"$res_suffix"/TAIR10_chr_all.epiTEome.masked.fasta -un "${sample}_unmapped_reads.fq" -p "$PER_JOB_THREADS"
     #
-    #     cd $main_dir
-    #
-    #     echo ""
-    #     echo "***   Completed processing $sample    ***"
-    #     echo ""
-    # done
+    #     echo -e "\n***   Completed processing ${sample}    ***\n"
+    # }
+    # export -f process_one
+    
+    # printf "%s\n" "${samples_name[@]}" | parallel -j "$MAX_JOBS" --halt soon,fail=1 process_one {}
+    
+    # Loop over samples
+    for sample in "${samples_name[@]}"; do
+        
+        mkdir -p "$main_dir"/results_"$res_suffix"/"$sample"
+        cd "$main_dir"/results_"$res_suffix"/"$sample"
+        
+        # concatenate paired unmapped reads
+        if [[ $dont_concatenate -eq 0 ]]; then
+            zcat $bismark_results/"$sample"/"$sample"_unmapped_reads_1.fq.gz $bismark_results/"$sample"/"$sample"_unmapped_reads_2.fq.gz > "$sample"_unmapped_reads.fq
+        fi
+        
+        # run epiTEome
+        perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../../genome_indx/"$gff_file" -t ../../te_lists/"$te_ids_list" -ref ../genome_indx_"$res_suffix"/TAIR10_chr_all.epiTEome.masked.fasta -un "$sample"_unmapped_reads.fq -p $n_threads
+        
+        cd $main_dir
+        
+        echo ""
+        echo "***   Completed processing $sample    ***"
+        echo ""
+    done
     
 else
     test_data_res=test_data_res_"$res_suffix"
