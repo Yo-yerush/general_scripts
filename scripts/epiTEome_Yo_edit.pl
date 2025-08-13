@@ -600,14 +600,14 @@ sub mappingMethylCSeq {
 	# my @convertInBam = ($self->{program}->{awk}, '\'{if($6 ~/^[0-9]+M$/){print $0;} else if($1 ~/^@.*/){print $0;}}\'', $self->{fileName}->{segemehl}->{-o}, '|', $self->{program}->{samtools}, 'view -b - |', $self->{program}->{samtools},'sort - -o', $self->{fileName}->{segemehl}->{bam} ) ;
 
 	#### Yo edit - just add << '-@', $threads, '-m', '2G' >> arguments
-	my @convertInBam = ($self->{program}->{samtools}, 'view -b', $self->{fileName}->{segemehl}->{-o}, '|', $self->{program}->{samtools},'sort -', '-@', $threads, '-o', $self->{fileName}->{mappingOutput}->{bam} ) ;
+	my @convertInBam = ($self->{program}->{samtools}, 'view -b', '-@', $threads, $self->{fileName}->{segemehl}->{-o}, '|', $self->{program}->{samtools},'sort -', '-@', $threads, '-o', $self->{fileName}->{mappingOutput}->{bam} ) ;
 	####
 
 	print STDERR join ( " ", @convertInBam),"\n" ;
 	system(join" ", @convertInBam) ;
 	my @rm = ($self->{program}->{rm}, $self->{fileName}->{segemehl}->{-o}) ;
 	system(join" ", @rm) ;
-	my @index = ($self->{program}->{samtools}, 'index ', $self->{fileName}->{mappingOutput}->{bam} ) ;
+	my @index = ($self->{program}->{samtools}, 'index', '-@', $threads, $self->{fileName}->{mappingOutput}->{bam} ) ;
 	print STDERR join ( " ", @index),"\n" ;
 	system(join" ", @index) ;
 }
@@ -867,7 +867,7 @@ sub pairedEndGrab {
 	print STDERR join(" ", @bam_filter), "\n";
 	system(join " ", @bam_filter) == 0 or die "DIE: samtools view -N failed\n";
 
-	my @index = ($self->{program}->{samtools}, 'index', $fileName);
+	my @index = ($self->{program}->{samtools}, 'index', '-@', $threads, $fileName);
 	print STDERR join(" ", @index), "\n";
 	system(join " ", @index) == 0 or die "DIE: samtools index failed\n";
 
@@ -1153,7 +1153,7 @@ sub splitReadsGrab_v2{
 	    print STDERR join(" ", @bam_filter), "\n";
 	    system(join " ", @bam_filter) == 0 or die "DIE: samtools view -N failed\n";
 
-	    my @index = ($self->{program}->{samtools}, 'index', $fileName);
+	    my @index = ($self->{program}->{samtools}, 'index', '-@', $threads, $fileName);
 	    print STDERR join(" ", @index), "\n";
 	    system(join " ", @index) == 0 or die "DIE: samtools index failed\n";
 	}
