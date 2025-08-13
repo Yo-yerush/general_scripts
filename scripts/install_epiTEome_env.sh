@@ -71,17 +71,6 @@ awk '$9 ~ /sF=LTR\/Copia|sF=LTR\/Gypsy|sF=LINE\/L1/ {
      }
 }' ../genome_indx/tair10TEs.gff3 | sort | uniq > retrotransposons_list.txt
 
-# run to create helitron - "ATREP9" family list:
-awk '$9 ~ /fam=ATREP9/ {
-     split($9, arr, ";");
-     for (i in arr) {
-         if (arr[i] ~ /ID=/) {
-             split(arr[i], id, "=");
-             print id[2];
-         }
-     }
-}' ../genome_indx/tair10TEs.gff3 | sort | uniq > helitron_atrep9_list.txt
-
 # run to create gypsy - "ATHILA2" family list:
 awk '$9 ~ /fam=ATHILA2/ {
      split($9, arr, ";");
@@ -136,6 +125,28 @@ awk '$9 ~ /sF=LINE\/L1/ {
          }
      }
 }' ../genome_indx/tair10TEs.gff3 | sort | uniq > line_l1_list.txt
+
+# run to create helitron - "ATREP9" family list:
+awk '$9 ~ /fam=ATREP9/ {
+     split($9, arr, ";");
+     for (i in arr) {
+         if (arr[i] ~ /ID=/) {
+             split(arr[i], id, "=");
+             print id[2];
+         }
+     }
+}' ../genome_indx/tair10TEs.gff3 | sort | uniq > helitron_atrep9_list.txt
+
+# run to create helitron - "ATREP" family list:
+awk '$9 ~ /fam=ATREP/ {
+     split($9, arr, ";");
+     for (i in arr) {
+         if (arr[i] ~ /ID=/) {
+             split(arr[i], id, "=");
+             print id[2];
+         }
+     }
+}' ../genome_indx/tair10TEs.gff3 | sort | uniq > helitron_all_atrep_list.txt
 
 cd ../
 
