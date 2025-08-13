@@ -600,7 +600,7 @@ sub mappingMethylCSeq {
 	# my @convertInBam = ($self->{program}->{awk}, '\'{if($6 ~/^[0-9]+M$/){print $0;} else if($1 ~/^@.*/){print $0;}}\'', $self->{fileName}->{segemehl}->{-o}, '|', $self->{program}->{samtools}, 'view -b - |', $self->{program}->{samtools},'sort - -o', $self->{fileName}->{segemehl}->{bam} ) ;
 
 	#### Yo edit - just add << '-@', $threads, '-m', '2G' >> arguments
-	my @convertInBam = ($self->{program}->{samtools}, 'view -b', $self->{fileName}->{segemehl}->{-o}, '|', $self->{program}->{samtools},'sort', '-@', $threads, '-m', '2G', '-', '-o', $self->{fileName}->{mappingOutput}->{bam} ) ;
+	my @convertInBam = ($self->{program}->{samtools}, 'view -b', $self->{fileName}->{segemehl}->{-o}, '|', $self->{program}->{samtools},'sort -', '-@', $threads, '-o', $self->{fileName}->{mappingOutput}->{bam} ) ;
 	####
 
 	print STDERR join ( " ", @convertInBam),"\n" ;

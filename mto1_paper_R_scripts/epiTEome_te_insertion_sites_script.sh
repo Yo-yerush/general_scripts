@@ -9,7 +9,7 @@
 #   --dont_indx          Skip genome indexing step
 #   --dont_concatenate   Skip concatenation of unmapped reads
 #   --run_test           Use test data
-#   --costum_test_list   TE list as 'te_ids_list' argument
+#   --custom_test_list   TE list as 'te_ids_list' argument
 #
 #-------------------------------------------------------------
 #
@@ -28,6 +28,7 @@
 main_dir=/home/yoyerush/yo/methylome_pipeline/transposition_epiTEome
 samples_name=("wt_1" "mto1_1" "mto1_2" "mto1_3" "wt_2")
 te_ids_list=gypsy_athila2_list.txt
+test_te_list=gypsy_athila2_list.txt
 bismark_results=/home/yoyerush/yo/methylome_pipeline/Bismark/res_unmapped_040825/bismark_results
 genome_file=TAIR10_chr_all.fna
 gff_file=tair10TEs.gff3
@@ -71,14 +72,14 @@ for arg in "$@"; do
     fi
 done
 
-# '--costum_test_list' arguments - fix it!!!!!!
-test_te_list=../test_data/teid.lst
-for arg in "$@"; do
-    if [[ "$arg" == "--costum_test_list" ]]; then
-        test_te_list=../te_lists/"$te_ids_list"
-        break
-    fi
-done
+# # '--custom_test_list' arguments
+# test_te_list=../test_data/teid.lst
+# for arg in "$@"; do
+#     if [[ "$arg" == "--custom_test_list" ]]; then
+#         test_te_list=../te_lists/"$te_ids_list"
+#         break
+#     fi
+# done
 
 #-------------------------------------------------------------
 
@@ -87,13 +88,15 @@ if [[ $run_test -eq 0 ]]; then
     
     mkdir -p "$main_dir"/results_"$res_suffix"
     
-    mkdir -p "$main_dir"/results_"$res_suffix"/genome_indx_"$res_suffix"
-    cd "$main_dir"/results_"$res_suffix"/genome_indx_"$res_suffix"
     
     # index the genome
     if [[ $dont_indx -eq 0 ]]; then
-        cp "$main_dir"/genome_indx/$genome_file ./
-        perl ../../epiteome_scripts/idxEpiTEome.pl -l 150 -gff ../../genome_indx/"$gff_file" -t ../../te_lists/"$te_ids_list" -fasta $genome_file
+        mkdir -p "$main_dir"/results_"$res_suffix"/genome_indx_"$res_suffix"
+        cd "$main_dir"/results_"$res_suffix"/genome_indx_"$res_suffix"
+        cp "$main_dir"/genome_indx/"$genome_file" ./
+        cp "$main_dir"/genome_indx/"$gff_file" ./
+        perl ../../epiteome_scripts/idxEpiTEome.pl -l 150 -gff $gff_file -t ../../te_lists/"$te_ids_list" -fasta $genome_file
+        cd ../
     fi
     
     # PER_JOB_THREADS=$(( n_threads / MAX_JOBS ))
@@ -135,7 +138,7 @@ if [[ $run_test -eq 0 ]]; then
         fi
         
         # run epiTEome
-        perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../../genome_indx/"$gff_file" -t ../../te_lists/"$te_ids_list" -ref ../genome_indx_"$res_suffix"/TAIR10_chr_all.epiTEome.masked.fasta -un "$sample"_unmapped_reads.fq -p $n_threads
+        perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../genome_indx_"$res_suffix"/"$gff_file" -t ../../te_lists/"$te_ids_list" -ref ../genome_indx_"$res_suffix"/TAIR10_chr_all.epiTEome.masked.fasta -un "$sample"_unmapped_reads.fq -p $n_threads
         
         cd $main_dir
         
@@ -153,11 +156,11 @@ else
     
     cd "$main_dir"/"$test_data_res"
     
-    perl ../epiteome_scripts/idxEpiTEome.pl -l 150 -gff ../genome_indx/tair10TEs.gff3 -t "$test_te_list" -fasta genome_indx_test/Chr2.fasta
+    perl ../epiteome_scripts/idxEpiTEome.pl -l 150 -gff ../genome_indx/tair10TEs.gff3 -t ../te_lists/"$test_te_list" -fasta genome_indx_test/Chr2.fasta
     
     cd "$main_dir"/"$test_data_res"
     
-    perl ../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../genome_indx/tair10TEs.gff3 -t "$test_te_list" -ref genome_indx_test/Chr2.epiTEome.masked.fasta -un unmapped.fastq.bz2 -p 1
+    perl ../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../genome_indx/tair10TEs.gff3 -t ../te_lists/"$test_te_list" -ref genome_indx_test/Chr2.epiTEome.masked.fasta -un unmapped.fastq.bz2 -p 1
     
     cd $main_dir
 fi
