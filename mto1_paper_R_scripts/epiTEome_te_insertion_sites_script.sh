@@ -27,12 +27,13 @@
 # epiTEome scripts dir - also the output files path
 main_dir=/home/yoyerush/yo/methylome_pipeline/transposition_epiTEome
 samples_name=("wt_1" "mto1_1" "mto1_2" "mto1_3" "wt_2")
-te_ids_list=gypsy_athila2_list.txt
-test_te_list=gypsy_athila2_list.txt
+te_ids_list=overlap_TEGs_list.txt
+test_te_list=test_list.txt
 bismark_results=/home/yoyerush/yo/methylome_pipeline/Bismark/res_unmapped_040825/bismark_results
 genome_file=TAIR10_chr_all.fna
 gff_file=tair10TEs.gff3
-n_threads=30
+n_threads=16
+batch_size=200
 # MAX_JOBS=5 # can use number of samples if want
 
 # genome indexed file with - '.epiTEome.masked.fasta' suffix
@@ -138,7 +139,7 @@ if [[ $run_test -eq 0 ]]; then
         fi
         
         # run epiTEome
-        perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../genome_indx_"$res_suffix"/"$gff_file" -t ../../te_lists/"$te_ids_list" -ref ../genome_indx_"$res_suffix"/TAIR10_chr_all.epiTEome.masked.fasta -un "$sample"_unmapped_reads.fq -p $n_threads
+        perl ../../epiteome_scripts/epiTEome_Yo_edit.pl -gff ../genome_indx_"$res_suffix"/"$gff_file" -t ../../te_lists/"$te_ids_list" -ref ../genome_indx_"$res_suffix"/TAIR10_chr_all.epiTEome.masked.fasta -un "$sample"_unmapped_reads.fq -p $n_threads -b $batch_size
         
         cd $main_dir
         
@@ -148,7 +149,8 @@ if [[ $run_test -eq 0 ]]; then
     done
     
 else
-    test_data_res=test_data_res_"$res_suffix"
+    res_suffix_test=$(basename "$test_te_list" _list.txt)
+    test_data_res=test_data_res_"$res_suffix_test"
     mkdir "$main_dir"/"$test_data_res"
     mkdir "$main_dir"/"$test_data_res"/genome_indx_test
     cp "$main_dir"/test_data/unmapped.fastq.bz2 "$main_dir"/"$test_data_res"
@@ -164,3 +166,29 @@ else
     
     cd $main_dir
 fi
+
+
+##########################################
+### R script to find overlap TEGs in mto1 vs wt (insert to met1 github page in different file)
+
+# library(dplyr)
+# 
+# cg_file <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/methylome_23/BSseq_results/mto1_vs_wt/genome_annotation/CG/TEG_CG_genom_annotations.csv"
+# chg_file <- gsub("/CG/TEG_CG_", "/CHG/TEG_CHG_", cg_file)
+# chh_file <- gsub("/CG/TEG_CG_", "/CHH/TEG_CHH_", cg_file)
+# cg_data <- read.csv(cg_file)
+# chg_data <- read.csv(chg_file)
+# chh_data <- read.csv(chh_file)
+# methylation_data <- rbind(cg_data, chg_data, chh_data) %>%
+# distinct(gene_id, .keep_all = T) %>%
+# select(gene_id, Derives_from)
+# 
+# rnaseq <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/rnaseq_23/met23/mto1_vs_wt/all_genes_results_mto1_vs_wt.csv") %>%
+# filter(padj < 0.05) %>%
+# select(gene_id)
+# 
+# overlap_tegs <- merge(methylation_data, rnaseq, by = "gene_id") %>%
+# filter(Derives_from != "") %>%
+# distinct(Derives_from)
+# 
+# write.table(overlap_tegs, "overlap_TEGs_list.txt", row.names = F, quote = F, col.names = F)
