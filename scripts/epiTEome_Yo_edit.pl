@@ -840,16 +840,35 @@ sub pairedEndGrab {
 	# $sam = Bio::DB::Sam->new(-bam => $fileName);
 	# @features = $sam->features("match") ; # output all matching reads.
 
-	################################################## Yo edit
+	########################### Yo edit - 'samtools view' instead of 'bamutils'
 	my $fileName = $self->{option}->{unmappedFastqFile}->{prefix} . ".matePairedEnd.bam";
 	my $whitelist = $self->{option}->{unmappedFastqFile}->{prefix} . ".fishReads.list";
 
-	######## use the local darwin samtool (1.16)
+	### make the list pair-aware ('samtools' are not)
+	my $whitelist_withmates = $self->{option}->{unmappedFastqFile}->{prefix} . ".fishReads.withmates.list";
+	{
+    	open my $IN,  "<", $whitelist or die "DIE: cannot open $whitelist\n";
+    	open my $OUT, ">", $whitelist_withmates or die "DIE: cannot write $whitelist_withmates\n";
+    	my %seen;
+    	while (my $n = <$IN>) {
+    	    chomp $n; next unless length $n;
+    	    if ($n =~ m{^(.*)/(1|2)$}) {
+    	        my $core = $1;
+    	        print $OUT "$core/1\n" unless $seen{"$core/1"}++;
+    	        print $OUT "$core/2\n" unless $seen{"$core/2"}++;
+    	    } else {
+    	        print $OUT "$n\n" unless $seen{$n}++;
+    	    }
+    	}
+    	close $IN; close $OUT;
+	}
+
+	### use the local darwin samtool (1.16)
 	my @bam_filter = (
 	    $self->{program}->{samtools}, 'view',
         '-@', $threads,
 	    '-b', '-o', $fileName,
-	    '-N', $whitelist,
+	    '-N', $whitelist_withmates,
 	    $self->{fileName}->{mappingOutput}->{bam}
 	);
 
@@ -1123,19 +1142,38 @@ sub splitReadsGrab_v2{
 	# $sam = Bio::DB::Sam->new(-bam => $fileName);
 	# @features = $sam->features("match") ; # output all matching reads.
 
-	################################################## Yo edit
+	########################### Yo edit - 'samtools view' instead of 'bamutils'
 	my $fileName = $self->{option}->{unmappedFastqFile}->{prefix} . ".mateSplitReads.bam";
 	if (-e $fileName) {
 	    print STDERR "INFO $prog: File $fileName already exists => skip read filtering.\n";
 	} else {
 	    my $whitelist = $self->{option}->{unmappedFastqFile}->{prefix} . ".fishReads.list";
 
-		######## use the local darwin samtool (1.16)
+		### make the list pair-aware ('samtools' are not)
+		my $whitelist_withmates = $self->{option}->{unmappedFastqFile}->{prefix} . ".fishReads.withmates.list";
+    	{
+    	    open my $IN,  "<", $whitelist or die "DIE: cannot open $whitelist\n";
+    	    open my $OUT, ">", $whitelist_withmates or die "DIE: cannot write $whitelist_withmates\n";
+    	    my %seen;
+    	    while (my $n = <$IN>) {
+    	        chomp $n; next unless length $n;
+    	        if ($n =~ m{^(.*)/(1|2)$}) {
+    	            my $core = $1;
+    	            print $OUT "$core/1\n" unless $seen{"$core/1"}++;
+    	            print $OUT "$core/2\n" unless $seen{"$core/2"}++;
+    	        } else {
+    	            print $OUT "$n\n" unless $seen{$n}++;
+    	        }
+    	    }
+    	    close $IN; close $OUT;
+    	}
+
+		### use the local darwin samtool (1.16)
 		my @bam_filter = (
 		    $self->{program}->{samtools}, 'view',
             '-@', $threads,
 		    '-b', '-o', $fileName,
-		    '-N', $whitelist,
+		    '-N', $whitelist_withmates,
 		    $self->{fileName}->{mappingOutput}->{bam}
 		);
 
