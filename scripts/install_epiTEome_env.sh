@@ -71,6 +71,9 @@ awk '$9 ~ /sF=LTR\/Copia|sF=LTR\/Gypsy|sF=LINE\/L1/ {
      }
 }' ../genome_indx/tair10TEs.gff3 | sort | uniq > retrotransposons_list.txt
 
+# make the list as random order (too many ATHILA's will couse overload of the system)
+shuf retrotransposons_list.txt > rndm_retrotransposons_list.txt
+
 # run to create gypsy - "ATHILA2" family list:
 awk '$9 ~ /fam=ATHILA2/ {
      split($9, arr, ";");

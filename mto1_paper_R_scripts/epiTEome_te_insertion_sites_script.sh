@@ -27,7 +27,7 @@
 # epiTEome scripts dir - also the output files path
 main_dir=/home/yoyerush/yo/methylome_pipeline/transposition_epiTEome
 samples_name=("wt_1" "mto1_1" "mto1_2" "mto1_3" "wt_2")
-te_ids_list=overlap_TEGs_list.txt
+te_ids_list=rndm_retrotransposons_list.txt
 test_te_list=test_list.txt
 bismark_results=/home/yoyerush/yo/methylome_pipeline/Bismark/res_unmapped_040825/bismark_results
 genome_file=TAIR10_chr_all.fna
