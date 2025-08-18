@@ -3,8 +3,6 @@ library(ggplot2)
 library(dplyr)
 library(ggbreak)
 
-dir.create("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/", showWarnings = F)
-
 TE <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/Arabidopsis_db/TAIR10/TAIR10 transposable elements/TAIR10_Transposable_Elements.txt", sep = "\t")
 TE$Transposon_ID <- TE$Transposon_Name
 for (chr.i in 1:5) {
@@ -209,7 +207,8 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
         LINE = TE_DMRs_overlap("LINE", "all"),
         SINE = TE_DMRs_overlap("SINE|Rath", "all"),
         TIR = TE_DMRs_overlap("DNA", "all"),
-        Helitron = TE_DMRs_overlap("Helitron", "all")
+        Helitron = TE_DMRs_overlap("Helitron", "all"),
+        Unassigned = TE_DMRs_overlap("Unassigned", "all")
     )
 
     # Extract the relevant information for each family using lapply
@@ -272,12 +271,12 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
             data.frame(Overlapped_IDs = x$contingency_table[1, 1], Non_overlapped_IDs = x$contingency_table[1, 2])
         }))
     ) %>%
-        cbind(plot_2_df[1:6, ]) %>%
+        cbind(plot_2_df[1:7, ]) %>%
         relocate(family, .before = Overlapped_IDs) %>%
         relocate(pValue, .after = Non_overlapped_IDs) %>%
         select(-direction) %>%
         rename(hyper_to_total = presentage) %>%
-        mutate(hypo_to_total = plot_2_df[7:12, 3],
+        mutate(hypo_to_total = plot_2_df[8:14, 3],
         total_DMRs = total_DMRs_sp,
         hyper = (hyper_sp / total_DMRs_sp) * 100,
         hypo = (hypo_sp / total_DMRs_sp) * 100

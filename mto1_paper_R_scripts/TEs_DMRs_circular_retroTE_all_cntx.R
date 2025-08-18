@@ -23,17 +23,17 @@ treatment = "mto1"
   
   
   #############  RNAseq res file   ############# 
-  RNA_file = read.csv(paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/rnaseq_23/met23/",treatment,"_vs_wt/all.transcripts.",treatment,"_vs_wt.DE.csv")) %>% 
+  RNA_file = read.csv(paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/rnaseq_23/met23/",treatment,"_vs_wt/all_genes_results_",treatment,"_vs_wt.csv")) %>% 
     filter(padj < 0.05) %>% 
-    select(locus_tag)
+    select(gene_id)
   
   transcripts = gff3.trimmed[which(gff3.trimmed$type == "mRNA")] %>%
     as.data.frame() %>%
-    mutate(locus_tag = as.character(Parent)) %>%
-    select(seqnames,start,end,locus_tag) %>%
-    distinct(locus_tag, .keep_all = T)
+    mutate(gene_id = as.character(Parent)) %>%
+    select(seqnames,start,end,gene_id) %>%
+    distinct(gene_id, .keep_all = T)
   
-  RNA_transcriptsLoc = merge.data.frame(transcripts, RNA_file, by = "locus_tag")[,c(2:4,1)]
+  RNA_transcriptsLoc = merge.data.frame(transcripts, RNA_file, by = "gene_id")[,c(2:4,1)]
   
   
   ############# TE file #############
@@ -52,15 +52,15 @@ treatment = "mto1"
   
   ############# Heterochromatin positions #############
   heteroChr = data.frame(Chr = paste0("Chr",c(1:5)),
-                         start = c(12500000, 1250000, 11000000, 1666667, 9444444),
-                         end = c(17500000, 7500000, 16250000, 7000000, 15000000))
+                         start = c(11.5, 1.1, 10.3, 1.5, 9) * 1e6,
+                         end = c(17.7, 7.2, 17.3, 6.3, 16) * 1e6)
   
   
   ############# Centromere positions #############
   cenChr = data.frame(Chr = paste0("Chr",c(1:5)),
-                      start = c(14476796, 3462971, 13780083, 3177188, 11207348),
-                      end = c(15081019, 3650512, 14388500, 3248799, 11555278))
-  
+                      start = c(14.08, 2.93, 13.16, 2, 10.93) * 1e6,
+                      end = c(15.61, 3.95, 14.55, 4.26, 12.66) * 1e6)
+
   #cenChr = data.frame(Chr = paste0("Chr",c(1:3,3,3:5)),
   #                    start = c(15086046, 3607930, 13799418, 13587787, 14208953, 3956022, 11725025),
   #                    end = c(15087045, 3608929, 13800417, 13588786, 14209952, 3957021, 11726024))
@@ -127,7 +127,8 @@ density_TE$value = density_TE$value / max(density_TE$value)
 #####################################
 ############# the plot #############
 svg(paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/figures/retroTE_DMRs_density.svg"),
-    width = 3, height = 3, family = "serif")
+    width = 3.25, height = 3.25, family = "serif")
+    par(mar = c(0,0,0,0))
 
   circos.par(
     gap.degree = c(rep(4, 4), 35),
@@ -204,7 +205,7 @@ for (family.i in 1:length(family_list_gain)) {
   density_loss <- genomicDensity(family_list_loss[[family.i]], window.size = 1e6, count_by = "number")
   y_max = max(c(density_gain$value, density_loss$value))
   ylims <- c(0, y_max) * 1.435
-  track_height = 0.125
+  track_height = 0.08
   
   circos.genomicTrackPlotRegion(cbind(density_gain, density_loss$value),
                                 ylim = c(0,y_max),
@@ -229,19 +230,21 @@ for (family.i in 1:length(family_list_gain)) {
   })
   
   ### y-axis labels
-  circos.text("Chr1", x = 0, y = 0.5, labels = paste0(names(family_list_gain)[family.i],"  "), facing = "downward", cex = 0.6, adj = c(1,0))
+  circos.text("Chr1", x = 0, y = 0.5, labels = paste0(names(family_list_gain)[family.i]," "), facing = "downward", cex = 0.6, adj = c(1,0))
 }
 
 ##########
 
 ### DEGs and TEs
-# DEGs
-circos.genomicTrackPlotRegion(density_RNA, ylim = c(0,1), bg.border = NA, track.height = 0.2, track.margin = c(0, 0), panel.fun = function(region, value, ...) {
-  circos.genomicLines(region, value, col = "gray80", border = TRUE, type = "l", area = T)})
+# # DEGs
+# circos.genomicTrackPlotRegion(density_RNA, ylim = c(0,1), bg.border = NA, track.height = 0.2, track.margin = c(0, 0), panel.fun = function(region, value, ...) {
+#   circos.genomicLines(region, value, col = "gray80", border = TRUE, type = "l", area = T)})
+
 # TEs
-circos.genomicTrackPlotRegion(density_TE, bg.border = NA, track.height = 0.05, track.margin = c(0, 0), panel.fun = function(region, value, ...) {
-  circos.genomicLines(region, value, col = "#fcba0320", border = TRUE, type = "l", area = T,
-                      track.index = get.cell.meta.data("track.index")-1 )})
+circos.genomicTrackPlotRegion(density_TE, bg.border = NA, track.height = 0.2, # 0.05
+ track.margin = c(0, 0), panel.fun = function(region, value, ...) {
+  circos.genomicLines(region, value, col = "#fcba0320", border = TRUE, type = "l", area = T)}) #,
+                   #   track.index = get.cell.meta.data("track.index")-1 )})
                       
 
 circos.clear()
