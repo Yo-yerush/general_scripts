@@ -11,7 +11,6 @@ var2_name <- "mto1"
 var1_rnaseq_names <- c("met20", "met22")
 var2_rnaseq_names <- c("met14", "met15", "met16")
 genes_2_keep <- "filtered_by_DEGs"
-main_output_directory <- "./Linear_correlation/"
 additional_plots <- TRUE
 pValues_table <- TRUE
 var1_col <- "gray50"
@@ -26,6 +25,22 @@ library(lmerTest)
 library(tidyr)
 library(MASS)
 library(scales)
+
+# pValues function
+pval_fun <- function(x, is.inte=T) {
+    if (!is.inte) {
+        "n.e."
+    } else {
+        ifelse(x <= 0.001, "***",
+            ifelse(x <= 0.01, "**  ",
+                ifelse(x <= 0.05, "*    ",
+                    "ns  "
+                )
+            )
+        )
+    }
+}
+
 ### filter by 'genes_2_keep'
 rna_2_filter <- read.csv(paste0(RNAseq_results_directory, "all_genes_results_", var2_name, "_vs_", var1_name, ".csv"))
 gene_list_name <- genes_2_keep
@@ -81,6 +96,7 @@ for (context in c("CG", "CHG", "CHH")) {
     annotation_point_plots_list <- setNames(vector("list", length(annotation_type_names)), annotation_type_names)
     annotation_regression_plot_list <- setNames(vector("list", length(annotation_type_names)), annotation_type_names)
     residuals_plots_list <- setNames(vector("list", length(annotation_type_names)), annotation_type_names)
+
     for (annotation_type in annotation_type_names) {
         path_2_save.0 <- main_output_directory
         path_2_save.1 <- paste0(path_2_save.0, gene_list_name, "/")
@@ -161,10 +177,23 @@ for (context in c("CG", "CHG", "CHH")) {
         tryCatch(
             {
                 #### linear model ####
-                plot_df$normCounts <- as.numeric(plot_df$normCounts) + 1e-6
-                plot_df$Meth <- as.numeric(plot_df$Meth) + 1e-6
+                plot_df$normCounts <- as.numeric(plot_df$normCounts)
+                plot_df$Meth <- as.numeric(plot_df$Meth)
                 plot_df$genotype <- as.factor(plot_df$genotype)
-                lm_model_0 <- glm.nb(normCounts ~ Meth * genotype, data = plot_df)
+
+                # do it with/without interaction, and initialize lm_model results
+                lm_model_0 <- NULL
+                is.interaction <- FALSE
+                tryCatch(
+                    {
+                        lm_model_0 <<- glm.nb(normCounts ~ Meth * genotype, data = plot_df)
+                        is.interaction <<- TRUE
+                    },
+                    error = function(e) {
+                        lm_model_0 <<- glm.nb(normCounts ~ Meth + genotype, data = plot_df)
+                        is.interaction <<- FALSE
+                    }
+                )
                 lm_model <- summary(lm_model_0)
 
                 # fitted vs. residuals
@@ -174,21 +203,12 @@ for (context in c("CG", "CHG", "CHH")) {
                 # Meth and genotype rows
                 meth_row <- grep("^Meth$", rownames(lm_model$coefficients))
                 genotype_row <- grep("^genotypewt$", rownames(lm_model$coefficients))
-                interaction_row <- grep("Meth:genotypewt", rownames(lm_model$coefficients))
+                if (is.interaction) {interaction_row <- grep("Meth:genotypewt", rownames(lm_model$coefficients))}
 
                 #### linear model p-Value ####
-                pval_fun <- function(x) {
-                    ifelse(x <= 0.001, "***",
-                        ifelse(x <= 0.01, "**",
-                            ifelse(x <= 0.05, "*",
-                                "nf"
-                            )
-                        )
-                    )
-                }
                 M_pval <- pval_fun(lm_model$coefficients[meth_row, 4])
                 G_pval <- pval_fun(lm_model$coefficients[genotype_row, 4])
-                MnG_pval <- pval_fun(lm_model$coefficients[interaction_row, 4])
+                MnG_pval <- pval_fun(lm_model$coefficients[interaction_row, 4], is.interaction)
 
                 #####################################################
 
@@ -197,7 +217,7 @@ for (context in c("CG", "CHG", "CHH")) {
                 #### p value ####
                 p_df[ann_cntx_row_number, ]$Meth <- lm_model$coefficients[meth_row, 4]
                 p_df[ann_cntx_row_number, ]$genotype <- lm_model$coefficients[genotype_row, 4]
-                p_df[ann_cntx_row_number, ]$interaction <- lm_model$coefficients[interaction_row, 4]
+                p_df[ann_cntx_row_number, ]$interaction <- ifelse(!is.interaction, "n.e.", lm_model$coefficients[interaction_row, 4])
 
                 #### R^2 value ####
                 res_dev <- lm_model_0$deviance
@@ -273,10 +293,12 @@ for (context in c("CG", "CHG", "CHH")) {
                     # context text (on Chr1)
                     annotate("text", x = Inf, y = Inf, label = context_label, hjust = context_label_hj, vjust = context_label_vj, size = 6) +
                     # # 'M' and 'G' text
-                    # annotate("text", x = Inf, y = Inf, label = "M", hjust = 4, vjust = 2, size = 3.5) +
-                    # annotate("text", x = Inf, y = Inf, label = "G", hjust = 4.75, vjust = 4, size = 3.5) +
-                    # annotate("text", x = Inf, y = Inf, label = paste0("'", M_pval, "'"), hjust = 1.15, vjust = 2, size = 3.5) +
-                    # annotate("text", x = Inf, y = Inf, label = paste0("'", G_pval, "'"), hjust = 1.15, vjust = 4, size = 3.5) +
+                    annotate("text", x = Inf, y = Inf, label = "M", hjust = 3.5, vjust = 2, size = 4.15) +
+                    annotate("text", x = Inf, y = Inf, label = "G", hjust = 4.25, vjust = 4, size = 4.15) +
+                    annotate("text", x = Inf, y = Inf, label = "M×G", hjust = 2.07, vjust = 6, size = 4.15) +
+                    annotate("text", x = Inf, y = Inf, label = M_pval, hjust = 1.15, vjust = 2, size = 4.15) +
+                    annotate("text", x = Inf, y = Inf, label = G_pval, hjust = 1.15, vjust = 4, size = 4.15) +
+                    annotate("text", x = Inf, y = Inf, label = MnG_pval, hjust = 1.15, vjust = 6, size = 4.15) +
                     ####
                     yo_theme_base() +
                     theme(
@@ -455,7 +477,7 @@ if (additional_plots) {
         theme_bw() +
         labs(
             x = "",
-            y = "R²",
+            y = "Deviance R²",
             fill = "Context"
         ) +
         theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold")) +

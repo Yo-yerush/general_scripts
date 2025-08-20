@@ -3,6 +3,12 @@ library(ggplot2)
 library(dplyr)
 library(ggbreak)
 
+#####################################################################
+# if want to try fisher with 'less' argument, edit in line 98       #
+# fisher <- fisher.test(contingency_table, alternative = "greater") #
+#####################################################################
+
+
 TE <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/Arabidopsis_db/TAIR10/TAIR10 transposable elements/TAIR10_Transposable_Elements.txt", sep = "\t")
 TE$Transposon_ID <- TE$Transposon_Name
 for (chr.i in 1:5) {
@@ -89,7 +95,7 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
         )
     )
 
-    fisher <- fisher.test(contingency_table, alternative = "greater")
+    fisher <- fisher.test(contingency_table, alternative = "two.sided")
     # TE_score = as.numeric(fisher$estimate)
     TE_score <- (a / b) / (c / d)
 
@@ -266,6 +272,7 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
 
     ################################################
     ###  prepare table for supplementary
+    ### run untill 'plot_2_df' in the above script
     super_families_results <- rbind(
         do.call(rbind, lapply(families, function(x) {
             data.frame(Overlapped_IDs = x$contingency_table[1, 1], Non_overlapped_IDs = x$contingency_table[1, 2])
@@ -308,7 +315,7 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
             super_families_results,
             data.frame(family = "Total TEs", Overlapped_IDs = all_overlap, Non_overlapped_IDs = all_non_overlap, pValue = "", total_DMRs = unique(total_DMRs), hyper = all_hyper, hypo = all_hypo, hyper_to_total = "", hypo_to_total = "")
         ),
-        "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/Super-family_enrichment_results.csv",
+        "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/Super-family_enrichment_two_sided_results.csv",
         row.names = F
     )
 }
