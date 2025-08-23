@@ -47,7 +47,7 @@ breaks_and_labels <- list(breaks = c(1, 20, 40, 60), labels = c("    -2kb", "TSS
 plot_out <- ggplot(data = cntx_bind, aes(x = pos, y = delta, color = context, group = context)) +
     geom_vline(xintercept = c(20, 40), colour = "gray", linetype = "solid", linewidth = 0.5) +
     geom_hline(yintercept = 0, colour = "gray30", linetype = "dashed", linewidth = 0.5) +
-    geom_line(linewidth = 0.65) +
+    geom_line(linewidth = 0.5) +
     theme_classic() +
     labs(
         title = main_title,
@@ -68,7 +68,7 @@ plot_out <- ggplot(data = cntx_bind, aes(x = pos, y = delta, color = context, gr
                x = 3,
                y = 0.054,
                label = legend_labels,
-               hjust = 0, vjust = 0.75, size = 3, 
+               hjust = 0, vjust = 0.75, size = 2.75, 
                color = plot_colors, fontface = "bold")
 
 
