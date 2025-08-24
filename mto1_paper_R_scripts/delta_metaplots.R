@@ -2,9 +2,10 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-for (list_type in c("all", "long", "short")) {
+# for (list_type in c("all", "long", "short", "superfamilies")) {
+delta_metaplots <- function(list_type, superfamily = "", max_value = 0.085) {
     if (list_type == "all") {
-        main_dir <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/methylome_23/BSseq_results/mto1_vs_wt/metaPlots/TEs/metaPlot_tables"
+        main_dir <- "C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/methylome_23/BSseq_results/mto1_long_short_TE_metaplots/all_TEs/TEs/metaPlot_tables"
         main_title <- "TEs"
     } else if (list_type == "long") {
         main_dir <- "C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/methylome_23/BSseq_results/mto1_long_short_TE_metaplots/long_TEs/TEs/metaPlot_tables"
@@ -12,8 +13,12 @@ for (list_type in c("all", "long", "short")) {
     } else if (list_type == "short") {
         main_title <- "Short TEs"
         main_dir <- "C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/methylome_23/BSseq_results/mto1_long_short_TE_metaplots/short_TEs/TEs/metaPlot_tables"
+    } else if (list_type == "superfamilies") {
+        main_dir <- paste0("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/methylome_23/BSseq_results/mto1_long_short_TE_metaplots/superfamilies_TEs/", superfamily, "/TEs/metaPlot_tables")
+        main_title <- superfamily
     }
 
+    file_prefix <- ifelse(list_type == "superfamilies", superfamily, list_type)
 
     delta_by_cntx <- function(cntx) {
         wt_cntx <- rbind(
@@ -40,8 +45,9 @@ for (list_type in c("all", "long", "short")) {
         pivot_longer(cols = c(CG, CHG, CHH), names_to = "context", values_to = "delta")
 
     min_value <- -0.005 # min(v.cntx.stream$delta)
-    max_value <- ifelse(list_type == "long",0.1, 0.05) # max(v.cntx.stream$delta)
+    # max_value <- 0.085 # ifelse(list_type == "long", 0.1, 0.05) # max(v.cntx.stream$delta)
     mid_value <- max_value / 2
+    mid_value_label <- ifelse(max_value == 0.1, paste0("  ", mid_value), mid_value)
 
     # legend_labels <- c("wt", "\nmto1")
     legend_labels <- c("CG", "\nCHG", "\n\nCHH")
@@ -71,18 +77,33 @@ for (list_type in c("all", "long", "short")) {
             axis.text.x = element_text(size = 9)
         ) +
         scale_x_continuous(breaks = breaks_and_labels$breaks, labels = breaks_and_labels$labels, expand = expansion(add = c(0, 0))) +
-        scale_y_continuous(breaks = c(0, mid_value, max_value), limits = c(min_value, max_value), labels = c(0, mid_value, max_value)) +
+        scale_y_continuous(breaks = c(0, mid_value, max_value), limits = c(min_value, max_value), labels = c(0, mid_value_label, max_value)) +
         scale_color_manual(values = plot_colors) +
-        annotate("text",
-            x = 3,
-            y = max_value - 0.001,
-            label = legend_labels,
-            hjust = 0, vjust = 0.75, size = 2.75,
-            color = plot_colors, fontface = "bold"
-        )
+        {
+            if (list_type == "all") {
+                annotate("text",
+                    x = 3,
+                    y = max_value - 0.001,
+                    label = legend_labels,
+                    hjust = 0, vjust = 0.75, size = 2.75,
+                    color = plot_colors, fontface = "bold"
+                )
+            }
+        }
 
 
-    svg(paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/delta_metaPlot_TEs/", list_type, "_TEs_delta_metaPlot.svg"), width = 1.88, height = 1.94, family = "serif")
+    svg(paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/delta_metaPlot_TEs/", file_prefix, "_TEs_delta_metaPlot.svg"), width = 1.88, height = 1.94, family = "serif")
     print(plot_out)
     dev.off()
 }
+
+delta_metaplots("all", "", 0.05)
+delta_metaplots("long")
+delta_metaplots("short")
+delta_metaplots("superfamilies", "Gypsy")
+delta_metaplots("superfamilies", "Copia")
+delta_metaplots("superfamilies", "LINE")
+delta_metaplots("superfamilies", "SINE")
+delta_metaplots("superfamilies", "Helitron")
+delta_metaplots("superfamilies", "TIR")
+delta_metaplots("superfamilies", "Unassigned")

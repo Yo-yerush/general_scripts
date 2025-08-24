@@ -32,18 +32,17 @@ load_vars <- mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$n
 meth_wt <- trimm_and_rename(load_vars[[1]])
 meth_mto1 <- trimm_and_rename(load_vars[[2]])
 
-#############################################
-
 TE_df <- read.csv(TE_file_path, sep = "\t")
 te_width <- data.frame(
     te_id = TE_df$Transposon_Name,
-    width = (TE_df$Transposon_max_End - TE_df$Transposon_min_Start)
+    width = (TE_df$Transposon_max_End - TE_df$Transposon_min_Start),
+    superfamily = (TE_df$Transposon_Super_Family)
 )
 long_tes <- te_width[te_width$width >= 4000, 1]
 short_tes <- te_width[te_width$width <= 500, 1] # %>% sample(10000) # random IDs
 
 #############################################
-
+## run lond and short TEs
 metaPlot_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/mto1_long_short_TE_metaplots"
 long_te_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/mto1_long_short_TE_metaplots/long_TEs"
 short_te_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/mto1_long_short_TE_metaplots/short_TEs"
@@ -58,13 +57,34 @@ setwd(short_te_path)
 Genes_metaPlot(meth_wt, meth_mto1, "wt", "mto1", edit_TE_file(TE_df), short_tes, 6, n.cores, is_TE = T)
 
 ########################
-## all TEs run
+## run all TEs
 all_tes <- te_width[, 1]
 all_te_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/mto1_long_short_TE_metaplots/all_TEs"
 dir.create(all_te_path, showWarnings = F)
 
 setwd(all_te_path)
 Genes_metaPlot(meth_wt, meth_mto1, "wt", "mto1", edit_TE_file(TE_df), all_tes, 6, n.cores, is_TE = T)
+
+########################
+## run each super-families group
+SF_list <- list(
+    Gypsy = te_width %>% filter(grepl("Gypsy", superfamily)) %>% .[, 1],
+    Copia = te_width %>% filter(grepl("Copia", superfamily)) %>% .[, 1],
+    LINE = te_width %>% filter(grepl("LINE", superfamily)) %>% .[, 1],
+    Helitron = te_width %>% filter(grepl("Helitron", superfamily)) %>% .[, 1],
+    TIR = te_width %>% filter(grepl("DNA", superfamily)) %>% .[, 1],
+    SINE = te_width %>% filter(grepl("SINE|Rath", superfamily)) %>% .[, 1],
+    Unassigned = te_width %>% filter(grepl("Unassigned", superfamily)) %>% .[, 1]
+)
+superfamilies_te_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/mto1_long_short_TE_metaplots/superfamilies_TEs/"
+dir.create(superfamilies_te_path, showWarnings = F)
+
+for (i_te_list in seq(length(SF_list))) {
+    new_dir_SF <- paste0(superfamilies_te_path, names(SF_list)[i_te_list])
+    dir.create(new_dir_SF, showWarnings = F)
+    setwd(new_dir_SF)
+    Genes_metaPlot(meth_wt, meth_mto1, "wt", "mto1", edit_TE_file(TE_df), SF_list[[i_te_list]], 6, n.cores, is_TE = T)
+}
 
 ########################
 setwd(metaPlot_path)
@@ -86,14 +106,25 @@ summary_info <- paste0(
     "- Long TEs (≥4000 bp): ", length(long_tes), " TEs\n",
     "- Short TEs (≤500 bp): ", length(short_tes), " TEs\n",
     "- All TEs analyzed: ", length(all_tes), " TEs\n\n",
+    "Superfamilies Analyzed:\n",
+    "- Gypsy: ", nrow(SF_list[[1]]), " TEs\n",
+    "- Copia: ", nrow(SF_list[[2]]), " TEs\n",
+    "- LINE: ", nrow(SF_list[[3]]), " TEs\n",
+    "- Helitron: ", nrow(SF_list[[4]]), " TEs\n",
+    "- TIR (DNA): ", nrow(SF_list[[5]]), " TEs\n",
+    "- SINE: ", nrow(SF_list[[6]]), " TEs\n",
+    "- Unassigned: ", nrow(SF_list[[7]]), " TEs\n\n",
     "Analysis Parameters:\n",
     "- Number of cores used: ", n.cores, "\n",
-    "- Bin size for metaplots: 6\n",
+    "- Bin size for metaplots: 20\n",
+    "- Minimum reads per cytosine: 6\n",
     "- Context analyzed: CX (all cytosines)\n\n",
     "Output Directories:\n",
     "- Main output: ", metaPlot_path, "\n",
     "- Long TEs: ", long_te_path, "\n",
     "- Short TEs: ", short_te_path, "\n",
-    "- All TEs: ", all_te_path, "\n"
+    "- All TEs: ", all_te_path, "\n",
+    "- Superfamilies: ", superfamilies_te_path, "\n"
 )
 writeLines(summary_info, file.path(metaPlot_path, "analysis_summary.txt"))
+#
