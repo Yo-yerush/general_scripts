@@ -95,7 +95,7 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
         )
     )
 
-    fisher <- fisher.test(contingency_table, alternative = "two.sided")
+    fisher <- fisher.test(contingency_table, alternative = "greater")
     # TE_score = as.numeric(fisher$estimate)
     TE_score <- (a / b) / (c / d)
 
@@ -231,7 +231,8 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
         family = rep(names(families), 2),
         direction = c(rep("Hyper", n.rep), rep("Hypo", n.rep)),
         presentage = c(hyper_sp / total_DMRs, hypo_sp / total_DMRs) * 100,
-        pValue = c(pValue_sp, rep(1, n.rep))
+        pValue = c(pValue_sp, rep(1, n.rep)),
+        score = score_sp
     )
 
     level_order <- unique(plot_2_df[order((hyper_sp + hypo_sp), decreasing = T), 1])
@@ -291,7 +292,8 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
         relocate(total_DMRs, .after = pValue) %>%
         relocate(hyper, .after = total_DMRs) %>%
         relocate(hypo, .after = hyper) %>%
-        relocate(hypo_to_total, .after = hyper_to_total)
+        relocate(hypo_to_total, .after = hyper_to_total) %>%
+        relocate(score, .before = pValue)
 
     # total TEs row
     all_TE_df <- rbind(
@@ -313,9 +315,9 @@ TE_DMRs_overlap <- function(TE_family, TE_super_family, TE_df = TE, is.tairs = F
     write.csv(
         rbind(
             super_families_results,
-            data.frame(family = "Total TEs", Overlapped_IDs = all_overlap, Non_overlapped_IDs = all_non_overlap, pValue = "", total_DMRs = unique(total_DMRs), hyper = all_hyper, hypo = all_hypo, hyper_to_total = "", hypo_to_total = "")
+            data.frame(family = "Total TEs", Overlapped_IDs = all_overlap, Non_overlapped_IDs = all_non_overlap, pValue = "", score = "", total_DMRs = unique(total_DMRs), hyper = all_hyper, hypo = all_hypo, hyper_to_total = "", hypo_to_total = "")
         ),
-        "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/Super-family_enrichment_two_sided_results.csv",
+        "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/Super-family_enrichment_results.csv",
         row.names = F
     )
 }
