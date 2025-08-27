@@ -84,7 +84,8 @@ te_size_plot <- function(x, is.delta = F) {
             se = TRUE,
             linewidth = 0.5
         )
-        dashed_line <- NULL
+        y_dashed_line <- NULL
+        x_dashed_line <- NULL
         color_values <- c("WT" = "#7F7F7F", "mto1" = "#bf6828")
         y_scale <- scale_y_continuous(limits = c(0, 1), expand = c(0,0), breaks = c(0.005, 0.5, 0.995), labels = c(0, 0.5, 1))
     } else {
@@ -94,14 +95,16 @@ te_size_plot <- function(x, is.delta = F) {
             linewidth = 0.5,
             color = "red4"
         )
-        dashed_line <- geom_hline(yintercept = 0, linetype = "dashed", color = "black") # , alpha = 0.6)
+        y_dashed_line <- geom_hline(yintercept = 0, linetype = "dashed", color = "black") # , alpha = 0.6)
+        x_dashed_line <- geom_vline(xintercept = 4000, linetype = "dashed", color = "gray")
         color_values <- c("delta" = "gray20")
         y_scale <- scale_y_continuous(limits = c(-0.3, 0.3), expand = c(0,0), breaks = c(-0.296, 0, 0.296), labels = c(-0.3, 0, 0.3))
     }
 
     ggplot(x, aes(x = width, y = avg_meth, color = sample)) +
+        x_dashed_line +
         geom_point(alpha = ifelse(is.delta, 0.6, 0.4), size = 0.3, shape = 20) +
-        dashed_line +
+        y_dashed_line +
         smooth_p +
         scale_color_manual(values = color_values) +
         labs(
