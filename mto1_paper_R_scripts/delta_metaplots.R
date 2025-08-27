@@ -3,7 +3,7 @@ library(tidyr)
 library(ggplot2)
 
 # for (list_type in c("all", "long", "short", "superfamilies")) {
-delta_metaplots <- function(list_type, superfamily = "", max_value = 0.085) {
+delta_metaplots <- function(list_type, superfamily = "", max_value = 0.085, context_legend = F) {
     if (list_type == "all") {
         main_dir <- "C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/methylome_23/BSseq_results/mto1_long_short_TE_metaplots/all_TEs/TEs/metaPlot_tables"
         main_title <- "TEs"
@@ -70,7 +70,7 @@ delta_metaplots <- function(list_type, superfamily = "", max_value = 0.085) {
             legend.position = "none",
             axis.line.x = element_blank(),
             axis.line.y = element_blank(),
-            panel.border = element_rect(colour = "black", fill = NA, linewidth = 1),
+            panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.75),
             axis.ticks = element_line(color = "black", linewidth = 0.5),
             plot.title = element_text(hjust = 0.5, size = 10),
             axis.text.y = element_text(size = 8),
@@ -80,12 +80,12 @@ delta_metaplots <- function(list_type, superfamily = "", max_value = 0.085) {
         scale_y_continuous(breaks = c(0, mid_value, max_value), limits = c(min_value, max_value), labels = c(0, mid_value_label, max_value)) +
         scale_color_manual(values = plot_colors) +
         {
-            if (list_type == "all") {
+            if (context_legend) {
                 annotate("text",
                     x = 3,
-                    y = max_value - 0.001,
+                    y = max_value - 0.00085,
                     label = legend_labels,
-                    hjust = 0, vjust = 0.75, size = 2.75,
+                    hjust = 0, vjust = 0.75, size = 2.35,
                     color = plot_colors, fontface = "bold"
                 )
             }
@@ -97,8 +97,8 @@ delta_metaplots <- function(list_type, superfamily = "", max_value = 0.085) {
     dev.off()
 }
 
-delta_metaplots("all", "", 0.05)
-delta_metaplots("long")
+delta_metaplots("all", "", 0.05, T)
+delta_metaplots("long", context_legend = T)
 delta_metaplots("short")
 delta_metaplots("superfamilies", "Gypsy")
 delta_metaplots("superfamilies", "Copia")

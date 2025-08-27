@@ -45,7 +45,9 @@ TE_gr <- edit_TE_file(TE_df)
 filtered_te_width <- te_width %>% filter(width < 20000)
 
 #############################################
-## TE methylation levels, size and distance from centromer plots
+
+#############################################
+## TE methylation levels and size
 scatter_te_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/mto1_long_short_TE_metaplots/scatter_plots"
 dir.create(scatter_te_path, showWarnings = F)
 setwd(scatter_te_path)
@@ -75,6 +77,58 @@ calculate_te_methylation <- function(meth_data, TE_gr, context, is.delta = F) {
     as.data.frame(te_avg_meth) %>% merge(., filtered_te_width, by = "te_id")
 }
 
+te_size_plot <- function(x, is.delta = F) {
+    if (!is.delta) {
+        smooth_p <- geom_smooth(
+            method = lm, formula = y ~ splines::bs(x, 3), # "gam",
+            se = TRUE,
+            linewidth = 0.5
+        )
+        dashed_line <- NULL
+        color_values <- c("WT" = "#7F7F7F", "mto1" = "#bf6828")
+        y_scale <- scale_y_continuous(limits = c(0, 1), expand = c(0,0), breaks = c(0.005, 0.5, 0.995), labels = c(0, 0.5, 1))
+    } else {
+        smooth_p <- geom_smooth(
+            method = lm, formula = y ~ splines::bs(x, 3),
+            se = TRUE,
+            linewidth = 0.5,
+            color = "red4"
+        )
+        dashed_line <- geom_hline(yintercept = 0, linetype = "dashed", color = "black") # , alpha = 0.6)
+        color_values <- c("delta" = "gray20")
+        y_scale <- scale_y_continuous(limits = c(-0.3, 0.3), expand = c(0,0), breaks = c(-0.296, 0, 0.296), labels = c(-0.3, 0, 0.3))
+    }
+
+    ggplot(x, aes(x = width, y = avg_meth, color = sample)) +
+        geom_point(alpha = ifelse(is.delta, 0.6, 0.4), size = 0.3, shape = 20) +
+        dashed_line +
+        smooth_p +
+        scale_color_manual(values = color_values) +
+        labs(
+            title = paste(cntx, "context"),
+            x = "TE size (Kbp)",
+            y = paste0(ifelse(is.delta, "Δ ", ""), "Methylation") # ,
+            # color = "Sample"
+        ) +
+        theme_classic() +
+        theme(
+            legend.position = "none",
+            axis.line.x = element_blank(),
+            axis.line.y = element_blank(),
+            panel.border = element_rect(colour = "black", fill = NA, linewidth = 1),
+            axis.ticks = element_line(color = "black", linewidth = 0.5),
+            plot.title = element_text(hjust = 0.5, size = 10),
+            axis.text.y = element_text(size = 8),
+            axis.text.x = element_text(size = 9)
+        ) +
+        scale_x_continuous(
+            breaks = c(65, 5000, 10000, 15000, 19935),
+            labels = seq(0, 20, by = 5),
+            limits = c(0, 20000), expand = c(0, 0)
+        ) +
+        y_scale
+}
+
 # Calculate average methylation for both samples
 meth_delta <- meth_wt[, 1]
 meth_delta$Proportion <- (meth_mto1$readsM / meth_mto1$readsN) - (meth_wt$readsM / meth_wt$readsN)
@@ -82,46 +136,33 @@ meth_delta$Proportion[is.nan(meth_delta$Proportion)] <- 0
 
 # plots
 for (cntx in c("CG", "CHG", "CHH")) {
+    # Combine the data for both samples
     te_meth_wt <- calculate_te_methylation(meth_wt, TE_gr, cntx)
     te_meth_mto1 <- calculate_te_methylation(meth_mto1, TE_gr, cntx)
-    te_meth_delta <- calculate_te_methylation(meth_delta, TE_gr, cntx, T)
-
-    ## Combine the data for both samples
     combined_data <- rbind(
         data.frame(te_meth_wt, sample = "WT"),
         data.frame(te_meth_mto1, sample = "mto1")
     )
 
-    # TE size
-    te_size_plot <- ggplot(combined_data, aes(x = width, y = avg_meth, color = sample)) +
-        geom_point(alpha = 0.5, size = 0.3) +
-        geom_smooth(method = "gam", se = TRUE) +
-        scale_color_manual(values = c("WT" = "gray50", "mto1" = "#bf6828")) +
-        labs(
-            title = paste("TE Methylation vs Width -", cntx, "context"),
-            x = "TE Width (bp)",
-            y = "Average Methylation Level",
-            color = "Sample"
-        ) +
-        theme_classic() + 
-            theme(
-        legend.position = "none",
-        axis.line.x = element_blank(),
-        axis.line.y = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA, linewidth = 1),
-        axis.ticks = element_line(color = "black", linewidth = 0.5),
-        plot.title = element_text(hjust = 0.5, size = 10),
-        axis.text.y = element_text(size = 8),
-        axis.text.x = element_text(size = 9)
-    )
+    # delta
+    te_meth_delta <- calculate_te_methylation(meth_delta, TE_gr, cntx, T)
+    te_meth_delta$sample <- "delta"
 
-    png(paste0(cntx, ".png"), width = 350, height = 250)
-    print(te_size_plot)
+    png(paste0("TE_size_scatter_", cntx, ".png"), width = 3500, height = 2500, res = 1200, family = "serif")
+    print(te_size_plot(combined_data))
+    dev.off()
+
+    png(paste0("TE_size_delta_scatter_", cntx, ".png"), width = 3500, height = 2500, res = 1200, family = "serif")
+    print(te_size_plot(te_meth_delta, is.delta = T))
     dev.off()
 }
 
+#############################################
+## TE methylation levels and distance from centromer plots
+distance_te_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/mto1_long_short_TE_metaplots/distance_from_centromere"
+dir.create(distance_te_path, showWarnings = F)
+setwd(distance_te_path)
 
-# TE distance
 # centromers positions
 cen_pos <- c(14.845, 3.44, 13.855, 3.13, 11.795) * 1e6
 te_distance <- data.frame(
@@ -133,47 +174,56 @@ te_distance <- data.frame(
 for (cen_i in 1:5) {
     te_distance$centromere[te_distance$chr == paste0("Chr", cen_i)] <- cen_pos[cen_i]
 }
-te_distance$distance <- abs(te_distance$centromere - te_distance$pos)
+te_distance$distance <- abs(te_distance$centromere - te_distance$pos) / 1e6
 all_cx_dis <- rbind(
     calculate_te_methylation(meth_delta, TE_gr, "CG", T),
     calculate_te_methylation(meth_delta, TE_gr, "CHG", T),
     calculate_te_methylation(meth_delta, TE_gr, "CHH", T)
-    )
+)
 keep_col <- grep("te_id|distance", names(te_distance))
-te_distance_merged <- merge(te_distance[,keep_col], all_cx_dis, by = "te_id")
+te_distance_merged <- merge(te_distance[, keep_col], all_cx_dis, by = "te_id")
 
 te_distance_cntx <- rbind(
-    te_distance_merged %>% 
+    te_distance_merged %>%
         filter(context == "CG") %>%
-        mutate(window = floor(distance / 250000) * 250000) %>%
+        mutate(window = floor(distance)) %>% # floor(distance / 1e6) * 1e6) %>%
         group_by(window, context) %>%
-        summarise(avg_meth = mean(avg_meth, na.rm = TRUE), 
-                 distance = mean(distance, na.rm = TRUE), 
-                 .groups = "drop"),
-    te_distance_merged %>% 
+        summarise(
+            avg_meth = mean(avg_meth, na.rm = TRUE),
+            distance = mean(distance, na.rm = TRUE),
+            .groups = "drop"
+        ),
+    te_distance_merged %>%
         filter(context == "CHG") %>%
-        mutate(window = floor(distance / 250000) * 250000) %>%
+        mutate(window = floor(distance)) %>% # floor(distance / 1e6) * 1e6) %>%
         group_by(window, context) %>%
-        summarise(avg_meth = mean(avg_meth, na.rm = TRUE), 
-                 distance = mean(distance, na.rm = TRUE), 
-                 .groups = "drop"),
-    te_distance_merged %>% 
+        summarise(
+            avg_meth = mean(avg_meth, na.rm = TRUE),
+            distance = mean(distance, na.rm = TRUE),
+            .groups = "drop"
+        ),
+    te_distance_merged %>%
         filter(context == "CHH") %>%
-        mutate(window = floor(distance / 250000) * 250000) %>%
+        mutate(window = floor(distance)) %>% # floor(distance / 1e6) * 1e6) %>%
         group_by(window, context) %>%
-        summarise(avg_meth = mean(avg_meth, na.rm = TRUE), 
-                 distance = mean(distance, na.rm = TRUE), 
-                 .groups = "drop")
+        summarise(
+            avg_meth = mean(avg_meth, na.rm = TRUE),
+            distance = mean(distance, na.rm = TRUE),
+            .groups = "drop"
+        )
 ) %>%
-as.data.frame() %>%
-filter(avg_meth != max(avg_meth, na.rm = TRUE))
+    as.data.frame() %>%
+    filter(avg_meth != max(avg_meth, na.rm = TRUE))
 
-te_distance_plot <- ggplot(data = te_distance_cntx, aes(x = -distance, y = avg_meth, color = context, group = context)) +
-    geom_line(linewidth = 0.5) +
-    theme_classic() +
+plot_colors <- c("#3d53b4", "#3b8f3e", "#bb4949")
+
+te_distance_plot <- ggplot(data = te_distance_cntx, aes(x = distance, y = avg_meth, color = context, group = context)) +
+    geom_line(linewidth = 0.85) +
+    theme_bw() + # theme_classic() +
     labs(
-        x = "Distance from Centromer",
-        y = "Δ methylation"
+        title = " ",
+        x = "Distance from centromer (Mbp)",
+        y = "Δ Methylation"
     ) +
     theme(
         legend.position = "none",
@@ -184,11 +234,31 @@ te_distance_plot <- ggplot(data = te_distance_cntx, aes(x = -distance, y = avg_m
         plot.title = element_text(hjust = 0.5, size = 10),
         axis.text.y = element_text(size = 8),
         axis.text.x = element_text(size = 9)
+    ) +
+    scale_x_continuous(
+        limits = c(0, 15), # max(-te_distance_cntx$distance)),
+        breaks = c(0.06, 5, 10, 14.94),
+        labels = seq(0, 15, by = 5),
+        expand = c(0, 0)
+        ) +
+    scale_y_continuous(
+        limits = c(-0.001, max(te_distance_cntx$avg_meth)),
+        breaks = c(0, 0.02, 0.04)
+        ) +
+    annotate("text",
+        x = 12.75, # 12.25,
+        y = max(te_distance_cntx$avg_meth) * 0.98,
+        label = c("CG", "\nCHG", "\n\nCHH"),
+        hjust = 0, vjust = 0.75, size = 3.25,
+        color = plot_colors, fontface = "bold"
     )
 
-    svg(paste0("centromere_distance.svg"), width = 3, height = 2.5)
-    print(te_distance_plot)
-    dev.off()
+png(paste0("centromere_distance.png"), width = 3500, height = 2500, res = 1200, family = "serif")
+print(te_distance_plot)
+dev.off()
+
+
+#############################################
 
 #############################################
 ## run long and short TEs
