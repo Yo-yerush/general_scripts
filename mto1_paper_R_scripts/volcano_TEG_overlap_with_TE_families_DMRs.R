@@ -2,11 +2,11 @@ library(dplyr)
 library(GenomicRanges)
 library(ggplot2)
 
-#context = "all"
+context = "all"
 #context = "nonCG"
 #context = "CG"
 #context = "CHG"
-context = "CHH"
+#context = "CHH"
 
 #################################################
 
@@ -144,7 +144,7 @@ TE_gr <- makeGRangesFromDataFrame(TE_file, keep.extra.columns = T)
     geom_point(alpha = 0.4, size = 1) +
     # change axis titles
     xlab("log2(Fold-Change)") +
-    ylab("-log10(p-Value)") +
+    ylab("-log10(padj)") +
 
     # theme_classic() + #
     theme_bw() +
