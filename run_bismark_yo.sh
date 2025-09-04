@@ -18,9 +18,9 @@ Options:
 -o, --outdir    Output directory [default: ./bismark_results]
 -n, --ncores    Number of cores (max). multiples of 4 recommended. [default: 16]
 -m, --mem       Buffer size for 'bismark_methylation_extractor' [default: 8G]
---cx            Produce and keep only '*.CX_report.txt.gz' file
+--cx            Produce and keep only '_CX_report.txt.gz' file
 --sort          Sort & index BAM files (applies only if --cx is off)
---all           Produce, sort and keep all files (will ignore --cx or --sort arguments)
+--strand        Keep top/bottom strand (OT/OB) files [remove in default]
 --um            Produce and keep only unmapped files (as .fastq)
 --help
 
@@ -60,7 +60,7 @@ n_cores=16
 buffer_size=8G
 keep_cx=false
 sort_bam=false
-keep_all=false
+keep_strand=false
 keep_unmapped=false
 
 while [[ $# -gt 0 ]]; do
@@ -93,8 +93,8 @@ while [[ $# -gt 0 ]]; do
             sort_bam=true
             shift
         ;;
-        --all)
-            keep_all=true
+        --strand)
+            keep_strand=true
             shift
         ;;
         --um)
@@ -177,11 +177,11 @@ fi
 if [[ "$sort_bam" == "true" ]]; then
     echo "**  sort bam file" >> "$log_file"
 fi
-if [[ "$keep_all" == "true" ]]; then
-    echo "**  keep all files (CX report, bedGraph, and sorted BAM)" >> "$log_file"
+if [[ "$keep_strand" == "true" ]]; then
+    echo "**  keep also top/bottom strand (OT/OB) files" >> "$log_file"
 fi
 if [[ "$keep_unmapped" == "true" ]]; then
-    echo "**  keep just the unmapped files (remove BAM)" >> "$log_file"
+    echo "**  keep just the unmapped files ('.fastq')" >> "$log_file"
 fi
 
 echo "" >> "$log_file"
@@ -264,28 +264,28 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
         echo "methylation calling..." >> "$log_file"
         mkdir -p $output_path/"$i"/methylation_extractor
 
-        if [[ "$keep_all" == "true" ]]; then
-            # run 'methylation_extractor' and keep all files
-            bismark_methylation_extractor --cytosine_report --CX --bedGraph --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
-            
-            gzip $output_path/"$i"/methylation_extractor/*.CX_report.txt
-
-        elif [[ "$keep_cx" == "true" ]]; then
+        if [[ "$keep_cx" == "true" ]]; then
             # run 'methylation_extractor' and keep 'CX_report' file only
-            bismark_methylation_extractor --cytosine_report --CX --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
+            bismark_methylation_extractor --CX --cytosine_report --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
 
             gzip $output_path/"$i"/methylation_extractor/*.CX_report.txt
             mv  $output_path/"$i"/methylation_extractor/*.CX_report.txt.gz $output_path
+            rm -r -- "$output_path/$i"
 
-            rm -r $output_path/"$i"
         else
             # run 'methylation_extractor' and keep files *without 'CX_report' file*
-            bismark_methylation_extractor --bedGraph --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
+            bismark_methylation_extractor --CX --bedGraph --cytosine_report --parallel "$n_cores_2" --buffer_size "$buffer_size" --genome_folder $output_path/genome_indx -o $output_path/"$i"/methylation_extractor $output_path/"$i"/"$i"_bismark_"$Rs_type".bam
+
+            gzip $output_path/"$i"/methylation_extractor/*.CX_report.txt
+
+            if [[ "$keep_strand" == "false" ]]; then
+                rm -v -- "$output_path/$i"/methylation_extractor/{CHG,CHH,CpG}_{CTOB,CTOT,OB,OT}_*
+            fi
         fi
 
         # # # # # # # # # # # #
         # sort bam files (can use in IGV software to watch the reads over the genome)
-        if [[ "$sort_bam" == "true" || "$keep_all" == "true" ]]; then
+        if [[ "$sort_bam" == "true" || "$keep_cx" == "false" ]]; then
             samtools sort $output_path/"$i"/"$i"_bismark_"$Rs_type".bam -o $output_path/"$i"/"$i"_sorted.bam
             samtools index $output_path/"$i"/"$i"_sorted.bam
         fi
@@ -293,10 +293,6 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
     echo "" >> "$log_file"
     echo "-----------------------------------" >> "$log_file"
 done
-
-#if [[ "$keep_cx" == "true" ]]; then
-#    rm -r $output_path/genome_indx
-#fi
 
 echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
 cd $ori_path
