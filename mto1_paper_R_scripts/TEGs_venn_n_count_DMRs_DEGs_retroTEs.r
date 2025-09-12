@@ -15,9 +15,9 @@ DMR_file <- DMR_file.0 %>%
 
 ############################################
 
-RNA_file <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/rnaseq_23/met23/mto1_vs_wt/all.transcripts.mto1_vs_wt.DE.csv") %>%
+RNA_file <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/rnaseq_23/met23/mto1_vs_wt/all_genes_results_mto1_vs_wt.csv") %>%
     filter(gene_model_type == "transposable_element_gene") %>%
-    dplyr::rename(gene_id = "locus_tag") %>%
+    # dplyr::rename(gene_id = "locus_tag") %>%
     filter(padj < 0.05) %>%
     select(gene_id, log2FoldChange) %>%
     distinct(gene_id, .keep_all = T)
@@ -53,7 +53,7 @@ gene_sets <- list(
 # venn_colors <- c("#a05b9c", "#71c071")
 venn_colors <- c("#928e92", "#d69641")
 category.position <- c(0, 0)
-resolution <- 300
+resolution <- 900
 cex <- 0.75
 
 venn.diagram(
@@ -62,12 +62,13 @@ venn.diagram(
         "\nunique TEGs                    \noverlap DMRs                   ",
         "\n\n\n\n\n\n\n\nDE-TEGs"
     ),
-    filename = paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/DMRs_over_de-retro-TEGs_VennDiagram.png"),
+    filename = paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/DMRs_over_de-retro-TEGs_VennDiagram.tif"),
     disable.logging = T,
     output = T,
-    imagetype = "png",
-    height = 480,
-    width = 480,
+    imagetype = "tiff",
+    height = 1.65,
+    width = 1.65,
+    units = "in",
     resolution = resolution,
     compression = "lzw",
     lwd = 1,

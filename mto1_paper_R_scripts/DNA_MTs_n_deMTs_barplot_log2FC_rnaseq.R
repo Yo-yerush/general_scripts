@@ -55,7 +55,7 @@ g1 <- ggplot(data = df_x, aes(x = Symbol, y = RNA_log2FC, fill = color)) +
 
 h <- 3
 w <- 3.25
-svg("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/MTs_n_deMTs_barPplot_RNAseq.svg", width = w, height = h, family = "serif")
+tiff("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/MTs_n_deMTs_barPplot_RNAseq.tif", width = w, height = h, units = "in", res = 1200, family = "serif")
 plot(g1)
 dev.off()
 

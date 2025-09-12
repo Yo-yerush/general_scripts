@@ -58,7 +58,7 @@ gene_sets_threeUTRs <- list(
 
 ##################### venn plots
 venn_colors <- c("#928e92", "#928e92", "#d69641")
-resolution <- 300
+resolution <- 900
 cex_gb_p <- 0.65
 cex <- 0.5
 
@@ -66,12 +66,13 @@ cex <- 0.5
 venn.diagram(
     x = gene_sets_1,
     category.names = c("          Promoters", "Genes-body            ", "DEGs"),
-    filename = paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/DMRs_over_DEGs_Gb_Pr_unique_VennDiagram.png"),
+    filename = paste0("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/DMRs_over_DEGs_Gb_Pr_unique_VennDiagram.tiff"),
     disable.logging = T,
     output = T,
-    imagetype = "png",
-    height = 480,
-    width = 480,
+    imagetype = "tiff",
+    height = 1.65,
+    width = 1.65,
+    units = "in",
     resolution = resolution,
     lwd = 1,
     fill = venn_colors[1:length(gene_sets_1)],

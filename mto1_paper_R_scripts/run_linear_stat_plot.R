@@ -389,7 +389,7 @@ cat(paste0("\rsave plots: [", 0, "/", total_plots, "]"))
 
 #### save all plot as one, for each context ####
 ### main plot - with points
-png(paste0(path_2_save.2, "lm.stats.plot.", var2_name, ".png"), width = 18, height = 7.5, units = "in", res = 900, family = "serif")
+tiff(paste0(path_2_save.2, "lm.stats.plot.", var2_name, ".tif"), width = 18, height = 7.5, units = "in", res = 600, family = "serif")
 do.call(multiplot, c(
     c(all_cntx_points$CG, all_cntx_points$CHG, all_cntx_points$CHH),
     list(
@@ -402,7 +402,7 @@ dev.off()
 cat(paste0("\rsave plots: [", 1, "/", total_plots, "]"))
 
 ### residuals plot
-png(paste0(path_2_save.2, "lm.residuals.plot.", var2_name, ".png"), width = 18, height = 7.5, units = "in", res = 300, family = "serif")
+tiff(paste0(path_2_save.2, "lm.residuals.plot.", var2_name, ".tif"), width = 18, height = 7.5, units = "in", res = 600, family = "serif")
 do.call(multiplot, c(
     c(all_cntx_residuals$CG, all_cntx_residuals$CHG, all_cntx_residuals$CHH),
     list(
