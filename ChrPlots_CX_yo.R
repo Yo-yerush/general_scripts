@@ -232,9 +232,9 @@ ChrPlots_CX_all <- function(
 ###################################################################
 
 upload_te <- function() {
-    te_file <- "C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/annotation_files/TAIR10_Transposable_Elements.txt"
-    source("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/scripts/trimm_and_rename_seq.R")
-    source("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/Methylome.At_paper/files_160525/scripts/edit_TE_file.R")
+    te_file <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt"
+    source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/trimm_and_rename_seq.R")
+    source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/edit_TE_file.R")
 
     TE_4_dens <- edit_TE_file(read.csv(te_file, sep = "\t")) %>%
         circlize::genomicDensity(window.size = 0.5e6) %>%
@@ -276,3 +276,4 @@ te_plot_conf <- function(te_gr) {
         )
     }
 }
+
