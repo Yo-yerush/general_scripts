@@ -83,7 +83,7 @@ ChrPlots_CX_all <- function(
     TE_as_gr = "tair10") {
     ### color palette
     n.pal <- ifelse(length(meth_var_list) < 3, 3, length(meth_var_list))
-    col_vec <- c("#00000090", "#bf682890", paste0(RColorBrewer::brewer.pal(n = n.pal, "Set1")[-5], "90"))
+    col_vec <- c("#00000090", paste0(RColorBrewer::brewer.pal(n = n.pal, "Set1")[-5], "90"), "#bf682890")
 
     ### y-mid edit
     y_mid_cg <- ifelse(is.null(y_mid_cg), (y_max_cg + y_min_cg) / 2, y_mid_cg)
