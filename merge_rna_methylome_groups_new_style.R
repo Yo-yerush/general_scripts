@@ -136,6 +136,32 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     names(sse)[1] <- "gene_id"
     sse$gene_id <- toupper(sse$gene_id)
     sse_merged <- merge.data.frame(sse, all_res, by = "gene_id") %>% dplyr::select(-Title)
+
+    ################
+    # Nuclear Localised MORE SULPHUR ACCUMULATION1 Epigenetically Regulates Sulphur Homeostasis in Arabidopsis thaliana
+    # https://doi.org/10.1371/journal.pgen.1006298
+    # Huang X.Y. et al. 2016, PLOS genetics
+    # S7 Table. List of DMGs that are responsive to sulphur starvation or involved in glucosinolate and anthocyanin metabolisms
+    gene_list_sulfur_responsive <- data.frame(
+      gene_id = c(
+        "AT3G28740", "AT4G01870", "AT1G34670", "AT4G21990", "AT4G08620", "AT1G66760", "AT5G13580", "AT1G78000", "AT5G16770", "AT3G27150", "AT3G44320", "AT4G39950", "AT1G47400", "AT5G43780", "AT3G19710", "AT4G09820", "AT5G24520", "AT1G24100", "AT3G49680"
+      )
+    )
+
+    sulfur_responsive <- merge.data.frame(gene_list_sulfur_responsive, all_res, by = "gene_id") %>% arrange(RNA_padj)
+
+    ##############
+    # Epigenetic regulation of sulphur homeostasis in plants
+    # https://doi.org/10.1093/jxb/erz218
+    # Huang X.Y. et al. 2019, Journal of Experimental Botany
+    gene_list_sulfur_pathway_related <- data.frame(
+      gene_id = toupper(c(
+        "At4g08620", "At1g78000", "At1g22150", "At5g10180", "At1g77990", "At3g51895", "At4g02700", "At1g23090", "At3g15990", "At5g19600", "At5g13550", "At3g12520", "At3g22890", "At1g19920", "At4g14680", "At5g43780", "At4g04610", "At1g62180", "At4g21990", "At2g14750", "At4g39940", "At3g03900", "At5g67520", "At5g04590", "At5g56760", "At1g55920", "At3g13110", "At2g17640", "At4g35640", "At4g14880", "At3g59760", "At2g43750", "At3g22460", "At3g03630", "At3g04940", "At3g61440", "At5g28030"
+      ))
+    )
+
+    sulfur_pathway_related <- merge.data.frame(gene_list_sulfur_pathway_related, all_res, by = "gene_id") %>% arrange(RNA_padj)
+
     ################
     cat(paste0("\r",treatment, "... [30%] "))
     # GO term offsprings
@@ -203,9 +229,11 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       alan_asp_glut_metabolism = all_res[grep("ath00250", all_res$KEGG_pathway), ],
       gly_ser_and_threo_metabolism = all_res[grep("ath00260", all_res$KEGG_pathway), ],
       lysine_biosynthesis = all_res[grep("ath00300", all_res$KEGG_pathway), ],
-      sulfur_biosynthesis = all_res[grep("ath00920", all_res$KEGG_pathway), ],
       selenocompound_metabolism = all_res[grep("ath00450", all_res$KEGG_pathway), ],
       hormone_signal_transduction = all_res[grep("ath04075", all_res$KEGG_pathway), ],
+      sulfur_biosynthesis = all_res[grep("ath00920", all_res$KEGG_pathway), ],
+      sulfur_responsive = sulfur_responsive,
+      sulfur_pathway_related = sulfur_pathway_related,
       primary_metabolism = primary_metabolism_v,
       secondary_metabolism = secondary_metabolism_v,
       AA_transporters = rbind(
