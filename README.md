@@ -9,8 +9,8 @@ Workflows:
 6. long/short TEs
 7. sub-context analysis
 
-8. RNAseq pipeline - using [RSEM software](https://github.com/deweylab/RSEM) - add it
-9. RNAseq downstream pipeline - add it
+8. RNAseq pipeline - using [RSEM software](https://github.com/deweylab/RSEM)
+9. RNAseq downstream pipeline - fix it
 10. DEGs - GO term summary (Term and its offspring)
 11. DMRs-DEGs correlations
 12. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data - add it
@@ -198,7 +198,7 @@ genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_r
 -----------------------------------------------------------------
 
 ## RNAseq pipeline 
-\\ #### Run [RSEM](https://github.com/deweylab/RSEM) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
+#### Run [RSEM](https://github.com/deweylab/RSEM) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
 
  Download *Arabidopsis* reference genome ([TAIR10](https://www.arabidopsis.org/))
  ```bash
@@ -225,13 +225,16 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 Run RSEM to get only '**.genes.results**' file
 * *run without '--genes_results' option to get all output files*
 ```bash
+wget https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/run_rsem_yo.sh
+chmod +x run_rsem_yo.sh
 ./run_rsem_yo.sh -s samples_table.txt -g TAIR10_chr_all.fa.gz -a Araport11_GTF_genes_transposons.current.gtf.gz -n 32 --genes_results
 ```
 #### Use downstream pipeline script (utilyzing [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) package)
 ```r
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/DEseq_fun_yo.R")
 path <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/rnaseq_23"
-description_file <-> "Methylome.At_description_file.csv.gz"
+description_file <- "Methylome.At_description_file.csv.gz"
+
 deseq_fc("dml3_vs_wt", "At", c(1:3,7:9), "dml3", "wt", path = path, description_file = description_file)
 
 #### fix path and add colData argument
