@@ -9,17 +9,17 @@ Workflows:
 6. long/short TEs
 7. sub-context analysis
 
-8. RNAseq pipeline - using [RSEM software](https://github.com/deweylab/RSEM)
-9. RNAseq downstream pipeline
+8. RNAseq pipeline - using [RSEM software](https://github.com/deweylab/RSEM) - add it
+9. RNAseq downstream pipeline - add it
+10. DEGs - GO term summary (Term and its offspring)
+11. DMRs-DEGs correlations
+12. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data - add it
+13. Classify into gene groups (epigenetic, metabolism, stress-related, etc.) - add it
+14. Methylated TEs near DEGs - add it
 
-10. DMRs-DEGs correlations
-11. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data
-12. Classify into gene groups (epigenetic, metabolism, stress-related, etc.)
-13. Methylated TEs near DEGs
-
-14. KEGG pathways - enrichment and viewPlots
-15. GO analysis
-16. REVIGO scripts
+15. KEGG pathways - enrichment and viewPlots - add it
+16. GO analysis - add it
+17. REVIGO scripts - add it
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
@@ -60,7 +60,7 @@ Run Bismark to get only '**.CX_report.txt**' file
 ```
 
 #### Use [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
-```
+``` bash
 git clone https://github.com/Yo-yerush/Methylome.At.git
 cd ./Methylome.At
 chmod +x ./setup_env.sh
@@ -194,6 +194,69 @@ genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_r
   width="50%"
 />
 
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+## RNAseq pipeline 
+\\ #### Run [RSEM](https://github.com/deweylab/RSEM) for *dml3* samples ([Zhejiang University](https://www.ncbi.nlm.nih.gov/sra/SRX4698864))
+
+ Download *Arabidopsis* reference genome ([TAIR10](https://www.arabidopsis.org/))
+ ```bash
+ cd /PATH/TO
+ wget -O TAIR10_chr_all.fas.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
+ wget -O Araport11_GTF_genes_transposons.current.gtf.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/Araport11_genome_release/Araport11_GTF_genes_transposons.20241001.gtf.gz
+
+ gunzip TAIR10_chr_all.fas.gz
+ gunzip Araport11_GTF_genes_transposons.current.gtf.gz
+ ```
+
+Create a sample table file (*tab* delimiter)
+```txt
+dml3_1    PATH/TO/FILE/dml3_1_R1.fastq
+dml3_1    PATH/TO/FILE/dml3_1_R2.fastq
+dml3_2    PATH/TO/FILE/dml3_2_R1.fastq
+dml3_2    PATH/TO/FILE/dml3_2_R2.fastq
+wt_1    PATH/TO/FILE/wt1_R1.fastq
+wt_1    PATH/TO/FILE/wt1_R2.fastq
+wt_2    PATH/TO/FILE/wt2_R1.fastq
+wt_2    PATH/TO/FILE/wt2_R2.fastq
+```
+
+Run RSEM to get only '**.genes.results**' file
+* *run without '--genes_results' option to get all output files*
+```bash
+./run_rsem_yo.sh -s samples_table.txt -g TAIR10_chr_all.fa.gz -a Araport11_GTF_genes_transposons.current.gtf.gz -n 32 --genes_results
+```
+#### Use downstream pipeline script (utilyzing [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) package)
+```r
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/DEseq_fun_yo.R")
+path <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/rnaseq_23"
+description_file <-> "Methylome.At_description_file.csv.gz"
+deseq_fc("dml3_vs_wt", "At", c(1:3,7:9), "dml3", "wt", path = path, description_file = description_file)
+
+#### fix path and add colData argument
+```
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+## DEGs - GO term summary (Term and its offspring)'
+After runing the RNAseq downstream pipeline, load the 'all genes' results file and choose GO ID(s) to summary
+* *will summary the GO term and its offstpring terms*
+* *each GO ID output one row, which include the Term, count of total unique genes related to this term (and its offspring); significants, and up-/down- regulated; and the precentage of significats compare to total genes*
+```r
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/GO_DEGs_offspring_summary.R")
+
+rnaseq_res <- read.csv("PATH/TO/all_genes_results_mto1_vs_wt.csv")
+GO_offspring_summary(rnaseq_res, c("GO:0006952","GO:0006950","GO:0009607","GO:0009628"))
+```
+This will output:
+```
+Parent_GO_ID                   Category Total Upregulated Downregulated Significant Percentage
+GO:0006952             defense response  1268         229           294         523    41.25 %
+GO:0006950           response to stress  3155         593           738        1331    42.19 %
+GO:0009607  response to biotic stimulus  1146         231           258         489    42.67 %
+GO:0009628 response to abiotic stimulus  1984         385           539         924    46.57 %
+```
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
