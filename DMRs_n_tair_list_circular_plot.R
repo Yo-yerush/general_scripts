@@ -104,7 +104,7 @@ DMRs_n_tair_list_plot <- function(tair_ids, DMRs_directory, gene_line_color = NU
 
     if (gene_line_color_legend == T) {
         # tair_list_col_ordered <- tair_list_col[match(tair_list_gr$gene_id, tair_list_col$gene_id), ]
-        tair_list_col_ordered <- merge(data.frame(gene_id=tair_list_gr$gene_id), tair_list_col, by = "gene_id", all.x = T)
+        tair_list_col_ordered <- merge(data.frame(gene_id = tair_list_gr$gene_id), tair_list_col, by = "gene_id", all.x = T)
 
         gene2symbol <- read.csv(gene2symbol_file, sep = "\t", header = F)
         names(gene2symbol) <- c("gene_id", "Symbol")
@@ -143,15 +143,19 @@ DMRs_n_tair_list_plot <- function(tair_ids, DMRs_directory, gene_line_color = NU
 
     # output the gene list data frame as vector
     as.data.frame(tair_list_gr) %>%
-    merge(., gene2symbol, by = "gene_id", all.x = T) %>%
-    merge(., tair_list_col, by = "gene_id", all.x = T) %>%
-    dplyr::relocate(gene_id, Symbol, col, .after = strand) %>%
-    select(-end, -width, -gene_model_type)
+        merge(., gene2symbol, by = "gene_id", all.x = T) %>%
+        merge(., tair_list_col, by = "gene_id", all.x = T) %>%
+        dplyr::relocate(gene_id, Symbol, col, .after = strand) %>%
+        select(-end, -width, -gene_model_type)
 }
 ############################################################
 
 # legends
-DMRs_Density_legend <- function() {
+DMRs_Density_legend <- function(out_dir = ".") {
+    library(dplyr)
+    library(GenomicRanges)
+    library(circlize)
+
     rndm_dis <- function() {
         counts_norm_hyper <- hist(rnorm(3000, mean = 0, sd = 1), plot = F, breaks = 30)$counts
         counts_norm_hypo <- hist(rnorm(3000, mean = 0, sd = 1), plot = F, breaks = 30)$counts
@@ -182,7 +186,7 @@ DMRs_Density_legend <- function() {
     colfunc_vec_2 <- colfunc(100)[-c((round(100 / 2) - 5):(100 / 2) - 1, ((100 / 2) + 1):((100 / 2) + 1 + 5))]
 
 
-    svg("legends.svg", width = 2.5, height = 3.35, family = "serif")
+    svg(paste0(out_dir, "/DMRs_legends.svg"), width = 2.5, height = 3.35, family = "serif")
     par(mar = c(0, 0, 0, 0))
     circos.par("track.height" = 0.6, "canvas.xlim" = c(-0.2, 0.3), "canvas.ylim" = c(-0.25, 1), "gap.degree" = 0, "clock.wise" = FALSE)
     circos.initialize(factors = as.character(1:tracks_total_size), xlim = c(0, 1))
