@@ -31,7 +31,8 @@ ec_squere_plots <- function(treatment = NULL, by_folder = "by_DEseq2") {
         "00290",
         "00330",
         "00250",
-        "00620"
+        "00620",
+        "00966"
     )
 
     for (n.map in 1:length(map_ids)) {
