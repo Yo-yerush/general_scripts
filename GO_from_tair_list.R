@@ -1,10 +1,13 @@
-GO_from_tairList <- function(interesting.TAIRs, background.TAIRs, treatment = "TAIR list", ontology_type = "BP", pValue.threshold = 0.01, topGO.algorithm = "weight01", topGO.statistic = "fisher", netPlot = FALSE) {
+GO_from_tairList <- function(interesting.TAIRs, background.TAIRs="all", treatment = "TAIR list", ontology_type = "BP", pValue.threshold = 0.01, topGO.algorithm = "weight01", topGO.statistic = "fisher", netPlot = FALSE) {
     
     # this function run GO analysis for arabidopsis TAIR IDs
     # just insert the gene list to test (interesting.TAIRs)
     # and the beckground TAIR list (background.TAIRs)
+    # 
+    # if using 'nePlot=TRUE', 'background.TAIRs' argument is not needed
     #
     # GO_from_tairList(interesting.TAIRs, background.TAIRs, pValue.threshold = 0.001)
+    # GO_from_tairList(interesting.TAIRs, netPlot = TRUE)
 
     suppressMessages({
         library(topGO)
@@ -12,7 +15,15 @@ GO_from_tairList <- function(interesting.TAIRs, background.TAIRs, treatment = "T
         library(ggplot2)
     })
 
-    msg <- paste("\n***************************\nontology type:", ontology_type, "\npadj threshold:", pValue.threshold, "\ntopGO algorithm:", topGO.algorithm, "\ntopGO statistic:", topGO.statistic, "\n\n")
+    msg <- paste("\n***************************\nontology type:", ontology_type, "\npadj threshold:", pValue.threshold, "\ntopGO algorithm:", topGO.algorithm, "\ntopGO statistic:", topGO.statistic,
+    ifelse(any(background.TAIRs == "all"), "\nbackground genes: all TAIR IDs",""),
+    "\n\n")
+
+    # all TAIR IDs (if not inserted beckground TAIR list)
+    if (any(background.TAIRs == "all")) {
+    background.TAIRs <- keys(org.At.tair.db, keytype = "TAIR")
+    }
+
 
     if (!netPlot) {
         # indicating if a gene is interesting (1) or not (0)
