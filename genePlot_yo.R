@@ -17,7 +17,13 @@
 
 # -------------------------------------------------------------
 
-run_DMRs_genePlots <- function(tair_id, ctrl_gr, mut_gr, ctrl_name, mut_name, output_path = ".", DMP_calling = TRUE, DMP_min_diff = c(40, 20, 10), DMP_qValue = 0.05, DMP_min_cov = 4, DMPs_table = FALSE, DMPs_pie = FALSE, nbp_upstream = 2000, nbp_downstream = 200, genePlot_legend = TRUE) {
+##### gain and loss colors - red and blue
+##### its coloring like the DMRs direction
+
+
+# -------------------------------------------------------------
+
+run_DMRs_genePlots <- function(tair_id, ctrl_gr, mut_gr, ctrl_name, mut_name, output_path = ".", DMP_calling = TRUE, DMP_min_diff = c(40, 20, 10), DMP_qValue = 0.01, DMP_min_cov = 4, DMPs_table = FALSE, DMPs_pie = FALSE, nbp_upstream = 2000, nbp_downstream = 200, genePlot_legend = TRUE) {
     suppressMessages({
         library(DMRcaller)
         library(GenomicFeatures)
@@ -114,7 +120,7 @@ run_DMRs_genePlots <- function(tair_id, ctrl_gr, mut_gr, ctrl_name, mut_name, ou
         DMRsList <- list("CG" = cg, "CHG" = chg, "CHH" = chh)
 
         if (create_legend) {
-            legend_genePlot_DMPs(output_path)
+            legend_genePlot(output_path)
         }
     } else if (DMRs_list) {
 
@@ -135,20 +141,20 @@ run_DMRs_genePlots <- function(tair_id, ctrl_gr, mut_gr, ctrl_name, mut_name, ou
     }
 
     if (DMPs_pie) {
-        gainORloss(DMPs_calc_mk, TRUE, paste0(exp_condition, "/using_methylKit"))
+        gainORloss(DMPs_calc_mk, TRUE)
     }
 
     ###################################
 
 
-    genePlot_fun(tair_id, ctrl_gr, mut_gr, ctrl_name, mut_name, DMRsList = DMRsList, output_path = output_path, create_legend = genePlot_legend)
+    genePlot_fun(tair_id, joint_gr, ctrl_name, mut_name, DMRsList = DMRsList, output_path = output_path, create_legend = genePlot_legend)
 
     #############
 }
 
 ################################################################################
 
-genePlot_fun <- function(tair_id, var1_pool, var2_pool, var1_name, var2_name, DMRsList = NULL, output_path = ".", create_legend = FALSE, n_bp_upstream = 2000, n_bp_downstream = 1000) {
+genePlot_fun <- function(tair_id, joint_gr, var1_name, var2_name, DMRsList = NULL, output_path = ".", create_legend = FALSE, n_bp_upstream = 2000, n_bp_downstream = 1000) {
     ###################################
 
     id2symbol <- filter(desc_file, gene_id == tair_id)
@@ -166,8 +172,7 @@ genePlot_fun <- function(tair_id, var1_pool, var2_pool, var1_name, var2_name, DM
 
     svg(paste0(output_path, "/genePlot_", file_suffix, ".svg"), width = 4.75, height = 2.75, family = "serif")
     plotLocalMethylationProfile_yo(
-        filtered_var1_pool,
-        filtered_var2_pool,
+        joint_gr,
         gene_gr,
         DMRsList,
         conditionsNames = c(var1_name, var2_name),
@@ -361,7 +366,8 @@ plotLocalMethylationProfile_yo <- function(
                     rect(start(range)[range$regionType == "gain"],
                         1.075 + (length(DMRs) - i) * 0.1, end(range)[range$regionType ==
                             "gain"], 1.125 + (length(DMRs) - i) * 0.1,
-                        col = DMRsColor[i], border = DMRsColor[i]
+                        # col = DMRsColor[i], border = DMRsColor[i]
+                        col = "red", border = DMRsColor[i]
                     )
                 }
                 if (length(which(range$regionType == "loss")) >
@@ -369,7 +375,8 @@ plotLocalMethylationProfile_yo <- function(
                     rect(start(range)[range$regionType == "loss"],
                         1.075 + (length(DMRs) - i) * 0.1, end(range)[range$regionType ==
                             "loss"], 1.125 + (length(DMRs) - i) * 0.1,
-                        col = DMRsColor[i], border = DMRsColor[i],
+                        # col = DMRsColor[i], border = DMRsColor[i],
+                        col = "blue", border = DMRsColor[i],
                         density = 30
                     )
                 }
