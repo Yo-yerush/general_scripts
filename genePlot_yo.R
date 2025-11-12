@@ -130,7 +130,7 @@ run_DMRs_genePlots <- function(tair_id, ctrl_gr, mut_gr, ctrl_name, mut_name, ou
     ###################################
 
     # DMRs/DMPs
-    if (!is.null(MPs_calc_mk)) {
+    if (!is.null(DMPs_calc_mk)) {
 
     } else {
         DMRsList <- NULL
