@@ -266,6 +266,7 @@ GO:0009628 response to abiotic stimulus  1984         385           539         
 ## DEGs - GO term abiotic stress groups -  enrichment test
 After runing the RNAseq downstream pipeline, load the 'all genes' results file
 * *will enrich (fisher) the abiotic GO terms and its offstpring terms*
+* use *dataset = "up"* or *dataset = "down"* argument for *up-/down- regulated DEGs*
 ```r
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/GO_abiotic_stress_enrichment_test.R")
 
@@ -273,10 +274,11 @@ rnaseq_res <- read.csv("PATH/TO/all_genes_results_mto1_vs_wt.csv")
 abiotic_stress_enrichment_test(rnaseq_res, sub_title_prefix = "mto1 vs. wt")
 ```
 This will plot:
+
 <img
   src="https://github.com/Yo-yerush/general_scripts/blob/main/GO_stress_response_enrichmrnt_results_plot_mto1_all_DEGs.svg"
   alt="fig"
-  width="85%"
+  width="65%"
 />
 
 ```r
