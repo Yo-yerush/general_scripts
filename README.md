@@ -274,9 +274,9 @@ abiotic_stress_enrichment_test(rnaseq_res, sub_title_prefix = "mto1 vs. wt")
 ```
 This will plot:
 <img
-  src="https://github.com/Yo-yerush/general_scripts/blob/main/GO_stress_response_enrichmrnt_results_plot_mto1_all_DEGs.pdf"
+  src="https://github.com/Yo-yerush/general_scripts/blob/main/GO_stress_response_enrichmrnt_results_plot_mto1_all_DEGs.svg"
   alt="fig"
-  width="100%"
+  width="85%"
 />
 
 ```r
