@@ -242,7 +242,7 @@ deseq_fc("dml3_vs_wt", "At", c(1:3,7:9), "dml3", "wt", path = path, description_
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
-## DEGs - GO term summary (Term and its offspring)'
+## DEGs - GO term summary (Term and its offspring)
 After runing the RNAseq downstream pipeline, load the 'all genes' results file and choose GO ID(s) to summary
 * *will summary the GO term and its offstpring terms*
 * *each GO ID output one row, which include the Term, count of total unique genes related to this term (and its offspring); significants, and up-/down- regulated; and the precentage of significats compare to total genes*
@@ -259,6 +259,41 @@ GO:0006952             defense response  1268         229           294         
 GO:0006950           response to stress  3155         593           738        1331    42.19 %
 GO:0009607  response to biotic stimulus  1146         231           258         489    42.67 %
 GO:0009628 response to abiotic stimulus  1984         385           539         924    46.57 %
+```
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+## DEGs - GO term abiotic stress groups -  enrichment test
+After runing the RNAseq downstream pipeline, load the 'all genes' results file
+* *will enrich (fisher) the abiotic GO terms and its offstpring terms*
+```r
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/GO_abiotic_stress_enrichment_test.R")
+
+rnaseq_res <- read.csv("PATH/TO/all_genes_results_mto1_vs_wt.csv")
+abiotic_stress_enrichment_test(rnaseq_res, sub_title_prefix = "mto1 vs. wt")
+```
+This will plot:
+<img
+  src="https://github.com/Yo-yerush/general_scripts/blob/main/GO_stress_response_enrichmrnt_results_plot_mto1_all_DEGs.pdf"
+  alt="fig"
+  width="100%"
+/>
+
+```r
+abiotic_stress_enrichment_test(rnaseq_res, print_as_table = TRUE)
+```
+This will output:
+```
+         Test_name Sig_in_term Total_in_term Fold_enrichment  P_value Odds_ratio Significant
+      Cold stress          42           118            1.40 8.47e-03       1.63        TRUE
+   Osmotic stress         163           440            1.46  2.9e-08       1.75        TRUE
+      Salt stress           1             2            1.97    0.443       2.95       FALSE
+Water deprivation          40           102            1.55  1.4e-03       1.91        TRUE
+       DNA damage          46           303            0.60    1.000       0.52       FALSE
+ Oxidative stress          70           169            1.63 3.33e-06       2.10        TRUE
+      UV-B stress           1             6            0.66    0.827       0.59       FALSE
+         Wounding          12            36            1.32    0.180       1.47       FALSE
+      Heat stress          24            88            1.08    0.378       1.10       FALSE
 ```
 -----------------------------------------------------------------
 -----------------------------------------------------------------
