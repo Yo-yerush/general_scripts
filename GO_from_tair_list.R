@@ -3,7 +3,7 @@ GO_from_tairList <- function(interesting.TAIRs, background.TAIRs = "all", treatm
     # just insert the gene list to test (interesting.TAIRs)
     # and the beckground TAIR list (background.TAIRs)
     #
-    # if using 'nePlot=TRUE', 'background.TAIRs' argument is not needed
+    # if using 'netPlot=TRUE', 'background.TAIRs' argument is not needed
     #
     # GO_from_tairList(interesting.TAIRs, background.TAIRs, pValue.threshold = 0.001)
     # GO_from_tairList(interesting.TAIRs, netPlot = TRUE)
