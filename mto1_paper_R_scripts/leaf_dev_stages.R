@@ -4,16 +4,16 @@ grow <- read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/Arabidopsis
 names(grow) <- c("gene_id", "locus_info", "gene_symbol", "relationship", "developmental_stage", "stage_ontology", "stage_id", "qualifier", "evidence_code", "evidence_description", "with_from", "reference", "assigned_by", "date")
 
 groups_2_keep <- c(
-    "seedling development stage",
-    "two leaves visible stage",
-    "four leaves visible stage",
-    "six leaves visible stage",
-    "eight leaves visible stage",
-    "ten leaves visible stage",
-    "twelve leaves visible stage" # ,
+    Seedling = "seedling development stage",
+    "LP-2" = "two leaves visible stage",
+    "LP-6" = "six leaves visible stage",
+    "LP-8" = "eight leaves visible stage",
+    "LP-10" = "ten leaves visible stage",
+    "LP-12" = "twelve leaves visible stage",
     # "fourteen leaves visible stage",
     # "early rosette growth stage",
-    # "rosette growth complete stage"
+    # Rosette = "rosette growth complete stage",
+    Senescence = "4 leaf senescence stage"
 )
 
 grow <- grow %>%
@@ -46,9 +46,8 @@ merged_df <- merge(rnaseq_res, grow, by = "gene_id", all.y = T) %>%
 
 merged_expression_dtage <- merged_df[, grep("gene_id|developmental_stage|log2FoldChange", names(merged_df))]
 
-merged_expression_dtage$developmental_stage <- gsub(" development stage", "", merged_expression_dtage$developmental_stage)
-for (lp in 2:length(groups_2_keep)) {
-    merged_expression_dtage$developmental_stage <- gsub(groups_2_keep[lp], "", merged_expression_dtage$developmental_stage)
+for (lp in 1:length(groups_2_keep)) {
+    merged_expression_dtage$developmental_stage[grep(groups_2_keep[lp], merged_expression_dtage$developmental_stage)] <- names(groups_2_keep)[lp]
 }
 
 #########################################
@@ -59,7 +58,7 @@ library(ggplot2)
 
 # 4. Violin plot with summary statistics
 pdf("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/leaf_dev_violinPlot.pdf", width = 4.75, height = 3.5, family = "serif")
-ggplot(merged_expression_dtage, aes(x = developmental_stage, y = log2FoldChange)) +
+ggplot(merged_expression_dtage, aes(x = factor(developmental_stage, levels = names(groups_2_keep)), y = log2FoldChange)) +
     geom_violin(aes(fill = developmental_stage), alpha = 0.7) +
     geom_boxplot(width = 0.1, alpha = 0.8) +
     geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
@@ -86,28 +85,35 @@ unique_genes_per_stage <- merged_expression_dtage %>%
     count(developmental_stage, name = "unique_gene_count") %>%
     arrange(developmental_stage)
 
-# Genes shared in all stages
+# Genes shared in stages
 genes_shared_in_all <- merged_expression_dtage %>%
     group_by(gene_id) %>%
     summarise(n_stages = n_distinct(developmental_stage)) %>%
     filter(n_stages == length(groups_2_keep))
+
+genes_shared_in_LP <- merged_expression_dtage %>%
+    filter(developmental_stage != "Seedling") %>%
+    filter(developmental_stage != "Senescence") %>%
+    group_by(gene_id) %>%
+    summarise(n_stages = n_distinct(developmental_stage)) %>%
+    filter(n_stages == length(groups_2_keep) - 2)
 
 stage_counts <- merged_expression_dtage %>%
     count(developmental_stage, name = "gene_count") %>%
     arrange(developmental_stage) %>%
     mutate(unique_gene_count = unique_genes_per_stage$unique_gene_count) %>%
     mutate(shared_gene_count = gene_count - unique_gene_count) %>%
-    mutate(shared_in_all_count = nrow(genes_shared_in_all))
+    mutate(shared_in_all_count = nrow(genes_shared_in_all)) %>%
+    mutate(shared_in_LP_count = nrow(genes_shared_in_LP))
+stage_counts$shared_in_LP_count[grep("Seedling|Senescence", stage_counts$developmental_stage)] <- 0
 
 print("Number of unique genes per developmental stage:")
 print(unique_genes_per_stage)
 
-shared_leg <- paste0("Shared in all stages\nn=", nrow(genes_shared_in_all))
-
 pdf("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/leaf_dev_count_barPlot.pdf", width = 5, height = 3, family = "serif")
-ggplot(stage_counts, aes(x = reorder(developmental_stage, gene_count))) +
+ggplot(stage_counts, aes(x = factor(developmental_stage, levels = names(groups_2_keep)[length(groups_2_keep):1]))) +
     geom_col(aes(y = shared_gene_count, fill = "shared"), alpha = 0.8) +
-    geom_col(aes(y = shared_in_all_count, fill = shared_leg), alpha = 0.8) +
+    # geom_col(aes(y = shared_in_LP_count, fill = "shared - LP"), alpha = 0.8) +
     geom_col(aes(y = unique_gene_count, fill = "unique\ngenes"), alpha = 0.8) +
     geom_text(aes(y = gene_count, label = gene_count), hjust = -0.1, size = 3) +
     coord_flip() +
@@ -117,10 +123,16 @@ ggplot(stage_counts, aes(x = reorder(developmental_stage, gene_count))) +
         x = "Developmental Stage",
         y = "Number of Genes"
     ) +
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(stage_counts$gene_count) * 1.1)) +
-    scale_fill_manual(values = c("shared" = "steelblue", "unique\ngenes" = "red")) +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, max(stage_counts$gene_count) * 1.15)) +
+    scale_fill_manual(values = c(
+        "shared" = "steelblue",
+        # "shared - LP" = "#65aa65",
+        "unique\ngenes" = "red"
+    )) +
     theme(
-        plot.title = element_text(size = 10),
+        plot.title = element_text(size = 11),
+        axis.text.y = element_text(size = 12), # , angle = 45),
+        axis.text.x = element_text(size = 9),
         legend.title = element_blank(),
         legend.text = element_text(size = 8)
     ) #+ guides(fill = guide_legend(breaks = c(shared_leg, "unique\ngenes")))
