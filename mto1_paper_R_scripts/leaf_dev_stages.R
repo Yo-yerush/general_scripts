@@ -111,12 +111,15 @@ print("Number of unique genes per developmental stage:")
 print(unique_genes_per_stage)
 
 pdf("C:/Users/YonatanY/Migal/Rachel Amir Team - General/yonatan/methionine/mto1_paper/leaf_dev_count_barPlot.pdf", width = 5, height = 3, family = "serif")
+library(ggbreak)
+
 ggplot(stage_counts, aes(x = factor(developmental_stage, levels = names(groups_2_keep)[length(groups_2_keep):1]))) +
-    geom_col(aes(y = shared_gene_count, fill = "shared"), alpha = 0.8) +
+    geom_col(aes(y = shared_gene_count, fill = "Shared"), alpha = 0.8) +
     # geom_col(aes(y = shared_in_LP_count, fill = "shared - LP"), alpha = 0.8) +
-    geom_col(aes(y = unique_gene_count, fill = "unique\ngenes"), alpha = 0.8) +
+    geom_col(aes(y = unique_gene_count, fill = "Unique"), alpha = 0.8) +
     geom_text(aes(y = gene_count, label = gene_count), hjust = -0.1, size = 3) +
     coord_flip() +
+    # scale_y_cut(breaks = 60,   scales = "fixed", space = 0.5) +
     ggthemes::theme_base() +
     labs(
         title = "Number of Genes per Developmental Stage",
@@ -125,9 +128,9 @@ ggplot(stage_counts, aes(x = factor(developmental_stage, levels = names(groups_2
     ) +
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(stage_counts$gene_count) * 1.15)) +
     scale_fill_manual(values = c(
-        "shared" = "steelblue",
+        "Shared" = "steelblue",
         # "shared - LP" = "#65aa65",
-        "unique\ngenes" = "red"
+        "Unique" = "#be0000"
     )) +
     theme(
         plot.title = element_text(size = 11),
