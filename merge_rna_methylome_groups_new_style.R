@@ -393,69 +393,8 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
 
     ################################################################################
 
-    # pie plots
-    # dont run it
-    if (F) {
-      pie_groups <- function(name, is.padj) {
-        if (is.padj) {
-          x <- xl_list[[name]] %>% filter(RNA_padj < 0.05)
-        } else {
-          x <- xl_list[[name]] %>% filter(RNA_pvalue < 0.05)
-        }
-
-        x_up <- x %>%
-          filter(RNA_log2FC > 0) %>%
-          nrow()
-        x_down <- x %>%
-          filter(RNA_log2FC < 0) %>%
-          nrow()
-        x_total <- x_up + x_down
-
-        pres_up <- round((x_up / x_total) * 100, 1)
-        pres_down <- round((x_down / x_total) * 100, 1)
-
-        pie_data <- data.frame(
-          group = c(paste0(pres_up, "%"), paste0(pres_down, "%")),
-          value = c(x_up, x_down)
-        )
-
-        label_up <- paste0(pie_data$group[1], " (", pie_data$value[1], ")")
-        label_down <- paste0(pie_data$group[2], " (", pie_data$value[2], ")")
-
-        try({
-          if (x_total == 0) {
-            plot.new()
-            text(0.5, 0.5, "0 DEGs", col = "gray50")
-            title(main = paste0("\n\n\n", gsub("_", " ", name)))
-            mtext(paste0(rep("_", 24), collapse = ""), side = 1, col = "gray")
-          } else {
-            pie(c(Up = x_up, Down = x_down),
-              labels = c(label_up, label_down),
-              main = paste0("\n\n\n", gsub("_", " ", name)),
-              col = c("#d96c6c", "#6c96d9"),
-              border = "white",
-              radius = 0.6
-            )
-            mtext(paste0(rep("_", 30), collapse = ""), side = 1, col = "gray")
-          }
-        })
-      }
-
-      svg(file = paste0(output_res, "pie_", treatment, "_up_or_down_padj.svg"), width = 9, height = 9, family = "serif")
-      par(mfrow = c(5, 5), mar = c(0, 0, 3, 0), oma = c(0, 0, 0, 0))
-      for (i_name in names(xl_list)) {
-        pie_groups(i_name, is.padj = TRUE)
-      }
-      dev.off()
-
-      svg(file = paste0(output_res, "pie_", treatment, "_up_or_down_pValue.svg"), width = 9, height = 9, family = "serif")
-      par(mfrow = c(5, 5), mar = c(0, 0, 3, 0), oma = c(0, 0, 0, 0))
-      for (i_name in names(xl_list)) {
-        pie_groups(i_name, is.padj = FALSE)
-      }
-      dev.off()
-    }
     ################################################################################
+
     clean_ASCII <- function(x) {
       x <- gsub("\001", " ", x)
       x <- gsub("\002", " ", x)
@@ -549,3 +488,76 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
   }
   cat("\tdone\n")
 }
+
+
+    ################################################################################
+
+    # volcano plots
+    vol_list <- lapply(xl_list, function(df) filter(df, RNA_padj<0.05)$gene_id)
+    rna_df <- all_res[,1:3]
+
+    source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
+    ################################################################################
+
+    # pie plots
+    # dont run it
+    if (F) {
+      pie_groups <- function(name, is.padj) {
+        if (is.padj) {
+          x <- xl_list[[name]] %>% filter(RNA_padj < 0.05)
+        } else {
+          x <- xl_list[[name]] %>% filter(RNA_pvalue < 0.05)
+        }
+
+        x_up <- x %>%
+          filter(RNA_log2FC > 0) %>%
+          nrow()
+        x_down <- x %>%
+          filter(RNA_log2FC < 0) %>%
+          nrow()
+        x_total <- x_up + x_down
+
+        pres_up <- round((x_up / x_total) * 100, 1)
+        pres_down <- round((x_down / x_total) * 100, 1)
+
+        pie_data <- data.frame(
+          group = c(paste0(pres_up, "%"), paste0(pres_down, "%")),
+          value = c(x_up, x_down)
+        )
+
+        label_up <- paste0(pie_data$group[1], " (", pie_data$value[1], ")")
+        label_down <- paste0(pie_data$group[2], " (", pie_data$value[2], ")")
+
+        try({
+          if (x_total == 0) {
+            plot.new()
+            text(0.5, 0.5, "0 DEGs", col = "gray50")
+            title(main = paste0("\n\n\n", gsub("_", " ", name)))
+            mtext(paste0(rep("_", 24), collapse = ""), side = 1, col = "gray")
+          } else {
+            pie(c(Up = x_up, Down = x_down),
+              labels = c(label_up, label_down),
+              main = paste0("\n\n\n", gsub("_", " ", name)),
+              col = c("#d96c6c", "#6c96d9"),
+              border = "white",
+              radius = 0.6
+            )
+            mtext(paste0(rep("_", 30), collapse = ""), side = 1, col = "gray")
+          }
+        })
+      }
+
+      svg(file = paste0(output_res, "pie_", treatment, "_up_or_down_padj.svg"), width = 9, height = 9, family = "serif")
+      par(mfrow = c(5, 5), mar = c(0, 0, 3, 0), oma = c(0, 0, 0, 0))
+      for (i_name in names(xl_list)) {
+        pie_groups(i_name, is.padj = TRUE)
+      }
+      dev.off()
+
+      svg(file = paste0(output_res, "pie_", treatment, "_up_or_down_pValue.svg"), width = 9, height = 9, family = "serif")
+      par(mfrow = c(5, 5), mar = c(0, 0, 3, 0), oma = c(0, 0, 0, 0))
+      for (i_name in names(xl_list)) {
+        pie_groups(i_name, is.padj = FALSE)
+      }
+      dev.off()
+    }
