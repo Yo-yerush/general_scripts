@@ -7,7 +7,13 @@ library(openxlsx)
 library(ggplot2)
 library(cowplot)
 
+################################
 # make_it_unique = F # if TRUE, each gene can obtain in one group only (the first by order)
+volcano_plot_save <- TRUE
+pie_plot_save <- FALSE
+################################
+
+
 
 output_res <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/NGS_merged_results/genes_group_results/"
 
@@ -39,12 +45,12 @@ grep_position <- function(x) {
 for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", "SSE_low_vs_EV", "SSE_high_vs_SSE_low")) {
   for (make_it_unique in c(F)) {
     unique_or_not <- ifelse(make_it_unique, "_unique", "")
-    cat(paste0("\r", treatment, "... [0%]  "))
+    cat(paste0("\r", treatment, "...\t\t[0%]  "))
 
     all_res <- as.data.frame(readxl::read_xlsx("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/NGS_merged_results/merged_results_mtos_all_genes.xlsx", sheet = treatment, progress = FALSE))
     # all_res = all_res[,-ncol(all_res)] # %>% relocate("transcript_id", .after = "gene_id"
 
-    cat(paste0("\r", treatment, "... [10%] "))
+    cat(paste0("\r", treatment, "...\t\t[10%] "))
     ################
     # RdDM pathway
     rddm <- rbind(
@@ -77,7 +83,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     HLM_mto1 <- merge.data.frame(HLM, all_res, by = "gene_id") %>%
       arrange(RNA_padj)
     ################
-    cat(paste0("\r", treatment, "... [20%] "))
+    cat(paste0("\r", treatment, "...\t\t[20%] "))
     ################
     # Royal Family Proteins
     RF <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/Royal Family proteins/At_Agenet_Tudor_family.txt",
@@ -166,28 +172,28 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     # Seed dpecific genes
     # https://bar.utoronto.ca/ExpressionAngler/
     gene_list_seed_specific <- read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/Arabidopsis_db/seed_specific_expression_genes/high_seed_low_everything/Dry_seed_n_all_Stages_tair_rValues.csv") %>%
-      #filter(r_value >= 0.6) %>%
+      # filter(r_value >= 0.6) %>%
       dplyr::rename(gene_id = tair_id)
 
     seed_specific_genes <- merge.data.frame(gene_list_seed_specific, all_res, by = "gene_id") %>%
-    dplyr::filter(RNA_pvalue < 0.05) %>%
-    dplyr::select(-r_value)
+      dplyr::filter(RNA_pvalue < 0.05) %>%
+      dplyr::select(-r_value)
 
     ################
-    cat(paste0("\r", treatment, "... [30%] "))
+    cat(paste0("\r", treatment, "...\t\t[30%] "))
     # GO term offsprings
     # child_terms_epigenetic <- offspring_fun("GO:0040029") # epigenetic regulation of_gene expression
     child_terms_chromatin_org <- offspring_fun("GO:0006325") # chromatin organization
     child_terms_chromatin_rem <- offspring_fun("GO:0006338") # chromatin remodeling
-    cat(paste0("\r", treatment, "... [40%] "))
+    cat(paste0("\r", treatment, "...\t\t[40%] "))
     child_terms_defence <- offspring_fun("GO:0006952") # defense response
     child_terms_stress <- offspring_fun("GO:0006950") # response to stress
-    cat(paste0("\r", treatment, "... [50%] "))
+    cat(paste0("\r", treatment, "...\t\t[50%] "))
     child_terms_biotic <- offspring_fun("GO:0009607") # response to biotic stimulus
     child_terms_abiotic <- offspring_fun("GO:0009628") # response to abiotic stimulus
 
     ################
-    cat(paste0("\r", treatment, "... [60%] "))
+    cat(paste0("\r", treatment, "...\t\t[60%] "))
     xl_0_list <- list(
       DNA_methyltransferase = rbind(
         all_res[grep("^2\\.1\\.1\\.37", all_res$EC), ], # EC_2.1.1.37
@@ -248,19 +254,19 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       primary_metabolism = primary_metabolism_v,
       secondary_metabolism = secondary_metabolism_v,
       AA_transporters = rbind(
-        all_res[grep("amino acid transport", tolower(all_res$Short_description)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("amino acid transport", tolower(all_res$Computational_description)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("amino acid transport", tolower(all_res$Function)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("amino acid transport", tolower(all_res$note)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("amino acid transport", tolower(all_res$GO.biological.process)), ] %>% dplyr::filter(RNA_pvalue < 0.05)
+        all_res[grep("amino acid transport", tolower(all_res$Short_description)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("amino acid transport", tolower(all_res$Computational_description)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("amino acid transport", tolower(all_res$Function)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("amino acid transport", tolower(all_res$note)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("amino acid transport", tolower(all_res$GO.biological.process)), ] #  %>% dplyr::filter(RNA_pvalue < 0.05)
       ),
       transporters = rbind(
-        all_res[grep("transporter", tolower(all_res$Short_description)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("transporter", tolower(all_res$Computational_description)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("transporter", tolower(all_res$Function)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("transporter", tolower(all_res$note)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("transport", tolower(all_res$GO.biological.process)), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep("transport", tolower(all_res$GO.molecular.function)), ] %>% dplyr::filter(RNA_pvalue < 0.05)
+        all_res[grep("transporter", tolower(all_res$Short_description)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("transporter", tolower(all_res$Computational_description)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("transporter", tolower(all_res$Function)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("transporter", tolower(all_res$note)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("transport", tolower(all_res$GO.biological.process)), ], #  %>% dplyr::filter(RNA_pvalue < 0.05),
+        all_res[grep("transport", tolower(all_res$GO.molecular.function)), ] #  %>% dplyr::filter(RNA_pvalue < 0.05)
       ),
       Cohen_SSE = sse_merged, # %>% dplyr::filter(RNA_pvalue < 0.05),
 
@@ -282,7 +288,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
         dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters)))
     )
 
-    cat(paste0("\r", treatment, "... [70%] "))
+    cat(paste0("\r", treatment, "...\t\t[70%] "))
 
     # empty df with correct headers
     tmp_df <- data.frame(matrix(ncol = length(names(xl_0_list[[1]])), nrow = 0))
@@ -304,7 +310,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       tmp_df <- rbind(tmp_df, tmp_loop_df)
     }
 
-    cat(paste0("\r", treatment, "... [80%] "))
+    cat(paste0("\r", treatment, "...\t\t[80%] "))
 
     if (make_it_unique) {
       tmp_df <- tmp_df %>%
@@ -317,7 +323,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     xl_list <- xl_list[unique(tmp_df$tmp1)] # order it as suppose to be...
 
     ################################################################################
-    cat(paste0("\r", treatment, "... [90%] "))
+    cat(paste0("\r", treatment, "...\t\t[90%] "))
     ################################################################################
     remove_dup_DMR <- function(y) {
       y <- as.character(unique(unlist(strsplit(y, ","))))
@@ -482,26 +488,76 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
         conditionalFormatting(wb, sheet_name, style = style_other, rule = "!=0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
         conditionalFormatting(wb, sheet_name, style = style_other, rule = "==0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
       }
-      cat(paste0("\r", treatment, "... [100%]"))
+      cat(paste0("\r", treatment, "...\t\t[100%]"))
     }
     saveWorkbook(wb, paste0(output_res, treatment, unique_or_not, "_groups.xlsx"), overwrite = T)
-  }
-  cat("\tdone\n")
-}
+    cat("\n")
 
+    ################################################################################
 
     ################################################################################
 
     # volcano plots
-    vol_list <- lapply(xl_list, function(df) filter(df, RNA_padj<0.05)$gene_id)
-    rna_df <- all_res[,1:3]
+    if (volcano_plot_save) {
+      cat("\rvolcano plots...\t")
+      # source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
+      vol_list <- lapply(xl_list, function(df) df$gene_id)
+      vol_list_sig <- lapply(xl_list, function(df) filter(df, RNA_padj < 0.05)$gene_id)
+      # vol_list <- lapply(xl_list, function(df) {
+      #   df$sig <- df$RNA_padj < 0.05
+      #   vec <- df$gene_id
+      #   names(vec) <- df$sig
+      #   vec
+      # })
 
-    source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
+      vol_df_list <- list(
+        epigenetic_related = rev(c("DNA_methyltransferase", "Histone_Lysine_MTs", "RdDM_pathway", "Royal_Family_Proteins", "DNA_deMTs", "histone_deMTs", "REM_TFs", "chromatin_remodeling")),
+        met_metabolism = c("gly_ser_and_threo_metabolism", "lysine_biosynthesis", "sulfur_pathway_related", "sulfur_responsive", "sulfur_biosynthesis", "alan_asp_glut_metabolism", "methionine_biosynthesis"),
+        seed_specific = "seed_specific_genes",
+        metabolism = c("primary_metabolism", "secondary_metabolism"),
+        transporters = c("transporters", "AA_transporters"),
+        stress_related = c("defense_response", "response_to_stress", "response_to_biotic", "response_to_abiotic")
+      )
+
+      stress_df_defence <- all_res[grep_position(child_terms_defence), ]
+      stress_df_stress <- all_res[grep_position(child_terms_stress), ]
+      stress_df_biotic <- all_res[grep_position(child_terms_biotic), ]
+      stress_df_abiotic <- all_res[grep_position(child_terms_abiotic), ]
+      vol_list[["defense_response"]] <- stress_df_defence$gene_id
+      vol_list[["response_to_stress"]] <- stress_df_stress$gene_id
+      vol_list[["response_to_biotic"]] <- stress_df_biotic$gene_id
+      vol_list[["response_to_abiotic"]] <- stress_df_abiotic$gene_id
+      vol_list_sig[["defense_response"]] <- filter(stress_df_defence, RNA_padj<0.05)$gene_id
+      vol_list_sig[["response_to_stress"]] <- filter(stress_df_stress, RNA_padj<0.05)$gene_id
+      vol_list_sig[["response_to_biotic"]] <- filter(stress_df_biotic, RNA_padj<0.05)$gene_id
+      vol_list_sig[["response_to_abiotic"]] <- filter(stress_df_abiotic, RNA_padj<0.05)$gene_id
+
+      seed_specific_new_df <- merge.data.frame(gene_list_seed_specific, all_res, by = "gene_id") %>%
+      dplyr::filter(r_value > 0.75)
+      vol_list[["seed_specific_genes"]] <- seed_specific_new_df$gene_id
+      vol_list_sig[["seed_specific_genes"]] <- filter(seed_specific_new_df, RNA_padj<0.05)$gene_id
+      
+      dir.create(paste0(output_res, "volcano_plots/"))
+      dir.create(paste0(output_res, "volcano_plots/", treatment))
+
+      for (i_df in names(vol_df_list)) {
+        all_ids <- unique(as.character(unlist(vol_list[vol_df_list[[i_df]]])))
+        rna_df <- all_res[all_res$gene_id %in% all_ids, 1:3]
+        names(rna_df)[2:3] <- c("log2FoldChange", "padj")
+
+        vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]])
+
+        svg(file = paste0(output_res, "volcano_plots/", treatment, "/volcano_", treatment, "_", i_df, "_groups.svg"), width = 4.25, height = 2, family = "serif")
+        print(vol_plot)
+        dev.off()
+      }
+      cat("\rvolcano plots...\tdone\n\n")
+    }
     ################################################################################
 
     # pie plots
     # dont run it
-    if (F) {
+    if (pie_plot_save) {
       pie_groups <- function(name, is.padj) {
         if (is.padj) {
           x <- xl_list[[name]] %>% filter(RNA_padj < 0.05)
@@ -561,3 +617,5 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       }
       dev.off()
     }
+  }
+}
