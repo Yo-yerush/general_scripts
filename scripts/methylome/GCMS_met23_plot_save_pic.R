@@ -68,12 +68,19 @@ GCMS_met23_plot_save <- function(comp.name,
     data <- data[c(line_wt, line_treatment), ]
     n_exp_groups <- 1
   } else {
+    # if there is technical triplicates
+    # (finished with 'exp.1.1' instead of 'exp.1')
+    triplicates_exp <- grepl(paste0("^", exp, "\\.[0-9]+\\.[0-9]+"), data$X)
+    if (sum(triplicates_exp) > 1) {
+       data$X[triplicates_exp] <- gsub("\\.[0-9]+$", "", data$X[triplicates_exp])
+    }
     line_exp <- grep(paste0("^", exp, "\\."), data$X)
-    exp_labels <- seq_along(line_exp)
-    data$X[line_exp] <- paste0(exp, "-", exp_labels)
+    # exp_labels <- seq_along(line_exp)
+    # data$X[line_exp] <- paste0(exp, "-", exp_labels)
+    data$X[line_exp] <- gsub("\\.", "-", data$X[line_exp])
 
+    n_exp_groups <- length(unique(data$X[line_exp]))
     data <- data[c(line_wt, line_exp), ]
-    n_exp_groups <- length(line_exp)
   }
 
 

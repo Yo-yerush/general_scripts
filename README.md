@@ -353,3 +353,37 @@ linear_plot_meth_rna(
   alt="fig"
   width="100%"
 />
+
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+## GCMS plots
+Will take tables of values and output an boxplot, to replicates or grouped samples (using '*group_lines = TRUE*' argument)
+```r
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/GCMS_met23_plot_save_pic.R")
+mto1_file = read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/GCMS_23/mto1_GCMS.csv")[-c(1:2),-2] # second line was methionine (duplicated). second column is outlire
+
+uni_compounds <- unique(mto3_file[, 1])
+
+for (i in 1:length(uni_compounds)) {
+  GCMS_met23_plot_save(
+    comp.name = uni_compounds[i],
+    exp = "mto3",
+    ctrl = "wt",
+    title_x = "",
+    title_y = "nmol/gr",
+    file_for_metabo = mto3_file,
+    group_lines = T,
+    p_as_star = T,
+    width = 1.75,
+    height = 2.25,
+    x_cex = 12,
+    box_col = ifelse(
+      (uni_compounds[i] == "methionine" | uni_compounds[i] == "TOTAL AA"),
+      "#629ecf", "gray60"
+    ),
+    path_for_save_file = "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/GCMS_23/"
+  )
+}
+```
