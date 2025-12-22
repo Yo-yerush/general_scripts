@@ -2,7 +2,7 @@ GCMS_met23_plot_save <- function(comp.name,
                                  exp = "mto1",
                                  ctrl = "wt",
                                  title_x = "",
-                                 title_y = "nmol/gr",
+                                 title_y = "log(nmol/gr)",
                                  file_for_metabo,
                                  group_lines = TRUE,
                                  p_as_star = TRUE,
@@ -11,6 +11,7 @@ GCMS_met23_plot_save <- function(comp.name,
                                  x_cex = 1,
                                  box_col = "gray60",
                                  jitter_col = "#496b40",
+                                 log_norm = TRUE,
                                  path_for_save_file = "C:/Users/yonye/Migal/Rachel Amir Team - General/yonatan/methionine/GCMS_23/") {
   library(dplyr)
   library(ggplot2)
@@ -83,6 +84,10 @@ GCMS_met23_plot_save <- function(comp.name,
     data <- data[c(line_wt, line_exp), ]
   }
 
+  ### normelize y-values
+  if (log_norm) {
+    data$Y <- log1p(data$Y)
+  }
 
 
   title_main <- comp.name
@@ -102,6 +107,14 @@ GCMS_met23_plot_save <- function(comp.name,
   p_labels <- ifelse(p_as_star, "p.signif", "p")
   p_labels_size <- ifelse(p_as_star, 4, 2)
 
+
+  y_max = max(stat.test$y.position, na.rm = T) * 1.06
+  y_min <- min(data$Y, na.rm = T)
+  if (log_norm == T & y_max > 8.5) {
+    y_min <- y_min * 0.9
+  } else {
+    y_min <- y_min * 0.8
+  }
 
   # p.value_fun <- function(line, ctrl = data$methionine[line_wt]) {
   #  t.test_p.value = t.test(line,ctrl, var.equal = T)$p.value
@@ -147,9 +160,9 @@ GCMS_met23_plot_save <- function(comp.name,
       axis.text.y = element_text(face = "bold", size = 8),
       axis.title.y = element_text(size = 12, face = "bold"),
       axis.line = element_blank(),
-      axis.ticks = element_line(size = 0.75),
-      axis.ticks.length.x = unit(-0.3, "cm"),
-      axis.ticks.length.y = unit(-0.05, "cm")
+      axis.ticks = element_line("black", size = 0.75),
+      axis.ticks.length.x = unit(0.1, "cm"),
+      axis.ticks.length.y = unit(ifelse(group_lines, -0.125, -0.1), "cm")
       # plot.title = element_text(face="bold.italic")
       # strip.text = element_blank(),
       # axis.text.x = element_blank(),
@@ -162,14 +175,12 @@ GCMS_met23_plot_save <- function(comp.name,
     geom_jitter(color = jitter_col, alpha = 0.9, size = 1) +
     # geom_text(aes(label = ifelse(pValue < 0.05, ifelse(pValue < 0.01, ifelse(pValue < 0.001, '***', '**'), '*'), '')),
     #          vjust = -0.5, size = 4) +
-    geom_rect(aes(xmin = 0.5, xmax = length(level.order) + 0.5, ymin = 0, ymax = max(stat.test$y.position) * 1.1), # ymax = max(data[,2])*1.05),
+    geom_rect(aes(xmin = 0.5, xmax = length(level.order) + 0.5, ymin = y_min, ymax = y_max), # ymax = max(data[,2])*1.05),
       fill = "transparent", color = "black", size = 0.75
     ) +
-    stat_pvalue_manual(stat.test, label = p_labels, label.size = p_labels_size, hide.ns = T, family = "serif", face = "italic") # , tip.length = 0.01)
-  # annotate("text", label= p_value_vector, size = 8)
-
-
-  #  scale_y_continuous(expand = c(0,0), limits = c(0,max(data[,2])*1.1))# +  ### change y.axis hight -> limits=c(0,hight))
+    stat_pvalue_manual(stat.test, label = p_labels, label.size = p_labels_size, hide.ns = T, family = "serif", face = "italic") + # , tip.length = 0.01)
+    # annotate("text", label= p_value_vector, size = 8)
+    scale_y_continuous(expand = c(0,0), limits = c(y_min, y_max))
 
   dir.create(paste0(path_for_save_file, "/", plot_dir_name), showWarnings = F)
   dir.create(paste0(path_for_save_file, "/", plot_dir_name, "/GCMS_", exp, "_", Sys.Date()), showWarnings = F)
