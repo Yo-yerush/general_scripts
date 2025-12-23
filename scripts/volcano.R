@@ -11,9 +11,10 @@ plot_volcano <- function(
     labels_repel = TRUE,
     dot_size = 0.275,
     gene_groups = NULL, # groups: list vectors with IDs
-    group_colors = NULL,
-    alpha.yo = ifelse(is.null(gene_groups), 0.4, 0.8)
-    ) {
+    group_colors = NULL, # if one group, van use 'random' to not get alwayse green
+    alpha.yo = ifelse(is.null(gene_groups), 0.4, 0.8)) {
+
+  library(RColorBrewer)
   mydf <- as.data.frame(res_obj) %>% filter(!is.na(padj))
   mydf$id <- rownames(mydf)
   # mydf$isDE <- ifelse(is.na(res_obj$padj), FALSE, res_obj$padj < FDR)
@@ -41,22 +42,34 @@ plot_volcano <- function(
   }
 
   if (!is.null(gene_groups)) {
-    color_set <- ifelse(length(gene_groups) > 4, "Set1", "Set2")
-    if (length(gene_groups) < 5) {
-      color_pallet <- RColorBrewer::brewer.pal(length(gene_groups), "Set2")
-    } else if (length(gene_groups) < 9) {
-      color_pallet <- RColorBrewer::brewer.pal(length(gene_groups), "Set1")
-      if (!is.na(color_pallet[6])) {color_pallet[6] <- "#3b3b34"}
+    if (length(gene_groups) == 1) {
+      if (!is.null(group_colors)) {
+        if (group_colors == "random") {
+          color_pallet <- brewer.pal(8, "Set2")[-c(5,6,8)][sample(5, 1)]
+        } else {
+          color_pallet <- group_colors
+        }
+      } else {
+         color_pallet <- brewer.pal(8, "Set2")
+      }
     } else {
-       color_pallet <- rainbow(length(gene_groups))
+      color_set <- ifelse(length(gene_groups) > 4, "Set1", "Set2")
+      if (length(gene_groups) < 5) {
+        color_pallet <- brewer.pal(length(gene_groups), "Set2")
+      } else if (length(gene_groups) < 9) {
+        color_pallet <- brewer.pal(length(gene_groups), "Set1")
+        if (!is.na(color_pallet[6])) {
+          color_pallet[6] <- "#3b3b34"
+        }
+      } else {
+        color_pallet <- rainbow(length(gene_groups))
+      }
     }
-
     base_cols <- setNames(color_pallet, names(gene_groups))
 
     palette_vals <- c(base_cols, "nonDE" = "#b9b9b9")
     legend_name <- "Gene Groups"
 
-    if (!is.null(group_colors)) palette_vals[names(group_colors)] <- group_colors
   } else {
     palette_vals <- c("nonDE" = "gray60", "Upregulated" = "#a84848", "Downregulated" = "#5d60ba")
     legend_name <- "Gene Expression"
@@ -66,6 +79,13 @@ plot_volcano <- function(
   if ("baseMean" %in% names(mydf)) {
     mydf <- mydf[mydf$baseMean > 0, ]
   }
+
+  ##################
+
+  mydf$geneCat <- gsub("_", " ", mydf$geneCat)
+  names(palette_vals) <- gsub("_", " ", names(palette_vals))
+
+  ##################
 
   p <- ggplot(mydf, aes_string(x = "log2FoldChange", y = "-log10(padj)", color = "geneCat")) +
     geom_point(alpha = alpha.yo, size = dot_size)

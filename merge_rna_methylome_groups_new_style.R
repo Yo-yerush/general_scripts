@@ -8,21 +8,30 @@ library(ggplot2)
 library(cowplot)
 
 ################################
+# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # #
 
+################
 # make_it_unique = F # if TRUE, each gene can obtain in one group only (the first by order)
+save_excel_tables <- FALSE
 volcano_plot_save <- TRUE
 pie_plot_save <- FALSE
 
-################################
+################
+all_res_ecxel_file <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/NGS_merged_results/merged_results_mtos_all_genes.xlsx"
 
-save_excel_tables <- FALSE
-
-################################
-
+treatments_loop_vec <- c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", "SSE_low_vs_EV", "SSE_high_vs_SSE_low")
 
 output_res <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/NGS_merged_results/genes_group_results/"
 
+################
 
+# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # #
+################################
+### functions
+
+################
 offspring_fun <- function(go_id, xx = as.list(GO.db::GOBPOFFSPRING)) { # 'GOBPCHILDREN' for child terms
 
   child_terms_0 <- as.character(xx[[go_id]])
@@ -35,9 +44,7 @@ offspring_fun <- function(go_id, xx = as.list(GO.db::GOBPOFFSPRING)) { # 'GOBPCH
   return(child_terms[!is.na(child_terms)] %>% unique()) # %>% paste(collapse = "|"))
 }
 
-
 ################
-
 grep_position <- function(x) {
   vec <- NULL
   for (terms_l in x) {
@@ -46,56 +53,128 @@ grep_position <- function(x) {
   return(unique(vec))
 }
 
+################
+clean_ASCII <- function(x) {
+  x <- gsub("\001", " ", x)
+  x <- gsub("\002", " ", x)
+  x <- gsub("\036", " ", x)
 
-for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", "SSE_low_vs_EV", "SSE_high_vs_SSE_low")) {
+  # x = gsub("[[:punct:]]", " ", x)
+  # x = iconv(x, from = 'UTF-8', to = 'ASCII')
+  return(x)
+}
+
+################
+remove_dup_DMR <- function(y) {
+  y <- as.character(unique(unlist(strsplit(y, ","))))
+  paste(y, collapse = ",")
+}
+
+################
+
+# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # #
+################################
+### data sets
+
+################
+# RdDM pathway
+rddm <- rbind(
+  read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_RNA-directed DNA methylation_an epigenetic pathway of increasing complexity/tairs_ID.txt",
+    sep = "\t", header = T
+  ),
+  read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Non-canonical RNA-directed DNA methylation/tairs_ID.txt",
+    sep = "\t", header = T
+  )
+) %>% distinct()
+
+names(rddm) <- "gene_id"
+
+################
+# Histone Lysine Methyltransferases
+HLM <- rbind(
+  read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Histone Lysine Methyltransferases/tairs_ID.txt",
+    sep = "\t", header = T
+  ),
+  read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Plant SET Domain-containing Proteins_Structure, Function and Regulation/tairs_id.txt",
+    sep = "\t", header = T
+  )
+) %>%
+  distinct()
+
+names(HLM)[1] <- "gene_id"
+
+################
+# Royal Family Proteins
+RF <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/Royal Family proteins/At_Agenet_Tudor_family.txt",
+  sep = "\t", header = T
+)
+names(RF)[1] <- "gene_id"
+RF$gene_id <- gsub("DUF\\d+", "", RF$gene_id)
+
+################
+# Ash leaf
+Ash_leaf <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Girija_23 methylation Plant Physiol/Ash_leaves.txt",
+  sep = "\t", header = T
+)
+
+################
+# Cohen SSE (2014)
+sse <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/Cohen_14 SSE/gene_list.txt",
+  sep = "\t", header = T
+)
+names(sse)[1] <- "gene_id"
+sse$gene_id <- toupper(sse$gene_id)
+
+################
+# primary/secondary metabolism (https://doi.org/10.1093/gbe/evv217)
+primary_metabolism_0 <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Evolutionary Rate Heterogeneity of Primary and Secondary Metabolic Pathway Genes in Arabidopsis thaliana/primary_metabolism_genes_pathways_with_groups.csv")
+
+secondary_metabolism_0 <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Evolutionary Rate Heterogeneity of Primary and Secondary Metabolic Pathway Genes in Arabidopsis thaliana/secondary_metabolism_genes_pathways_with_groups.csv")
+
+################
+# Seed dpecific genes
+# https://bar.utoronto.ca/ExpressionAngler/
+gene_list_seed_specific <- read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/Arabidopsis_db/seed_specific_expression_genes/high_seed_low_everything/Dry_seed_n_all_Stages_tair_rValues.csv") %>%
+  # filter(r_value >= 0.6) %>%
+  dplyr::rename(gene_id = tair_id)
+
+################
+# GO term offsprings
+# child_terms_epigenetic <- offspring_fun("GO:0040029") # epigenetic regulation of_gene expression
+child_terms_chromatin_org <- offspring_fun("GO:0006325") # chromatin organization
+child_terms_chromatin_rem <- offspring_fun("GO:0006338") # chromatin remodeling
+child_terms_defence <- offspring_fun("GO:0006952") # defense response
+child_terms_stress <- offspring_fun("GO:0006950") # response to stress
+child_terms_biotic <- offspring_fun("GO:0009607") # response to biotic stimulus
+child_terms_abiotic <- offspring_fun("GO:0009628") # response to abiotic stimulus
+
+################
+
+# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # #
+################################
+### main loop
+yo
+for (treatment in treatments_loop_vec) {
   for (make_it_unique in c(F)) {
     unique_or_not <- ifelse(make_it_unique, "_unique", "")
-    cat(paste0("\r", treatment, "...\t\t[0%]  "))
 
-    all_res <- as.data.frame(readxl::read_xlsx("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/NGS_merged_results/merged_results_mtos_all_genes.xlsx", sheet = treatment, progress = FALSE))
+    all_res <- as.data.frame(readxl::read_xlsx(all_res_ecxel_file, sheet = treatment, progress = FALSE))
     # all_res = all_res[,-ncol(all_res)] # %>% relocate("transcript_id", .after = "gene_id"
 
-    cat(paste0("\r", treatment, "...\t\t[10%] "))
+    cat(paste0(treatment, "...\n"))
     ################
     # RdDM pathway
-    rddm <- rbind(
-      read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_RNA-directed DNA methylation_an epigenetic pathway of increasing complexity/tairs_ID.txt",
-        sep = "\t", header = T
-      ),
-      read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Non-canonical RNA-directed DNA methylation/tairs_ID.txt",
-        sep = "\t", header = T
-      )
-    ) %>% distinct()
-
-    names(rddm) <- "gene_id"
-
     rddm_mto1 <- merge.data.frame(rddm, all_res, by = "gene_id") %>% arrange(RNA_padj)
-    ################
 
     ################
     # Histone Lysine Methyltransferases
-    HLM <- rbind(
-      read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Histone Lysine Methyltransferases/tairs_ID.txt",
-        sep = "\t", header = T
-      ),
-      read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Plant SET Domain-containing Proteins_Structure, Function and Regulation/tairs_id.txt",
-        sep = "\t", header = T
-      )
-    ) %>%
-      distinct()
-
-    names(HLM)[1] <- "gene_id"
     HLM_mto1 <- merge.data.frame(HLM, all_res, by = "gene_id") %>%
       arrange(RNA_padj)
-    ################
-    cat(paste0("\r", treatment, "...\t\t[20%] "))
+
     ################
     # Royal Family Proteins
-    RF <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/Royal Family proteins/At_Agenet_Tudor_family.txt",
-      sep = "\t", header = T
-    )
-    names(RF)[1] <- "gene_id"
-    RF$gene_id <- gsub("DUF\\d+", "", RF$gene_id)
     RF_mto1 <- merge.data.frame(RF, all_res, by = "gene_id") %>% dplyr::select(-Agenet.Tudor.Domain, -Other.Domain)
 
     ################
@@ -118,19 +197,14 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
 
     ################
     # Ash leaf
-    Ash_leaf <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Girija_23 methylation Plant Physiol/Ash_leaves.txt",
-      sep = "\t", header = T
-    )
-
     Ash_merged <- merge.data.frame(Ash_leaf, all_res, by = "gene_id")
 
     ################
+    # Cohen SSE (2014)
+    sse_merged <- merge.data.frame(sse, all_res, by = "gene_id") %>% dplyr::select(-Title)
+
+    ################
     # primary/secondary metabolism (https://doi.org/10.1093/gbe/evv217)
-    primary_metabolism_0 <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Evolutionary Rate Heterogeneity of Primary and Secondary Metabolic Pathway Genes in Arabidopsis thaliana/primary_metabolism_genes_pathways_with_groups.csv")
-
-    secondary_metabolism_0 <- read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/sup_Evolutionary Rate Heterogeneity of Primary and Secondary Metabolic Pathway Genes in Arabidopsis thaliana/secondary_metabolism_genes_pathways_with_groups.csv")
-
-
     primary_metabolism_v <- distinct(primary_metabolism_0, gene_id) %>%
       merge.data.frame(., all_res, by = "gene_id") %>%
       arrange(RNA_padj)
@@ -138,15 +212,6 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     secondary_metabolism_v <- distinct(secondary_metabolism_0, gene_id) %>%
       merge.data.frame(., all_res, by = "gene_id") %>%
       arrange(RNA_padj)
-
-    ################
-    # Cohen SSE
-    sse <- read.table("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/papers/Cohen_14 SSE/gene_list.txt",
-      sep = "\t", header = T
-    )
-    names(sse)[1] <- "gene_id"
-    sse$gene_id <- toupper(sse$gene_id)
-    sse_merged <- merge.data.frame(sse, all_res, by = "gene_id") %>% dplyr::select(-Title)
 
     ################
     # Nuclear Localised MORE SULPHUR ACCUMULATION1 Epigenetically Regulates Sulphur Homeostasis in Arabidopsis thaliana
@@ -176,29 +241,11 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     ################
     # Seed dpecific genes
     # https://bar.utoronto.ca/ExpressionAngler/
-    gene_list_seed_specific <- read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/Arabidopsis_db/seed_specific_expression_genes/high_seed_low_everything/Dry_seed_n_all_Stages_tair_rValues.csv") %>%
-      # filter(r_value >= 0.6) %>%
-      dplyr::rename(gene_id = tair_id)
-
     seed_specific_genes <- merge.data.frame(gene_list_seed_specific, all_res, by = "gene_id") %>%
       dplyr::filter(RNA_pvalue < 0.05) %>%
       dplyr::select(-r_value)
 
     ################
-    cat(paste0("\r", treatment, "...\t\t[30%] "))
-    # GO term offsprings
-    # child_terms_epigenetic <- offspring_fun("GO:0040029") # epigenetic regulation of_gene expression
-    child_terms_chromatin_org <- offspring_fun("GO:0006325") # chromatin organization
-    child_terms_chromatin_rem <- offspring_fun("GO:0006338") # chromatin remodeling
-    cat(paste0("\r", treatment, "...\t\t[40%] "))
-    child_terms_defence <- offspring_fun("GO:0006952") # defense response
-    child_terms_stress <- offspring_fun("GO:0006950") # response to stress
-    cat(paste0("\r", treatment, "...\t\t[50%] "))
-    child_terms_biotic <- offspring_fun("GO:0009607") # response to biotic stimulus
-    child_terms_abiotic <- offspring_fun("GO:0009628") # response to abiotic stimulus
-
-    ################
-    cat(paste0("\r", treatment, "...\t\t[60%] "))
     xl_0_list <- list(
       DNA_methyltransferase = rbind(
         all_res[grep("^2\\.1\\.1\\.37", all_res$EC), ], # EC_2.1.1.37
@@ -293,8 +340,6 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
         dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters)))
     )
 
-    cat(paste0("\r", treatment, "...\t\t[70%] "))
-
     # empty df with correct headers
     tmp_df <- data.frame(matrix(ncol = length(names(xl_0_list[[1]])), nrow = 0))
     names(tmp_df) <- names(xl_0_list[[1]])
@@ -315,8 +360,6 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       tmp_df <- rbind(tmp_df, tmp_loop_df)
     }
 
-    cat(paste0("\r", treatment, "...\t\t[80%] "))
-
     if (make_it_unique) {
       tmp_df <- tmp_df %>%
         distinct(tmp2, .keep_all = TRUE) %>%
@@ -328,13 +371,6 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     xl_list <- xl_list[unique(tmp_df$tmp1)] # order it as suppose to be...
 
     ################################################################################
-    cat(paste0("\r", treatment, "...\t\t[90%] "))
-    ################################################################################
-    remove_dup_DMR <- function(y) {
-      y <- as.character(unique(unlist(strsplit(y, ","))))
-      paste(y, collapse = ",")
-    }
-
 
     ################ eddit xl_list data frames
     xl_list <- lapply(xl_list, function(x) {
@@ -404,17 +440,6 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
 
     ################################################################################
 
-    ################################################################################
-
-    clean_ASCII <- function(x) {
-      x <- gsub("\001", " ", x)
-      x <- gsub("\002", " ", x)
-      x <- gsub("\036", " ", x)
-
-      # x = gsub("[[:punct:]]", " ", x)
-      # x = iconv(x, from = 'UTF-8', to = 'ASCII')
-      return(x)
-    }
     ################
     xl_headers <- names(xl_list[[1]])
     numeric_cols <- grep("RNA_", xl_headers) # |CG_|CHG_|CHH_
@@ -493,13 +518,11 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
         conditionalFormatting(wb, sheet_name, style = style_other, rule = "!=0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
         conditionalFormatting(wb, sheet_name, style = style_other, rule = "==0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
       }
-      cat(paste0("\r", treatment, "...\t\t[100%]"))
     }
 
     if (save_excel_tables) {
       saveWorkbook(wb, paste0(output_res, treatment, unique_or_not, "_groups.xlsx"), overwrite = T)
     }
-    cat("\n")
 
     ################################################################################
 
@@ -507,7 +530,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
 
     # volcano plots
     if (volcano_plot_save) {
-      cat("\rvolcano plots...\t")
+      cat("volcano plots...\t")
       source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
       vol_list <- lapply(xl_list, function(df) df$gene_id)
       vol_list_sig <- lapply(xl_list, function(df) filter(df, RNA_padj < 0.05)$gene_id)
@@ -520,46 +543,50 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
 
       vol_df_list <- list(
         epigenetic_related = rev(c("DNA_methyltransferase", "Histone_Lysine_MTs", "RdDM_pathway", "Royal_Family_Proteins", "DNA_deMTs", "histone_deMTs", "REM_TFs", "chromatin_remodeling")),
-        met_metabolism = c("gly_ser_and_threo_metabolism", "lysine_biosynthesis", "sulfur_pathway_related", "sulfur_responsive", "sulfur_biosynthesis", "alan_asp_glut_metabolism", "methionine_biosynthesis"),
+        wide_met_metabolism = c("gly_ser_and_threo_metabolism", "lysine_biosynthesis", "sulfur_pathway_related", "sulfur_responsive", "sulfur_biosynthesis", "alan_asp_glut_metabolism", "methionine_biosynthesis"),
+        met_metabolism = c("sulfur_pathway_related", "sulfur_responsive", "sulfur_biosynthesis", "methionine_biosynthesis"),
         seed_specific = "seed_specific_genes",
         metabolism = c("primary_metabolism", "secondary_metabolism"),
-        transporters = c("transporters", "AA_transporters"),
-        stress_related = c("defense_response", "response_to_stress", "response_to_biotic", "response_to_abiotic")
+        transporters = c("transporters"),
+        AA_transporters = c("AA_transporters"),
+        total_stress = c("response_to_stress"),
+        biotic_stress = c("response_to_biotic"),
+        abiotic_stress = c("response_to_abiotic")
       )
 
       stress_df_defence <- all_res[grep_position(child_terms_defence), ]
       stress_df_stress <- all_res[grep_position(child_terms_stress), ]
       stress_df_biotic <- all_res[grep_position(child_terms_biotic), ]
       stress_df_abiotic <- all_res[grep_position(child_terms_abiotic), ]
-      vol_list[["defense_response"]] <- stress_df_defence$gene_id
+      # vol_list[["defense_response"]] <- stress_df_defence$gene_id
       vol_list[["response_to_stress"]] <- stress_df_stress$gene_id
       vol_list[["response_to_biotic"]] <- stress_df_biotic$gene_id
       vol_list[["response_to_abiotic"]] <- stress_df_abiotic$gene_id
-      vol_list_sig[["defense_response"]] <- filter(stress_df_defence, RNA_padj<0.05)$gene_id
-      vol_list_sig[["response_to_stress"]] <- filter(stress_df_stress, RNA_padj<0.05)$gene_id
-      vol_list_sig[["response_to_biotic"]] <- filter(stress_df_biotic, RNA_padj<0.05)$gene_id
-      vol_list_sig[["response_to_abiotic"]] <- filter(stress_df_abiotic, RNA_padj<0.05)$gene_id
+      # vol_list_sig[["defense_response"]] <- filter(stress_df_defence, RNA_padj<0.05)$gene_id
+      vol_list_sig[["response_to_stress"]] <- filter(stress_df_stress, RNA_padj < 0.05)$gene_id
+      vol_list_sig[["response_to_biotic"]] <- filter(stress_df_biotic, RNA_padj < 0.05)$gene_id
+      vol_list_sig[["response_to_abiotic"]] <- filter(stress_df_abiotic, RNA_padj < 0.05)$gene_id
 
       seed_specific_new_df <- merge.data.frame(gene_list_seed_specific, all_res, by = "gene_id") %>%
-      dplyr::filter(r_value > 0.75)
+        dplyr::filter(r_value > 0.75)
       vol_list[["seed_specific_genes"]] <- seed_specific_new_df$gene_id
-      vol_list_sig[["seed_specific_genes"]] <- filter(seed_specific_new_df, RNA_padj<0.05)$gene_id
-      
-      dir.create(paste0(output_res, "volcano_plots/"))
-      dir.create(paste0(output_res, "volcano_plots/", treatment))
+      vol_list_sig[["seed_specific_genes"]] <- filter(seed_specific_new_df, RNA_padj < 0.05)$gene_id
+
+      dir.create(paste0(output_res, "volcano_plots/"), showWarnings = F)
+      dir.create(paste0(output_res, "volcano_plots/", treatment), showWarnings = F)
 
       for (i_df in names(vol_df_list)) {
         all_ids <- unique(as.character(unlist(vol_list[vol_df_list[[i_df]]])))
         rna_df <- all_res[all_res$gene_id %in% all_ids, 1:3]
         names(rna_df)[2:3] <- c("log2FoldChange", "padj")
 
-        vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75)
+        col_rndm <- if (grepl("stress", i_df)) "random" else NULL
+        vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75, group_color = col_rndm)
 
         svg(file = paste0(output_res, "volcano_plots/", treatment, "/volcano_", treatment, "_", i_df, "_groups.svg"), width = 4.25, height = 2, family = "serif")
         print(vol_plot)
         dev.off()
       }
-      cat("\rvolcano plots...\tdone\n\n")
     }
     ################################################################################
 
