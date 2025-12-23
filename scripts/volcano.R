@@ -41,11 +41,19 @@ plot_volcano <- function(
   }
 
   if (!is.null(gene_groups)) {
-    base_cols <- setNames(
-      RColorBrewer::brewer.pal(length(gene_groups), "Set2"),
-      names(gene_groups)
-    )
-    palette_vals <- c(base_cols, "nonDE" = "#999999")
+    color_set <- ifelse(length(gene_groups) > 4, "Set1", "Set2")
+    if (length(gene_groups) < 5) {
+      color_pallet <- RColorBrewer::brewer.pal(length(gene_groups), "Set2")
+    } else if (length(gene_groups) < 9) {
+      color_pallet <- RColorBrewer::brewer.pal(length(gene_groups), "Set1")
+      if (!is.na(color_pallet[6])) {color_pallet[6] <- "#3b3b34"}
+    } else {
+       color_pallet <- rainbow(length(gene_groups))
+    }
+
+    base_cols <- setNames(color_pallet, names(gene_groups))
+
+    palette_vals <- c(base_cols, "nonDE" = "#b9b9b9")
     legend_name <- "Gene Groups"
 
     if (!is.null(group_colors)) palette_vals[names(group_colors)] <- group_colors

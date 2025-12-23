@@ -8,11 +8,16 @@ library(ggplot2)
 library(cowplot)
 
 ################################
+
 # make_it_unique = F # if TRUE, each gene can obtain in one group only (the first by order)
 volcano_plot_save <- TRUE
 pie_plot_save <- FALSE
+
 ################################
 
+save_excel_tables <- FALSE
+
+################################
 
 
 output_res <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/NGS_merged_results/genes_group_results/"
@@ -490,7 +495,10 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
       }
       cat(paste0("\r", treatment, "...\t\t[100%]"))
     }
-    saveWorkbook(wb, paste0(output_res, treatment, unique_or_not, "_groups.xlsx"), overwrite = T)
+
+    if (save_excel_tables) {
+      saveWorkbook(wb, paste0(output_res, treatment, unique_or_not, "_groups.xlsx"), overwrite = T)
+    }
     cat("\n")
 
     ################################################################################
@@ -500,7 +508,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
     # volcano plots
     if (volcano_plot_save) {
       cat("\rvolcano plots...\t")
-      # source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
+      source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
       vol_list <- lapply(xl_list, function(df) df$gene_id)
       vol_list_sig <- lapply(xl_list, function(df) filter(df, RNA_padj < 0.05)$gene_id)
       # vol_list <- lapply(xl_list, function(df) {
@@ -545,7 +553,7 @@ for (treatment in c("mto1_vs_wt", "mto3_vs_wt", "dCGS_vs_EV", "SSE_high_vs_EV", 
         rna_df <- all_res[all_res$gene_id %in% all_ids, 1:3]
         names(rna_df)[2:3] <- c("log2FoldChange", "padj")
 
-        vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]])
+        vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75)
 
         svg(file = paste0(output_res, "volcano_plots/", treatment, "/volcano_", treatment, "_", i_df, "_groups.svg"), width = 4.25, height = 2, family = "serif")
         print(vol_plot)
