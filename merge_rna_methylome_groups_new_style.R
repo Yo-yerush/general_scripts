@@ -26,9 +26,9 @@ output_res <- "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methio
 
 ################
 
-# # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # #
 ################################
+# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # #
 ### functions
 
 ################
@@ -72,9 +72,9 @@ remove_dup_DMR <- function(y) {
 
 ################
 
-# # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # #
 ################################
+# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # #
 ### data sets
 
 ################
@@ -151,11 +151,10 @@ child_terms_abiotic <- offspring_fun("GO:0009628") # response to abiotic stimulu
 
 ################
 
-# # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # #
 ################################
+# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # #
 ### main loop
-yo
 for (treatment in treatments_loop_vec) {
   for (make_it_unique in c(F)) {
     unique_or_not <- ifelse(make_it_unique, "_unique", "")
@@ -164,6 +163,16 @@ for (treatment in treatments_loop_vec) {
     # all_res = all_res[,-ncol(all_res)] # %>% relocate("transcript_id", .after = "gene_id"
 
     cat(paste0(treatment, "...\n"))
+
+    ################
+    # GO grep positions of chiled ters
+    grep_child_defence <- all_res[grep_position(child_terms_defence), ]
+    grep_child_stress <- all_res[grep_position(child_terms_stress), ]
+    grep_child_biotic <- all_res[grep_position(child_terms_biotic), ]
+    grep_child_abiotic <- all_res[grep_position(child_terms_abiotic), ]
+    grep_child_chromatin_rem <- all_res[grep_position(child_terms_chromatin_rem), ]
+    grep_child_chromatin_org <- all_res[grep_position(child_terms_chromatin_org), ]
+
     ################
     # RdDM pathway
     rddm_mto1 <- merge.data.frame(rddm, all_res, by = "gene_id") %>% arrange(RNA_padj)
@@ -290,8 +299,8 @@ for (treatment in treatments_loop_vec) {
         all_res[grep("jumonji", tolower(all_res$short_description)), ] %>% dplyr::filter(RNA_pvalue < 0.05), # jumonji
         all_res[grep("helicase domain", tolower(all_res$short_description)), ] %>% dplyr::filter(RNA_pvalue < 0.05), # helicase_domain
         all_res[grep("histone h3 acetylation", tolower(all_res$GO.biological.process)), ] %>% dplyr::filter(RNA_pvalue < 0.05), # histone_H3_acetylation_BP
-        all_res[grep_position(child_terms_chromatin_org), ] %>% dplyr::filter(RNA_pvalue < 0.05),
-        all_res[grep_position(child_terms_chromatin_rem), ] %>% dplyr::filter(RNA_pvalue < 0.05)
+        grep_child_chromatin_org %>% dplyr::filter(RNA_pvalue < 0.05),
+        grep_child_chromatin_rem %>% dplyr::filter(RNA_pvalue < 0.05)
       ),
       seed_specific_genes = seed_specific_genes,
       methionine_biosynthesis = all_res[grep("ath00270", all_res$KEGG_pathway), ],
@@ -329,14 +338,14 @@ for (treatment in treatments_loop_vec) {
       # epigenetic_reg._gene_expression = all_res[grep_position(child_terms_epigenetic), ] %>%
       #  dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
 
-      defense_response = all_res[grep_position(child_terms_defence), ] %>%
+      defense_response = grep_child_defence %>%
         dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
-      response_to_stress = all_res[grep_position(child_terms_stress), ] %>% dplyr::filter(RNA_pvalue < 0.05),
+      response_to_stress = grep_child_stress %>% dplyr::filter(RNA_pvalue < 0.05),
       # dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
 
-      response_to_biotic = all_res[grep_position(child_terms_biotic), ] %>%
+      response_to_biotic = grep_child_biotic %>%
         dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
-      response_to_abiotic = all_res[grep_position(child_terms_abiotic), ] %>%
+      response_to_abiotic = grep_child_abiotic %>%
         dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters)))
     )
 
@@ -530,7 +539,7 @@ for (treatment in treatments_loop_vec) {
 
     # volcano plots
     if (volcano_plot_save) {
-      cat("volcano plots...\t")
+      cat("volcano plots...\n")
       source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/volcano.R")
       vol_list <- lapply(xl_list, function(df) df$gene_id)
       vol_list_sig <- lapply(xl_list, function(df) filter(df, RNA_padj < 0.05)$gene_id)
@@ -554,18 +563,14 @@ for (treatment in treatments_loop_vec) {
         abiotic_stress = c("response_to_abiotic")
       )
 
-      stress_df_defence <- all_res[grep_position(child_terms_defence), ]
-      stress_df_stress <- all_res[grep_position(child_terms_stress), ]
-      stress_df_biotic <- all_res[grep_position(child_terms_biotic), ]
-      stress_df_abiotic <- all_res[grep_position(child_terms_abiotic), ]
-      # vol_list[["defense_response"]] <- stress_df_defence$gene_id
-      vol_list[["response_to_stress"]] <- stress_df_stress$gene_id
-      vol_list[["response_to_biotic"]] <- stress_df_biotic$gene_id
-      vol_list[["response_to_abiotic"]] <- stress_df_abiotic$gene_id
-      # vol_list_sig[["defense_response"]] <- filter(stress_df_defence, RNA_padj<0.05)$gene_id
-      vol_list_sig[["response_to_stress"]] <- filter(stress_df_stress, RNA_padj < 0.05)$gene_id
-      vol_list_sig[["response_to_biotic"]] <- filter(stress_df_biotic, RNA_padj < 0.05)$gene_id
-      vol_list_sig[["response_to_abiotic"]] <- filter(stress_df_abiotic, RNA_padj < 0.05)$gene_id
+      # vol_list[["defense_response"]] <- grep_child_defence$gene_id
+      vol_list[["response_to_stress"]] <- grep_child_stress$gene_id
+      vol_list[["response_to_biotic"]] <- grep_child_biotic$gene_id
+      vol_list[["response_to_abiotic"]] <- grep_child_abiotic$gene_id
+      # vol_list_sig[["defense_response"]] <- filter(grep_child_defence, RNA_padj<0.05)$gene_id
+      vol_list_sig[["response_to_stress"]] <- filter(grep_child_stress, RNA_padj < 0.05)$gene_id
+      vol_list_sig[["response_to_biotic"]] <- filter(grep_child_biotic, RNA_padj < 0.05)$gene_id
+      vol_list_sig[["response_to_abiotic"]] <- filter(grep_child_abiotic, RNA_padj < 0.05)$gene_id
 
       seed_specific_new_df <- merge.data.frame(gene_list_seed_specific, all_res, by = "gene_id") %>%
         dplyr::filter(r_value > 0.75)

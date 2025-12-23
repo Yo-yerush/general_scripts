@@ -106,7 +106,7 @@ plot_volcano <- function(
   }
 
   p <- p + theme_classic() + # theme_bw() +
-    scale_colour_manual(name = legend_name, values = palette_vals) +
+    scale_colour_manual(name = legend_name, values = palette_vals, breaks = names(palette_vals)) +
     guides(color = guide_legend(override.aes = list(size = 2.5)))
   # scale_colour_manual(
   #  name = paste0("FDR = ", FDR),
