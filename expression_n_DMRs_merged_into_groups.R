@@ -598,7 +598,7 @@ expression_n_DMRs_merged_into_groups <- function(
       x_lab <- ifelse(i_n > 9, "log2(FoldChange)", "")
       y_lab <- ifelse((i_n - 1) %% 3 == 0, "-log10(padj)", "")
 
-      vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75, group_color = col_rndm, x_lab, y_lab)
+      vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75, group_color = col_rndm, x_lab = x_lab, y_lab = y_lab)
 
       if (combine_volcano_plots) {
         vol_plot_list[[i_df]] <- vol_plot
