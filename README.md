@@ -365,14 +365,14 @@ source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/metabol
 
 GCMS_results_df <- read.csv("PATH/TO/mto1_GCMS.csv")
 
-trnt_file$x <- tools::toTitleCase(trnt_file$x)
-uni_compounds <- unique(trnt_file[, 1])
+GCMS_results_df[, 1] <- tools::toTitleCase(GCMS_results_df[, 1])
+uni_compounds <- unique(GCMS_results_df[, 1])
 
 all_plots <- list()
 for (i in 1:length(uni_compounds)) {
     all_plots[[i]] <- metabolome_boxplot(
         comp.name = uni_compounds[i],
-        df = trnt_file,
+        df = GCMS_results_df,
         exp = "mto1",
         ctrl = "wt",
         log_norm = TRUE,
