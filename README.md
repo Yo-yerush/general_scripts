@@ -361,29 +361,42 @@ linear_plot_meth_rna(
 ## GCMS plots
 Will take tables of values and output an boxplot, to replicates or grouped samples (using '*group_lines = TRUE*' argument)
 ```r
-source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/scripts/methylome/GCMS_met23_plot_save_pic.R")
-mto1_file = read.csv("C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/GCMS_23/mto1_GCMS.csv")[-c(1:2),-2] # second line was methionine (duplicated). second column is outlire
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/metabolome_boxplot.R")
 
-uni_compounds <- unique(mto3_file[, 1])
+GCMS_results_df <- read.csv("PATH/TO/mto1_GCMS.csv")
 
+trnt_file$x <- tools::toTitleCase(trnt_file$x)
+uni_compounds <- unique(trnt_file[, 1])
+
+all_plots <- list()
 for (i in 1:length(uni_compounds)) {
-  GCMS_met23_plot_save(
-    comp.name = uni_compounds[i],
-    exp = "mto3",
-    ctrl = "wt",
-    title_x = "",
-    title_y = "nmol/gr",
-    file_for_metabo = mto3_file,
-    group_lines = T,
-    p_as_star = T,
-    width = 1.75,
-    height = 2.25,
-    x_cex = 12,
-    box_col = ifelse(
-      (uni_compounds[i] == "methionine" | uni_compounds[i] == "TOTAL AA"),
-      "#629ecf", "gray60"
-    ),
-    path_for_save_file = "C:/Users/yonatany/Migal/Rachel Amir Team - General/yonatan/methionine/GCMS_23/"
-  )
+    all_plots[[i]] <- metabolome_boxplot(
+        comp.name = uni_compounds[i],
+        df = trnt_file,
+        exp = "mto1",
+        ctrl = "wt",
+        log_norm = TRUE,
+        group_lines = FALSE,
+        p_as_star = TRUE,
+        x_cex = 12,
+        box_col = ifelse(
+            (uni_compounds[i] == "Methionine" | uni_compounds[i] == "TOTAL AA"),
+            "#629ecf", "gray60"
+        ),
+        path_for_save_file = NULL
+    )
 }
+
+ggsave(
+    paste0("PATH/TO/plots/GCMS_mto1_vs_wt_replicates_", Sys.Date(), ".svg"),
+    plot = gridExtra::grid.arrange(grobs = all_plots, nrow = 3, ncol = 6),
+    width = 11,
+    height = 7
+)
 ```
+#### example output
+<img
+  src="https://github.com/Yo-yerush/general_scripts/blob/main/GCMS_mto1_vs_wt_rep_2025-12-24.svg"
+  alt="fig"
+  width="100%"
+/>
