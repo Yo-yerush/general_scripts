@@ -55,7 +55,6 @@ expression_n_DMRs_merged_into_groups <- function(
     make_it_unique = FALSE, # if TRUE, each gene can obtain in one group only (the first by order)
     datasets_dir = "https://raw.githubusercontent.com/Yo-yerush/RA_lab_db/refs/heads/main/Arabidopsis/Groups_genes_list",
     output_dir = "./") {
-
   suppressMessages({
     library(dplyr)
     # library(tidyr)
@@ -452,88 +451,88 @@ expression_n_DMRs_merged_into_groups <- function(
   ################################################################################
 
   ################
-  xl_headers <- names(xl_list[[1]])
-  numeric_cols <- grep("RNA_", xl_headers) # |CG_|CHG_|CHH_
-  p_cols <- grep("RNA_p", xl_headers)
-  lfc_rna_cols <- grep("RNA_log2FC", xl_headers)
-  lfc_dmr_cols <- grep("CG_|CHG_|CHH_", xl_headers)
-  other_cols <- (grep("CHH_Promoters", xl_headers) + 1):length(xl_headers)
-  ################
-  # save and edit EXCEL
-  wb <- createWorkbook()
-  # Define styles
-  style_up <- createStyle(fontName = "Times New Roman", bgFill = "#f59d98", fgFill = "#f59d98", border = "TopBottomLeftRight", borderColour = "black")
-  style_down <- createStyle(fontName = "Times New Roman", bgFill = "#c3ccf7", fgFill = "#c3ccf7", border = "TopBottomLeftRight", borderColour = "black")
-  style_p <- createStyle(fontName = "Times New Roman", bgFill = "#f7deb0", border = "TopBottomLeftRight", borderColour = "black")
-  style_other <- createStyle(fontName = "Times New Roman", bgFill = "#daf7d7", fgFill = "#daf7d7", border = "TopBottomLeftRight", borderColour = "black")
-  cell_n_font_style <- createStyle(fontName = "Times New Roman", border = "TopBottomLeftRight", borderColour = "black")
-  header_style <- createStyle(fontName = "Times New Roman", textDecoration = "bold", border = "TopBottomLeftRight", borderStyle = "double")
+  if (save_excel) {
+    xl_headers <- names(xl_list[[1]])
+    numeric_cols <- grep("RNA_", xl_headers) # |CG_|CHG_|CHH_
+    p_cols <- grep("RNA_p", xl_headers)
+    lfc_rna_cols <- grep("RNA_log2FC", xl_headers)
+    lfc_dmr_cols <- grep("CG_|CHG_|CHH_", xl_headers)
+    other_cols <- (grep("CHH_Promoters", xl_headers) + 1):length(xl_headers)
+    ################
+    # save and edit EXCEL
+    wb <- createWorkbook()
+    # Define styles
+    style_up <- createStyle(fontName = "Times New Roman", bgFill = "#f59d98", fgFill = "#f59d98", border = "TopBottomLeftRight", borderColour = "black")
+    style_down <- createStyle(fontName = "Times New Roman", bgFill = "#c3ccf7", fgFill = "#c3ccf7", border = "TopBottomLeftRight", borderColour = "black")
+    style_p <- createStyle(fontName = "Times New Roman", bgFill = "#f7deb0", border = "TopBottomLeftRight", borderColour = "black")
+    style_other <- createStyle(fontName = "Times New Roman", bgFill = "#daf7d7", fgFill = "#daf7d7", border = "TopBottomLeftRight", borderColour = "black")
+    cell_n_font_style <- createStyle(fontName = "Times New Roman", border = "TopBottomLeftRight", borderColour = "black")
+    header_style <- createStyle(fontName = "Times New Roman", textDecoration = "bold", border = "TopBottomLeftRight", borderStyle = "double")
 
-  cat(paste0("\r", treatment, "...\t[90%] "))
+    cat(paste0("\r", treatment, "...\t[90%] "))
 
-  for (sheet_name in names(xl_list)) {
-    addWorksheet(wb, sheet_name)
-    #  setColWidths(wb, sheet_name, cols = other_cols, widths = 10)
-    #  setColWidths(wb, sheet_name, cols = lfc_cols, widths = 4)
-    #  setColWidths(wb, sheet_name, cols = p_cols, widths = 6)
+    for (sheet_name in names(xl_list)) {
+      addWorksheet(wb, sheet_name)
+      #  setColWidths(wb, sheet_name, cols = other_cols, widths = 10)
+      #  setColWidths(wb, sheet_name, cols = lfc_cols, widths = 4)
+      #  setColWidths(wb, sheet_name, cols = p_cols, widths = 6)
 
-    df <- xl_list[[sheet_name]]
-    df <- data.frame(lapply(df, clean_ASCII))
-    df[, numeric_cols] <- sapply(df[, numeric_cols], as.numeric)
+      df <- xl_list[[sheet_name]]
+      df <- data.frame(lapply(df, clean_ASCII))
+      df[, numeric_cols] <- sapply(df[, numeric_cols], as.numeric)
 
-    writeData(wb, sheet_name, df)
+      writeData(wb, sheet_name, df)
 
-    addStyle(wb, sheet_name, style = cell_n_font_style, rows = 2:(nrow(df) + 1), cols = 1:ncol(df), gridExpand = TRUE)
-    addStyle(wb, sheet_name, style = header_style, rows = 1, cols = 1:ncol(df), gridExpand = TRUE)
+      addStyle(wb, sheet_name, style = cell_n_font_style, rows = 2:(nrow(df) + 1), cols = 1:ncol(df), gridExpand = TRUE)
+      addStyle(wb, sheet_name, style = header_style, rows = 1, cols = 1:ncol(df), gridExpand = TRUE)
 
-    conditionalFormatting(wb, sheet_name, cols = p_cols[1], rows = 2:(nrow(df) + 1), rule = "<0.05", style = style_p)
-    conditionalFormatting(wb, sheet_name, cols = p_cols[2], rows = 2:(nrow(df) + 1), rule = "<0.05", style = style_p)
+      conditionalFormatting(wb, sheet_name, cols = p_cols[1], rows = 2:(nrow(df) + 1), rule = "<0.05", style = style_p)
+      conditionalFormatting(wb, sheet_name, cols = p_cols[2], rows = 2:(nrow(df) + 1), rule = "<0.05", style = style_p)
 
-    for (col in lfc_rna_cols) {
-      conditionalFormatting(wb, sheet_name, cols = col, rows = 2:(nrow(df) + 1), rule = ">0", style = style_up)
-      conditionalFormatting(wb, sheet_name, cols = col, rows = 2:(nrow(df) + 1), rule = "<0", style = style_down)
-    }
+      for (col in lfc_rna_cols) {
+        conditionalFormatting(wb, sheet_name, cols = col, rows = 2:(nrow(df) + 1), rule = ">0", style = style_up)
+        conditionalFormatting(wb, sheet_name, cols = col, rows = 2:(nrow(df) + 1), rule = "<0", style = style_down)
+      }
 
-    # colors for DMRs values (minus as blue as plus as red)
-    for (i.c in lfc_dmr_cols) {
-      for (i.r in 1:nrow(df)) { # first row in excel is the headers
-        # for cells with both plus and minus direction
-        if (length(grep("^-.*, [0-9]", df[i.r, i.c])) != 0 | length(grep("^[0-9].*, -[0-9]", df[i.r, i.c])) != 0) {
-          addStyle(wb, sheet_name,
-            style = style_other,
-            rows = i.r + 1,
-            cols = i.c,
-            gridExpand = TRUE
-          )
+      # colors for DMRs values (minus as blue as plus as red)
+      for (i.c in lfc_dmr_cols) {
+        for (i.r in 1:nrow(df)) { # first row in excel is the headers
+          # for cells with both plus and minus direction
+          if (length(grep("^-.*, [0-9]", df[i.r, i.c])) != 0 | length(grep("^[0-9].*, -[0-9]", df[i.r, i.c])) != 0) {
+            addStyle(wb, sheet_name,
+              style = style_other,
+              rows = i.r + 1,
+              cols = i.c,
+              gridExpand = TRUE
+            )
 
-          # for cells with minus direction
-        } else if (length(grep("-", df[i.r, i.c])) != 0) {
-          addStyle(wb, sheet_name,
-            style = style_down,
-            rows = i.r + 1,
-            cols = i.c,
-            gridExpand = TRUE
-          )
+            # for cells with minus direction
+          } else if (length(grep("-", df[i.r, i.c])) != 0) {
+            addStyle(wb, sheet_name,
+              style = style_down,
+              rows = i.r + 1,
+              cols = i.c,
+              gridExpand = TRUE
+            )
 
-          # for cells with plus direction
-        } else if (length(grep("^[0-9]", df[i.r, i.c])) != 0) {
-          addStyle(wb, sheet_name,
-            style = style_up,
-            rows = i.r + 1,
-            cols = i.c,
-            gridExpand = TRUE
-          )
+            # for cells with plus direction
+          } else if (length(grep("^[0-9]", df[i.r, i.c])) != 0) {
+            addStyle(wb, sheet_name,
+              style = style_up,
+              rows = i.r + 1,
+              cols = i.c,
+              gridExpand = TRUE
+            )
+          }
         }
       }
-    }
 
-    for (col in other_cols[other_cols %% 2 == 0]) {
-      conditionalFormatting(wb, sheet_name, style = style_other, rule = "!=0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
-      conditionalFormatting(wb, sheet_name, style = style_other, rule = "==0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
+      for (col in other_cols[other_cols %% 2 == 0]) {
+        conditionalFormatting(wb, sheet_name, style = style_other, rule = "!=0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
+        conditionalFormatting(wb, sheet_name, style = style_other, rule = "==0", rows = 2:(nrow(df) + 1), cols = col, gridExpand = TRUE)
+      }
     }
-  }
-  cat(paste0("\r", treatment, "...\t[100%]"))
-  if (save_excel) {
+    cat(paste0("\r", treatment, "...\t[100%]"))
     saveWorkbook(wb, paste0(output_dir, treatment, unique_or_not, "_groups.xlsx"), overwrite = T)
   }
 
@@ -583,7 +582,6 @@ expression_n_DMRs_merged_into_groups <- function(
     vol_list[["seed_specific_genes"]] <- seed_specific_new_df$gene_id
     vol_list_sig[["seed_specific_genes"]] <- filter(seed_specific_new_df, RNA_padj < 0.05)$gene_id
 
-    dir.create(paste0(output_dir, "volcano_plots/"), showWarnings = F)
 
     vol_plot_list <- list()
     for (i_n in 1:length(vol_df_list)) {
@@ -595,14 +593,15 @@ expression_n_DMRs_merged_into_groups <- function(
       col_rndm <- if (length(vol_df_list[[i_df]] == 1)) "random" else NULL
       # col_rndm <- if (grepl("stress", i_df)) "random" else NULL
 
-      x_lab <- ifelse(i_n > 9, "log2(FoldChange)", "")
-      y_lab <- ifelse((i_n - 1) %% 3 == 0, "-log10(padj)", "")
+      x_lab_title <- ifelse(i_n > 9, "log2(FoldChange)", "")
+      y_lab_title <- ifelse(((i_n - 1) %% 3) == 0, "-log10(padj)", "")
 
-      vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75, group_color = col_rndm, x_lab = x_lab, y_lab = y_lab)
+      vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75, group_color = col_rndm, x_lab_title = x_lab_title, y_lab_title = y_lab_title)
 
       if (combine_volcano_plots) {
         vol_plot_list[[i_df]] <- vol_plot
       } else {
+        dir.create(paste0(output_dir, "volcano_plots/"), showWarnings = F)
         dir.create(paste0(output_dir, "volcano_plots/", treatment), showWarnings = F)
         svg(file = paste0(output_dir, "volcano_plots/", treatment, "/volcano_", treatment, "_", i_df, "_groups.svg"), width = 4.25, height = 2, family = "serif")
         print(vol_plot)
