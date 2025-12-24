@@ -12,7 +12,8 @@ GCMS_met23_plot_save <- function(comp.name,
                                  box_col = "gray60",
                                  jitter_col = "#496b40",
                                  log_norm = TRUE,
-                                 path_for_save_file = "C:/Users/yonye/Migal/Rachel Amir Team - General/yonatan/methionine/GCMS_23/") {
+                                 image_formate = "pdf",
+                                 path_for_save_file = NULL) {
   library(dplyr)
   library(ggplot2)
   library(ggsignif)
@@ -22,11 +23,6 @@ GCMS_met23_plot_save <- function(comp.name,
   library(rlang)
   library(ggpubr)
   library(rstatix)
-
-  # remove "/" if its in the end of "path_for_save_file" row
-  if (substr(path_for_save_file, nchar(path_for_save_file) - 1 + 1, nchar(path_for_save_file)) == "/") {
-    path_for_save_file <- substr(path_for_save_file, 1, nchar(path_for_save_file) - 1)
-  }
 
   # if there is a pthway name in the file from lc_pipline
   plot_dir_name <- "plots"
@@ -64,21 +60,22 @@ GCMS_met23_plot_save <- function(comp.name,
 
   if (group_lines) {
     line_treatment <- grep(exp, data$X)
-    data$X[line_treatment] <- gsub("\\.[0-9]+", "", data$X[line_treatment])
+    data$X[line_treatment] <- gsub("\\.[0-9]+|_[0-9]+", "", data$X[line_treatment])
 
     data <- data[c(line_wt, line_treatment), ]
     n_exp_groups <- 1
   } else {
     # if there is technical triplicates
     # (finished with 'exp.1.1' instead of 'exp.1')
-    triplicates_exp <- grepl(paste0("^", exp, "\\.[0-9]+\\.[0-9]+"), data$X)
+    trip_char_vec <- paste0("^", exp, "\\.[0-9]+\\.[0-9]+|^", exp, "_[0-9]+\\.[0-9]+")
+    triplicates_exp <- grepl(trip_char_vec, data$X)
     if (sum(triplicates_exp) > 1) {
-       data$X[triplicates_exp] <- gsub("\\.[0-9]+$", "", data$X[triplicates_exp])
+      data$X[triplicates_exp] <- gsub("\\.[0-9]+$", "", data$X[triplicates_exp])
     }
-    line_exp <- grep(paste0("^", exp, "\\."), data$X)
+    line_exp <- grep(paste0("^", exp, "\\.|","^", exp, "_"), data$X)
     # exp_labels <- seq_along(line_exp)
     # data$X[line_exp] <- paste0(exp, "-", exp_labels)
-    data$X[line_exp] <- gsub("\\.", "-", data$X[line_exp])
+    data$X[line_exp] <- gsub("\\.|_", "-", data$X[line_exp])
 
     n_exp_groups <- length(unique(data$X[line_exp]))
     data <- data[c(line_wt, line_exp), ]
@@ -108,7 +105,7 @@ GCMS_met23_plot_save <- function(comp.name,
   p_labels_size <- ifelse(p_as_star, 4, 2)
 
 
-  y_max = max(stat.test$y.position, na.rm = T) * 1.06
+  y_max <- max(stat.test$y.position, na.rm = T) * 1.06
   y_min <- min(data$Y, na.rm = T)
   if (log_norm == T & y_max > 8.5) {
     y_min <- y_min * 0.9
@@ -180,12 +177,22 @@ GCMS_met23_plot_save <- function(comp.name,
     ) +
     stat_pvalue_manual(stat.test, label = p_labels, label.size = p_labels_size, hide.ns = T, family = "serif", face = "italic") + # , tip.length = 0.01)
     # annotate("text", label= p_value_vector, size = 8)
-    scale_y_continuous(expand = c(0,0), limits = c(y_min, y_max))
+    scale_y_continuous(expand = c(0, 0), limits = c(y_min, y_max))
 
-  dir.create(paste0(path_for_save_file, "/", plot_dir_name), showWarnings = F)
-  dir.create(paste0(path_for_save_file, "/", plot_dir_name, "/GCMS_", exp, "_", Sys.Date()), showWarnings = F)
 
-  ggsave(paste0(path_for_save_file, "/", plot_dir_name, "/GCMS_", exp, "_", Sys.Date(), "/", comp.name, ".png"),
-    plot = comp.plot, width = width, height = height
-  )
+  if (is.null(path_for_save_file)) {
+    comp.plot
+  } else {
+    # remove "/" if its in the end of "path_for_save_file" row
+    if (substr(path_for_save_file, nchar(path_for_save_file) - 1 + 1, nchar(path_for_save_file)) == "/") {
+      path_for_save_file <- substr(path_for_save_file, 1, nchar(path_for_save_file) - 1)
+    }
+
+    dir.create(paste0(path_for_save_file, "/", plot_dir_name), showWarnings = F)
+    dir.create(paste0(path_for_save_file, "/", plot_dir_name, "/GCMS_", exp, "_", Sys.Date()), showWarnings = F)
+
+    ggsave(paste0(path_for_save_file, "/", plot_dir_name, "/GCMS_", exp, "_", Sys.Date(), "/", comp.name, ".", image_formate),
+      plot = comp.plot, width = width, height = height
+    )
+  }
 }
