@@ -361,7 +361,7 @@ linear_plot_meth_rna(
 ## GCMS plots
 Will take tables of values and output an boxplot, to replicates or grouped samples (using '*group_lines = TRUE*' argument)
 ```r
-source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/metabolome_boxplot.R")
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/metabolome_boxplot_yo.R")
 
 GCMS_results_df <- read.csv("PATH/TO/mto1_GCMS.csv")
 

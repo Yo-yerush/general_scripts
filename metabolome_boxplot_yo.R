@@ -1,19 +1,19 @@
 metabolome_boxplot <- function(comp.name,
-                                 df,
-                                 exp = "mutant",
-                                 ctrl = "wt",
-                                 title_x = "",
-                                 log_norm = TRUE,
-                                 title_y = ifelse(log_norm, "log(nmol/gr)", "nmol/gr"),
-                                 group_lines = TRUE,
-                                 p_as_star = TRUE,
-                                 x_cex = 1,
-                                 box_col = "gray60",
-                                 jitter_col = "#496b40",
-                                 width = 2.01,
-                                 height = 2.53,
-                                 path_for_save_file = NULL,
-                                 image_formate = "pdf") {
+                               df,
+                               exp = "mutant",
+                               ctrl = "wt",
+                               title_x = "",
+                               log_norm = TRUE,
+                               title_y = ifelse(log_norm, "log(nmol/gr)", "nmol/gr"),
+                               group_lines = TRUE,
+                               p_as_star = TRUE,
+                               x_cex = 1,
+                               box_col = "gray60",
+                               jitter_col = "#496b40",
+                               width = 2.01,
+                               height = 2.53,
+                               path_for_save_file = NULL,
+                               image_formate = "pdf") {
   library(dplyr)
   library(ggplot2)
   library(ggsignif)
@@ -24,22 +24,9 @@ metabolome_boxplot <- function(comp.name,
   library(ggpubr)
   library(rstatix)
 
-  # if there is a pthway name in the file from lc_pipline
-  plot_dir_name <- "plots"
-
-  # names(df) = gsub("\\.[0-9+]", "", names(df))
-  names(df)[1] <- "X"
-
-  y.axis.hight <- 1.1
-  y.label.hight <- 1
-
-  bar.width <- 0.5
-  error.width <- 0.1
-
   ##############
 
-
-
+  names(df)[1] <- "X"
   data <- data.frame(colnames(df), unlist(df[df$X == comp.name, ], use.names = F))[-1, ]
 
   names(data) <- data.frame(colnames(df), unlist(df[df$X == comp.name, ], use.names = F))[1, ]
@@ -63,7 +50,7 @@ metabolome_boxplot <- function(comp.name,
     if (sum(triplicates_exp) > 1) {
       data$X[triplicates_exp] <- gsub("\\.[0-9]+$", "", data$X[triplicates_exp])
     }
-    line_exp <- grep(paste0("^", exp, "\\.|","^", exp, "_"), data$X)
+    line_exp <- grep(paste0("^", exp, "\\.|", "^", exp, "_"), data$X)
     # exp_labels <- seq_along(line_exp)
     # data$X[line_exp] <- paste0(exp, "-", exp_labels)
     data$X[line_exp] <- gsub("\\.|_", "-", data$X[line_exp])
@@ -72,17 +59,13 @@ metabolome_boxplot <- function(comp.name,
     data <- data[c(line_wt, line_exp), ]
   }
 
-  ### normelize y-values
+  title_main <- comp.name
+  level.order <- unique(data$X)
+
+  ############### normelize y-values
   if (log_norm) {
     data$Y <- log1p(data$Y)
   }
-
-
-  title_main <- comp.name
-  #  X = names(data)[1]
-  #  Y = names(data)[2]
-  level.order <- unique(data$X)
-
 
   ############### pValue vector
   stat.test <- data %>%
@@ -104,39 +87,13 @@ metabolome_boxplot <- function(comp.name,
     y_min <- y_min * 0.8
   }
 
-  # p.value_fun <- function(line, ctrl = data$methionine[line_wt]) {
-  #  t.test_p.value = t.test(line,ctrl, var.equal = T)$p.value
-  #
-  #  if (t.test_p.value <= 0.05 & t.test_p.value > 0.01) {
-  #    p_value_lable = "*"
-  #  } else if (t.test_p.value <= 0.01 & t.test_p.value > 0.001) {
-  #    p_value_lable = "**"
-  #  } else if (t.test_p.value <= 0.001) {
-  #    p_value_lable = "***"
-  #  } else if (t.test_p.value > 0.05) {
-  #    p_value_lable = "ns"
-  #  }
-  #  return(p_value_lable)
-  # }
-
-  # pValue vector (arranged)
-  # p_value_vector = c("",
-  #                   p.value_fun(data$methionine[line_1]),
-  #                   p.value_fun(data$methionine[line_2]),
-  #                   p.value_fun(data$methionine[line_3]))
-
-
-
-
   #########################
-
 
   if (nchar(comp.name) >= 40) {
     comp.name <- paste(substring(comp.name, 1, 35), "....", substring(comp.name, nchar(comp.name) - 1, nchar(comp.name)), sep = "")
     title_main <- comp.name
   }
 
-  # c("firebrick4","grey70")
   #########################
   comp.plot <- data %>%
     ggplot(aes(x = factor(x = X, level = level.order), y = Y)) +
@@ -179,9 +136,7 @@ metabolome_boxplot <- function(comp.name,
       path_for_save_file <- substr(path_for_save_file, 1, nchar(path_for_save_file) - 1)
     }
 
-    dir.create(paste0(path_for_save_file, "/", plot_dir_name), showWarnings = F)
-    dir.create(paste0(path_for_save_file, "/", plot_dir_name, "/GCMS_", exp, "_", Sys.Date()), showWarnings = F)
-
+    dir.create(paste0(path_for_save_file, "/GCMS_", exp, "_", Sys.Date()), showWarnings = F)
     ggsave(paste0(path_for_save_file, "/", plot_dir_name, "/GCMS_", exp, "_", Sys.Date(), "/", comp.name, ".", image_formate),
       plot = comp.plot, width = width, height = height
     )
