@@ -7,6 +7,7 @@ plot_volcano <- function(
     title = NULL,
     y_lab_title = "-log10(padj)", 
     x_lab_title = "log2(FoldChange)",
+    leged_title = NULL,
     intgenes = NULL,
     intgenes_color = "steelblue",
     labels_intgenes = TRUE,
@@ -76,6 +77,12 @@ plot_volcano <- function(
     palette_vals <- c("nonDE" = "gray60", "Upregulated" = "#a84848", "Downregulated" = "#5d60ba")
     legend_name <- "Gene Expression"
   }
+  ##################
+
+  if (!is.null(leged_title)) {
+     legend_name <- leged_title
+  }
+
   ##################
 
   if ("baseMean" %in% names(mydf)) {

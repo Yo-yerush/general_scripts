@@ -593,10 +593,11 @@ expression_n_DMRs_merged_into_groups <- function(
       col_rndm <- if (length(vol_df_list[[i_df]] == 1)) "random" else NULL
       # col_rndm <- if (grepl("stress", i_df)) "random" else NULL
 
-      x_lab_title <- ifelse(i_n > 9, "log2(FoldChange)", "")
-      y_lab_title <- ifelse(((i_n - 1) %% 3) == 0, "-log10(padj)", "")
+      x_lab_title <- if(i_n > 9) "log2(FoldChange)" else ""
+      y_lab_title <- if(((i_n - 1) %% 3) == 0) "-log10(padj)" else ""
+      leged_title <- if (combine_volcano_plots) "" else NULL
 
-      vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75, group_color = col_rndm, x_lab_title = x_lab_title, y_lab_title = y_lab_title)
+      vol_plot <- plot_volcano(rna_df, gene_groups = vol_list_sig[vol_df_list[[i_df]]], dot_size = 0.75, group_color = col_rndm, x_lab_title = x_lab_title, y_lab_title = y_lab_title, leged_title = leged_title)
 
       if (combine_volcano_plots) {
         vol_plot_list[[i_df]] <- vol_plot
@@ -614,7 +615,7 @@ expression_n_DMRs_merged_into_groups <- function(
         paste0(output_dir, "volcano_", treatment, "_all_groups.svg"),
         plot = gridExtra::grid.arrange(grobs = vol_plot_list, nrow = 4, ncol = 3),
         width = 12.5,
-        height = 8
+        height = 8.5
       )
     }
   }
@@ -684,5 +685,5 @@ expression_n_DMRs_merged_into_groups <- function(
     dev.off()
   }
 
-  cat(paste0("\r", treatment, "...\t[done] \n"))
+  cat(paste0("\r", treatment, "...\t[done]   \n"))
 }
