@@ -5,6 +5,8 @@ plot_volcano <- function(
     ylim_up = NULL,
     vlines = NULL,
     title = NULL,
+    y_lab = "-log10(padj)", 
+    x_lab = "log2(FoldChange)",
     intgenes = NULL,
     intgenes_color = "steelblue",
     labels_intgenes = TRUE,
@@ -164,6 +166,8 @@ plot_volcano <- function(
         )
       }
     }
+
+    p <- p + labs(x = x_lab_name, y = y_lab_name)
   }
 
   p

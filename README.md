@@ -6,20 +6,22 @@ Workflows:
 
 4. Plot **delta** methylation levels from '*.wig*' or '*.CX_report.txt*' files
 5. genePlots
-6. long/short TEs
-7. sub-context analysis
+6. long/short TEs - add it
+7. sub-context analysis - add it
 
 8. RNAseq pipeline - using [RSEM software](https://github.com/deweylab/RSEM)
 9. RNAseq downstream pipeline - fix it
 10. DEGs - GO term summary (Term and its offspring)
 11. DMRs-DEGs correlations
-12. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data - add it
-13. Classify into gene groups (epigenetic, metabolism, stress-related, etc.) - add it
+12. Create 'expression + DMRs' integrated tables from WGBS and RNAseq data
+13. Classify the integrated table into gene groups (epigenetic, metabolism, stress-related, etc.)
 14. Methylated TEs near DEGs - add it
 
 15. KEGG pathways - enrichment and viewPlots - add it
 16. GO analysis - add it
 17. REVIGO scripts - add it
+    
+18. Metabolome Box-Plots for grouped or replicates data (include normalization)
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
@@ -355,6 +357,41 @@ linear_plot_meth_rna(
 />
 
 
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+## Create 'expression + DMRs' integrated tables from WGBS and RNAseq data
+
+```r
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/expression_n_DMRs_merge_results.R")
+merged_df <- expression_n_DMRs_merge_results(
+    treatment = "mto1_vs_wt",
+    DMRs_results_directory = "/PATH/TO/Methylome.At/results/mto1_vs_wt/genome_annotation/",
+    RNAseq_results_directory = "/PATH/TO/met23/mto1_vs_wt/"
+)
+
+write.csv(merged_df, "/PATH/TO/merge_rnaseq_methylome_tables_mto1_vs_wt.csv", row.names = F)
+```
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+## Classify the integrated table into gene groups (epigenetic, metabolism, stress-related, etc.)
+
+```r
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/expression_n_DMRs_merged_into_groups.R")
+expression_n_DMRs_merged_into_groups(
+  treatment = "mto1_vs_wt",
+  merged_results_df = merged_df, # the merged data framte from the section above
+  save_excel = TRUE,
+  save_volcano_plots = TRUE,
+  save_pie_plots = FALSE,
+  combine_volcano_plots = TRUE, # if false, will output seperate plots for each group
+  make_it_unique = FALSE, # if TRUE, each gene can obtain in one group only (the first by order)
+  datasets_dir = "https://raw.githubusercontent.com/Yo-yerush/RA_lab_db/refs/heads/main/Arabidopsis/Groups_genes_list",
+  output_dir = "./"
+)
+```
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
