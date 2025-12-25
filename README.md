@@ -6,7 +6,7 @@ Workflows:
 
 4. Plot **delta** methylation levels from '*.wig*' or '*.CX_report.txt*' files
 5. genePlots
-6. long/short TEs - add it
+6. long/short TEs
 7. sub-context analysis - add it
 
 8. RNAseq pipeline - using [RSEM software](https://github.com/deweylab/RSEM)
@@ -195,6 +195,62 @@ genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_r
   alt="fig"
   width="50%"
 />
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+## TE size and distance from centromer
+
+```r
+source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/TEs_size_n_distance.R")
+
+samples_table <- read.csv("/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/Methylome.At/samples_table/samples_table_mto1.txt")
+TE_context_list <- TE_delta_meth(samples_table, n.cores = 6)
+
+#############################################
+## TE methylation levels (delta) and size
+TE_delta_list <- list(
+    te_size_plot(TE_context_list[["CG"]]),
+    te_size_plot(TE_context_list[["CHG"]]),
+    te_size_plot(TE_context_list[["CHH"]])
+)
+
+ggsave(
+    filename = paste0(output_path, "TE_size_delta_scatter.png"),
+    plot = gridExtra::grid.arrange(grobs = TE_delta_list, nrow = 1, ncol = 3),
+    width = 10500,
+    height = 2500,
+    units = "px",
+    dpi = 1200
+)
+
+#############################################
+## TE methylation levels (delta) and distance from centromer
+TE_distance_plot <- distance_from_centromer(TE_context_list, TE_gr)
+
+ggsave(
+    filename = paste0(output_path, "centromere_distance_methylations.png"),
+    plot = TE_distance_plot,
+    width = 3500,
+    height = 2500,
+    units = "px",
+    dpi = 1200
+)
+```
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+## long/short TEs
+
+```r
+#### use long/short TEs script from mto1 paper
+#### create new delta_metaplots script
+delta_metaplots(list_type = "all", superfamily = "", max_value = 0.05, context_legend = T)
+delta_metaplots("long", context_legend = T)
+delta_metaplots("short")
+delta_metaplots("superfamilies", "Gypsy")
+```
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
