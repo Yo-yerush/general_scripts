@@ -258,12 +258,12 @@ AT1TE00020 14828054  0.0000000000      CG   126 RC/Helitron
   <img
     src="https://github.com/Yo-yerush/general_scripts/blob/main/TE_size_delta_scatter.png"
     alt="fig"
-    width="49%"
+    width="75%"
   />
   <img
     src="https://github.com/Yo-yerush/general_scripts/blob/main/centromere_distance_methylations.png"
     alt="fig"
-    width="49%"
+    width="25%"
   />
 </div>
 
