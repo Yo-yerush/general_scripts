@@ -27,12 +27,12 @@ te_width <- data.frame(
     width = (TE_df$Transposon_max_End - TE_df$Transposon_min_Start),
     superfamily = (TE_df$Transposon_Super_Family)
 )
-long_tes <- te_width[te_width$width >= long_TE_size, 1]
-short_tes <- te_width[te_width$width <= short_TE_size, 1]
+long_tes <- te_width[te_width$width >= 4000, 1]
+short_tes <- te_width[te_width$width <= 500, 1]
 
 TE_gr <- edit_TE_file(TE_df)
 
-rm(c("TE_df", "TE_file_path"))
+rm(list = c("TE_df", "TE_file_path"))
 
 ##################################################################################
 
@@ -47,7 +47,7 @@ TE_delta_meth <- function(var_table, n.cores = 6) {
         list(path = var1_path, name = var1_name),
         list(path = var2_path, name = var2_name)
     )
-    load_vars <- mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name, T, "CX_report"), mc.cores = ifelse(n.cores > 1, 2, 1))
+    load_vars <- mclapply(var_args, function(x) load_replicates(x$path, ifelse(n.cores > 1, n.cores / 2, 1), x$name, T, "CX_report"), mc.cores = ifelse(n.cores > 1, 2, 1))
     meth_ctrl <- trimm_and_rename(load_vars[[1]])
     meth_trnt <- trimm_and_rename(load_vars[[2]])
 
@@ -98,17 +98,17 @@ calculate_te_methylation <- function(meth_data, TE_gr, context, is.delta = F) {
 
 ##################################################################################
 
-te_size_plot <- function(x, line_col = "red4", point_col = "gray20") {
-    ggplot(x, aes(x = width, y = avg_meth, color = sample)) +
-        geom_vline(xintercept = 4000, linetype = "dashed", color = "gray") +
+te_size_plot <- function(x, cntx, line_col = "red4", point_col = "gray20") {
+    ggplot(x[[cntx]], aes(x = width, y = avg_meth, color = sample)) +
+        geom_vline(xintercept = 4000, linetype = "dashed", color = "gray60") +
         geom_point(alpha = 0.6, size = 0.3, shape = 20) +
         geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-        smooth_p <- geom_smooth(
-        method = lm, formula = y ~ splines::bs(x, 3),
-        se = TRUE,
-        linewidth = 0.5,
-        color = line_col
-    ) +
+        geom_smooth(
+            method = lm, formula = y ~ splines::bs(x, 3),
+            se = TRUE,
+            linewidth = 0.5,
+            color = line_col
+        ) +
         scale_color_manual(values = c("delta" = point_col)) +
         labs(
             title = paste(cntx, "context"),
@@ -137,7 +137,7 @@ te_size_plot <- function(x, line_col = "red4", point_col = "gray20") {
 
 ##################################################################################
 
-distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, lines_col = c("#3d53b4", "#3b8f3e", "#bb4949")) {
+distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, window_size = 1e6, lines_col = c("#3d53b4", "#3b8f3e", "#bb4949")) {
     # centromers positions
     cen_pos <- c(14.845, 3.44, 13.855, 3.13, 11.795) * 1e6
     te_distance <- data.frame(
@@ -149,14 +149,16 @@ distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, lines_col
     for (cen_i in 1:5) {
         te_distance$centromere[te_distance$chr == paste0("Chr", cen_i)] <- cen_pos[cen_i]
     }
-    te_distance$distance <- abs(te_distance$centromere - te_distance$pos) / 1e6
+    te_distance$distance <- abs(te_distance$centromere - te_distance$pos)
     all_cx_dis <- rbind(
         TE_meth_delta_list[["CG"]],
         TE_meth_delta_list[["CHG"]],
         TE_meth_delta_list[["CHH"]]
     )
     keep_col <- grep("te_id|distance", names(te_distance))
-    te_distance_merged <- merge(te_distance[, keep_col], all_cx_dis, by = "te_id")
+    te_distance_merged_out <- merge(te_distance[, keep_col], all_cx_dis, by = "te_id")
+    te_distance_merged <- te_distance_merged_out
+    te_distance_merged$distance <- te_distance_merged$distance / window_size
 
     te_distance_cntx <- rbind(
         te_distance_merged %>%
@@ -224,8 +226,11 @@ distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, lines_col
             y = max(te_distance_cntx$avg_meth) * 0.98,
             label = c("CG", "\nCHG", "\n\nCHH"),
             hjust = 0, vjust = 0.75, size = 3.25,
-            color = lines_col, fontface = "bold"
+            color = lines_col, fontface = "bold", family = "serif"
         )
 
-    te_distance_plot
+    return(list(
+        df = select(te_distance_merged_out, -sample),
+        plot = te_distance_plot
+    ))
 }

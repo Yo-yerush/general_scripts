@@ -204,15 +204,15 @@ genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_r
 ```r
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/TEs_size_n_distance.R")
 
-samples_table <- read.csv("/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/Methylome.At/samples_table/samples_table_mto1.txt")
+samples_table <- read.table("/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/Methylome.At/samples_table/samples_table_mto1.txt")
 TE_context_list <- TE_delta_meth(samples_table, n.cores = 6)
 
 #############################################
 ## TE methylation levels (delta) and size
 TE_delta_list <- list(
-    te_size_plot(TE_context_list[["CG"]]),
-    te_size_plot(TE_context_list[["CHG"]]),
-    te_size_plot(TE_context_list[["CHH"]])
+    te_size_plot(TE_context_list, "CG"),
+    te_size_plot(TE_context_list, "CHG"),
+    te_size_plot(TE_context_list, "CHH")
 )
 
 ggsave(
@@ -226,17 +226,37 @@ ggsave(
 
 #############################################
 ## TE methylation levels (delta) and distance from centromer
-TE_distance_plot <- distance_from_centromer(TE_context_list, TE_gr)
+TE_distance <- distance_from_centromer(TE_context_list, TE_gr, window_size = 1e6)
 
 ggsave(
     filename = paste0(output_path, "centromere_distance_methylations.png"),
-    plot = TE_distance_plot,
+    plot = TE_distance$plot,
     width = 3500,
     height = 2500,
     units = "px",
     dpi = 1200
 )
+
 ```
+
+distance from centromer data frame:
+
+> head(TE_distance$df)
+```
+     te_id distance      avg_meth context width superfamily
+AT1TE00010 14833064  0.0000000000     CHG    79   LTR/Copia
+AT1TE00010 14833064 -0.0005698006     CHH    79   LTR/Copia
+AT1TE00010 14833064  0.0000000000      CG    79   LTR/Copia
+AT1TE00020 14828054  0.0000000000     CHG   126 RC/Helitron
+AT1TE00020 14828054  0.0317174054     CHH   126 RC/Helitron
+AT1TE00020 14828054  0.0000000000      CG   126 RC/Helitron
+```
+
+#### examples output
+
+| TE size & delta scatter | Centromere distance |
+|-------------------------|---------------------|
+| <img src="https://github.com/Yo-yerush/general_scripts/blob/main/TE_size_delta_scatter.png" alt="fig" width="100%"/> | <img src="https://github.com/Yo-yerush/general_scripts/blob/main/centromere_distance_methylations.png" alt="fig" width="100%"/> |
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
