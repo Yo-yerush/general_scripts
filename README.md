@@ -254,9 +254,18 @@ AT1TE00020 14828054  0.0000000000      CG   126 RC/Helitron
 
 #### examples output
 
-| TE size & delta scatter | Centromere distance |
-|-------------------------|---------------------|
-| <img src="https://github.com/Yo-yerush/general_scripts/blob/main/TE_size_delta_scatter.png" alt="fig" width="100%"/> | <img src="https://github.com/Yo-yerush/general_scripts/blob/main/centromere_distance_methylations.png" alt="fig" width="100%"/> |
+<div style="display: flex; gap: 10px;">
+  <img
+    src="https://github.com/Yo-yerush/general_scripts/blob/main/TE_size_delta_scatter.png"
+    alt="fig"
+    width="49%"
+  />
+  <img
+    src="https://github.com/Yo-yerush/general_scripts/blob/main/centromere_distance_methylations.png"
+    alt="fig"
+    width="49%"
+  />
+</div>
 
 -----------------------------------------------------------------
 -----------------------------------------------------------------
