@@ -258,12 +258,12 @@ AT1TE00020 14828054  0.0000000000      CG   126 RC/Helitron
   <img
     src="https://github.com/Yo-yerush/general_scripts/blob/main/TE_size_delta_scatter.png"
     alt="fig"
-    width="75%"
+    width="74%"
   />
   <img
     src="https://github.com/Yo-yerush/general_scripts/blob/main/centromere_distance_methylations.png"
     alt="fig"
-    width="25%"
+    width="24%"
   />
 </div>
 
@@ -445,14 +445,23 @@ linear_plot_meth_rna(
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
-## Create 'expression + DMRs' integrated tables from WGBS and RNAseq data
+## Create 'expression + DMRs' integrated tables from WGBS and RNAseq results
+*by default, return **non-unique** IDs data frame if there is **>1 DMR** within gene-body/promoter*
+*if 'make_it_unique = TRUE', so the DMR's log2FC column will returned with non-numeric values*
+* *DMRs files outputed from 'Methylome.At' pipeline with 'genome_annotations' directory*
+* *the RNAseq result file must have gene_id+log2FC+padj+pvalue column (1-4 positions; will change to this names)*
 
 ```r
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/expression_n_DMRs_merge_results.R")
+
+RNAseq_results <- read.csv("/PATH/TO/all_genes_results_mut_vs_wt.csv") # can filter data frame
+
 merged_df <- expression_n_DMRs_merge_results(
-    treatment = "mto1_vs_wt",
-    DMRs_results_directory = "/PATH/TO/Methylome.At/results/mto1_vs_wt/genome_annotation/",
-    RNAseq_results_directory = "/PATH/TO/met23/mto1_vs_wt/"
+    DMRs_results_directory = "/PATH/TO/Methylome.At/results/mut_vs_wt/genome_annotation/",
+    RNAseq_results = RNAseq_results,
+    make_it_unique = FALSE,
+    DMR_sep = ", ", # if unique
+    empty_DMR = "" # if unique
 )
 
 write.csv(merged_df, "/PATH/TO/merge_rnaseq_methylome_tables_mto1_vs_wt.csv", row.names = F)
@@ -462,6 +471,7 @@ write.csv(merged_df, "/PATH/TO/merge_rnaseq_methylome_tables_mto1_vs_wt.csv", ro
 -----------------------------------------------------------------
 
 ## Classify the integrated table into gene groups (epigenetic, metabolism, stress-related, etc.)
+*return **unique** IDs data frame if there is **>1 DMR** within annotation*
 
 ```r
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/expression_n_DMRs_merged_into_groups.R")

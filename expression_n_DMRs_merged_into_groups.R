@@ -360,7 +360,7 @@ expression_n_DMRs_merged_into_groups <- function(
 
     ### make it unique or not (if each gene will be in one group or all related groups)
     tmp_loop_df$tmp2 <- paste0(tmp_loop_df$gene_id, tmp_loop_df$CG_Genes, tmp_loop_df$CHG_Genes, tmp_loop_df$CHH_Genes, tmp_loop_df$CG_Promoters, tmp_loop_df$CHG_Promoters, tmp_loop_df$CHH_Promoters)
-    if (make_it_unique == F) {
+    if (!make_it_unique) {
       tmp_loop_df <- tmp_loop_df %>%
         distinct(tmp2, .keep_all = TRUE) %>%
         dplyr::select(-tmp2)
