@@ -460,6 +460,7 @@ merged_df <- expression_n_DMRs_merge_results(
     DMRs_results_directory = "/PATH/TO/Methylome.At/results/mut_vs_wt/genome_annotation/",
     RNAseq_results = RNAseq_results,
     make_it_unique = FALSE,
+    designed_excel_output = NULL, # write output prefix to produce excel file
     DMR_sep = ", ", # if unique
     empty_DMR = "" # if unique
 )
