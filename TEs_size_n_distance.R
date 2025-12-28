@@ -137,7 +137,7 @@ te_size_plot <- function(x, cntx, line_col = "red4", point_col = "gray20") {
 
 ##################################################################################
 
-distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, window_size = 1e6, lines_col = c("#3d53b4", "#3b8f3e", "#bb4949")) {
+distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, window_size = 1e6, lines_col = c("#3d53b4", "#3b8f3e", "#bb4949"), y_max = NULL, y_min = NULL, y_breaks = NULL) {
     # centromers positions
     cen_pos <- c(14.845, 3.44, 13.855, 3.13, 11.795) * 1e6
     te_distance <- data.frame(
@@ -159,6 +159,8 @@ distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, window_si
     te_distance_merged_out <- merge(te_distance[, keep_col], all_cx_dis, by = "te_id")
     te_distance_merged <- te_distance_merged_out
     te_distance_merged$distance <- te_distance_merged$distance / window_size
+
+    ########
 
     te_distance_cntx <- rbind(
         te_distance_merged %>%
@@ -192,6 +194,22 @@ distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, window_si
         as.data.frame() %>%
         filter(avg_meth != max(avg_meth, na.rm = TRUE))
 
+    ########
+
+    y_axis_limits <- if (!is.null(y_max) | !is.null(y_min)) {
+        if (!is.null(y_breaks)) {
+            y_breaks <- c(y_min, 0, y_max)
+        }
+        scale_y_continuous(
+            limits = c(y_min, y_max),
+            breaks = y_breaks
+        )
+    } else {
+       geom_blank()
+    }
+
+    ########
+
     te_distance_plot <- ggplot(data = te_distance_cntx, aes(x = distance, y = avg_meth, color = context, group = context)) +
         geom_line(linewidth = 0.85) +
         theme_bw() + # theme_classic() +
@@ -217,10 +235,7 @@ distance_from_centromer <- function(TE_meth_delta_list, TE_gr = TE_gr, window_si
             labels = seq(0, 15, by = 5),
             expand = c(0, 0)
         ) +
-        scale_y_continuous(
-            limits = c(-0.001, max(te_distance_cntx$avg_meth)),
-            breaks = c(0, 0.02, 0.04)
-        ) +
+        y_axis_limits +
         annotate("text",
             x = 12.75, # 12.25,
             y = max(te_distance_cntx$avg_meth) * 0.98,

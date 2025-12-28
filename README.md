@@ -204,7 +204,7 @@ genePlot_fun(tair_id, var1_path, var2_path, var1_name, var2_name, methylome_at_r
 ```r
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/TEs_size_n_distance.R")
 
-samples_table <- read.table("/home/yoyerush/yo/methylome_pipeline/Methylome.At_180825/Methylome.At/samples_table/samples_table_mto1.txt")
+samples_table <- read.table("PATH/TO/samples_table_mto1.txt")
 TE_context_list <- TE_delta_meth(samples_table, n.cores = 6)
 
 #############################################
@@ -216,7 +216,7 @@ TE_delta_list <- list(
 )
 
 ggsave(
-    filename = paste0(output_path, "TE_size_delta_scatter.png"),
+    filename = "TE_size_delta_scatter.png",
     plot = gridExtra::grid.arrange(grobs = TE_delta_list, nrow = 1, ncol = 3),
     width = 10500,
     height = 2500,
@@ -229,7 +229,7 @@ ggsave(
 TE_distance <- distance_from_centromer(TE_context_list, TE_gr, window_size = 1e6)
 
 ggsave(
-    filename = paste0(output_path, "centromere_distance_methylations.png"),
+    filename = "TE_centromere_distance_delta.png",
     plot = TE_distance$plot,
     width = 3500,
     height = 2500,
