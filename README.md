@@ -1,10 +1,10 @@
 Workflows:
 
-1. Download SRA files (as '*.fastq*')
+1. Download SRA files (as `.fastq`)
 2. WGBS pipeline - using [Bismark software](https://www.bioinformatics.babraham.ac.uk/projects/bismark/#:~:text=Bismark%20is%20a%20program%20to%20map%20bisulfite%20treated,the%20methylation%20levels%20of%20their%20samples%20straight%20away.)
 3. [Methylome.At](https://github.com/Yo-yerush/Methylome.At) downstream pipeline
 
-4. Plot **delta** methylation levels from '*.wig*' or '*.CX_report.txt*' files
+4. Plot **delta** methylation levels from `.wig` or `.CX_report.txt` files
 5. genePlots
 6. long/short TEs
 7. sub-context analysis - add it
@@ -55,8 +55,8 @@ wt_2    PATH/TO/FILE/wt2_R1.fastq
 wt_2    PATH/TO/FILE/wt2_R2.fastq
 ```
 
-Run Bismark to get only '**.CX_report.txt**' file
-* *run without '--cx' option to get all output files*
+Run Bismark to get only `.CX_report.txt` file
+* *run without `--cx` option to get all output files*
 ```bash
 .run_bismark_yo.sh -s ./dml3_NS/bismark_dml3_samples.txt -g /PATH/TO/TAIR10_chr_all.fas.gz -o ./dml3_NS/bismark_results -n 32 -m 16G --cx
 ```
@@ -79,10 +79,10 @@ chmod +x ./setup_env.sh
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
-## Calculate and plot '*delta*' methylation levels
-Download '[*Stroud et al. (2013)*](https://pubmed.ncbi.nlm.nih.gov/23313553/)' '**.wig**' files  (*SRA experiment: '[SRP014726](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP014726&o=biosample_s%3Aa%3Bacc_s%3Aa)'*) and use '[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_wig_script.r)' script.
-This will save '**.csv**' files of the total-methylation delta (mutants compared to WT).
-In this example, *mto1* mutant '**.csv**' file created by '**.CX_report.txt**' (output from Bismark).
+## Calculate and plot `delta` methylation levels
+Download '[*Stroud et al. (2013)*](https://pubmed.ncbi.nlm.nih.gov/23313553/)' `.wig` files  (*SRA experiment: '[SRP014726](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP014726&o=biosample_s%3Aa%3Bacc_s%3Aa)'*) and use `[mutants compare_delta_df.r](https://github.com/Yo-yerush/general_scripts/blob/main/delta_df_from_wig_script.r)` script.
+This will save `.csv` files of the total-methylation delta (mutants compared to WT).
+In this example, *mto1* mutant `.csv` file created by `.CX_report.txt` (output from Bismark).
 
 #### Then to create **ChrPlots** run the following commands
 *  *use <TE_as_gr = NULL> argument to remove TE density from the plot*
@@ -147,8 +147,8 @@ dev.off()
 
 ## genePlots of methylations over the gene body and its 2kb upstream region
 #### One or multiple TAIR ID(s)
-#### This script use 'CX_report' files as input
-* *can add DMRs results (using 'Methylome.At' pipeline results)*
+#### This script use `CX_report` files as input
+* *can add DMRs results (using `Methylome.At` pipeline results)*
 #### Run in multiple cores are avilable for CX_repots reading files. in default: n_cores => total samples number 
 #### To create **genePlots** use the following script
 ```r
@@ -182,7 +182,7 @@ var2_path <- c(
 n_cores <- length(c(var1_path, var2_path))
 
 # DMRs results
-# use 'NULL' if there is no 'Methylome.At' results output
+# use `NULL` if there is no `Methylome.At` results output
 methylome_at_results <- "/PATH/TO/Methylome.At/results/mto1_vs_wt"
 
 # run genePlots scripts
@@ -309,8 +309,8 @@ wt_2    PATH/TO/FILE/wt2_R1.fastq
 wt_2    PATH/TO/FILE/wt2_R2.fastq
 ```
 
-Run RSEM to get only '**.genes.results**' file
-* *run without '--genes_results' option to get all output files*
+Run RSEM to get only `.genes.results` file
+* *run without `--genes_results` option to get all output files*
 ```bash
 wget https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/run_rsem_yo.sh
 chmod +x run_rsem_yo.sh
@@ -389,7 +389,7 @@ Water deprivation          40           102            1.55  1.4e-03       1.91 
 
 ## DMRs-DEGs correlations
 First, make average methylation level for each sample, in each context, and for each gene feature (promoter, CDS, etc.)
-* *note: 'average_methylation_over_gene_features' function will run **42** jobs in parallel (max)*
+* *note: `average_methylation_over_gene_features` function will run **42** jobs in parallel (max)*
 ```r
 sample_file_path <- "/PATH/TO/samples_table.txt"
 output_path <- "/PATH/TO/OUTPUT/DIRECTORY/"
@@ -447,8 +447,8 @@ linear_plot_meth_rna(
 
 ## Create 'expression + DMRs' integrated tables from WGBS and RNAseq results
 *by default, return **non-unique** IDs data frame if there is **>1 DMR** within gene-body/promoter*
-*if 'make_it_unique = TRUE', so the DMR's log2FC column will returned with non-numeric values*
-* *DMRs files outputed from 'Methylome.At' pipeline with 'genome_annotations' directory*
+*if `make_it_unique = TRUE`, so the DMR's log2FC column will returned with non-numeric values*
+* *DMRs files outputed from `Methylome.At` pipeline with `genome_annotations` directory*
 * *the RNAseq result file must have gene_id+log2FC+padj+pvalue column (1-4 positions; will change to this names)*
 
 ```r
@@ -492,7 +492,7 @@ expression_n_DMRs_merged_into_groups(
 -----------------------------------------------------------------
 
 ## GCMS plots
-Will take tables of values and output an boxplot, to replicates or grouped samples (using '*group_lines = TRUE*' argument)
+Will take tables of values and output an boxplot, to replicates or grouped samples (using `group_lines = TRUE` argument)
 ```r
 source("https://raw.githubusercontent.com/Yo-yerush/general_scripts/main/metabolome_boxplot_yo.R")
 

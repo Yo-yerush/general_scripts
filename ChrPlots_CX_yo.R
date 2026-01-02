@@ -40,8 +40,9 @@ chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_
     } else {
         # color bellow the lines
         polygon(c(pos, rev(pos)),
-        c(methylationProfiles[[1]]$Proportion, rep(y_min, length(pos))),
-        col = adjustcolor(col[1], alpha.f = 0.2), border = NA)
+            c(methylationProfiles[[1]]$Proportion, rep(y_min, length(pos))),
+            col = adjustcolor(col[1], alpha.f = 0.2), border = NA
+        )
         axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray20", tck = 0.1)
     }
     if (length(methylationProfiles) > 1) {
@@ -77,13 +78,17 @@ ChrPlots_CX_all <- function(
     y_min_cg = -1,
     y_min_chg = -0.5,
     y_min_chh = -0.2,
+    col_vec = NULL,
     italic_legend_names = TRUE,
     ylab_suffix = NULL,
     y_title_cex = 1,
     TE_as_gr = "tair10") {
-    ### color palette
-    n.pal <- ifelse(length(meth_var_list) < 3, 3, length(meth_var_list))
-    col_vec <- c("#00000090", paste0(RColorBrewer::brewer.pal(n = n.pal, "Set1")[-5], "90"), "#bf682890")
+
+    if (!is.null(col_vec)) {
+        ### color palette
+        n.pal <- ifelse(length(meth_var_list) < 3, 3, length(meth_var_list))
+        col_vec <- c("#00000090", paste0(RColorBrewer::brewer.pal(n = n.pal, "Set1")[-5], "90"), "#bf682890")
+    }
 
     ### y-mid edit
     y_mid_cg <- ifelse(is.null(y_mid_cg), (y_max_cg + y_min_cg) / 2, y_mid_cg)
@@ -276,4 +281,3 @@ te_plot_conf <- function(te_gr) {
         )
     }
 }
-

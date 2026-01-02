@@ -7,32 +7,35 @@ linear_plot_meth_rna <- function(
     DMRs_results_directory,
     RNAseq_results_directory,
     genes_2_keep = "filtered_by_DEGs", # can be "all_genes", "filtered_by_DMRs", "filtered_by_DEGs" or a custom gene list ---> c("AT3G01120", "AT3G17390", "AT1G53480")
+    genes_group_name = NULL,
     main_output_directory = "./Linear_correlation/",
     additional_plots = TRUE,
     pValues_table = TRUE,
     var1_col = "gray50",
     var2_col = "#bf6828") {
-
-    library(plyr)
-    library(dplyr)
-    library(corrplot)
-    library(ggpubr)
-    library(ggplot2)
-    library(lmerTest)
-    library(tidyr)
-    library(MASS)
-    library(scales)
+    suppressMessages({
+        library(plyr)
+        library(dplyr)
+        library(corrplot)
+        library(ggpubr)
+        library(ggplot2)
+        library(lmerTest)
+        library(tidyr)
+        library(MASS)
+        library(scales)
+    })
+    
     ### filter by 'genes_2_keep'
     rna_2_filter <- read.csv(paste0(RNAseq_results_directory, "all_genes_results_", var2_name, "_vs_", var1_name, ".csv"))
     gene_list_name <- genes_2_keep
 
-    if (genes_2_keep == "filtered_by_DEGs") {
+    if (length(genes_2_keep) != 1) {
+        gene_list <- filter(rna_2_filter, gene_id %in% genes_2_keep) %>% distinct(gene_id)
+        gene_list_name <- if (is.null(genes_group_name)) "selected_genes" else genes_group_name
+    } else if (genes_2_keep == "filtered_by_DEGs") {
         gene_list <- filter(rna_2_filter, padj < 0.05) %>% distinct(gene_id)
     } else if (genes_2_keep == "filtered_by_DMRs" | genes_2_keep == "all_genes") {
         gene_list <- distinct(rna_2_filter, gene_id)
-    } else {
-        gene_list <- filter(rna_2_filter, gene_id %in% genes_2_keep) %>% distinct(gene_id)
-        gene_list_name <- "selected_genes"
     }
 
     # open new plot for some reason..........
