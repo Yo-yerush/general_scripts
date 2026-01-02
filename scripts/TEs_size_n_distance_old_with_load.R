@@ -18,22 +18,24 @@ source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/ed
 
 ##################################################################################
 
-TE_df_tmp <- read.csv("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t")
+message("create TE objects into env")
+TE_file_path <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt"
+TE_df <- read.csv(TE_file_path, sep = "\t")
 te_width <- data.frame(
-    te_id = TE_df_tmp$Transposon_Name,
-    width = (TE_df_tmp$Transposon_max_End - TE_df_tmp$Transposon_min_Start),
-    superfamily = (TE_df_tmp$Transposon_Super_Family)
+    te_id = TE_df$Transposon_Name,
+    width = (TE_df$Transposon_max_End - TE_df$Transposon_min_Start),
+    superfamily = (TE_df$Transposon_Super_Family)
 )
 long_tes <- te_width[te_width$width >= 4000, 1]
 short_tes <- te_width[te_width$width <= 500, 1]
 
-TE_gr <- edit_TE_file(TE_df_tmp)
+TE_gr <- edit_TE_file(TE_df)
 
-rm("TE_df_tmp")
+rm(list = c("TE_df", "TE_file_path"))
 
 ##################################################################################
 
-TE_delta_meth <- function(var_table = NULL, pooled_list = NULL, context = NULL, TE_gr = TE_gr, n.cores = 6) {
+TE_delta_meth <- function(var_table = NULL, pooled_list = NULL, context = NULL, n.cores = 6) {
 
     if (!is.null(pooled_list)) {
         # use pooled and trimmed object
@@ -56,8 +58,6 @@ TE_delta_meth <- function(var_table = NULL, pooled_list = NULL, context = NULL, 
         meth_trnt <- trimm_and_rename(load_vars[[2]])
     }
 
-    if (is.null(context) | length(context) != 1) {context <- c("CG", "CHG", "CHH")}
-
     # Calculate average methylation for both samples
     meth_delta <- meth_ctrl[, 1]
     meth_delta$Proportion <- (meth_trnt$readsM / meth_trnt$readsN) - (meth_ctrl$readsM / meth_ctrl$readsN)
@@ -65,7 +65,7 @@ TE_delta_meth <- function(var_table = NULL, pooled_list = NULL, context = NULL, 
 
     # plots
     te_meth_delta <- list()
-    for (cntx in context) {
+    for (cntx in c("CG", "CHG", "CHH")) {
         # delta
         te_meth_delta[[cntx]] <- calculate_te_methylation(meth_delta, TE_gr, cntx, T)
         te_meth_delta[[cntx]]$sample <- "delta"
@@ -105,8 +105,8 @@ calculate_te_methylation <- function(meth_data, TE_gr, context, is.delta = F) {
 
 ##################################################################################
 
-te_size_plot <- function(x_list, cntx, line_col = "red4", point_col = "gray20") {
-    ggplot(x_list[[cntx]], aes(x = width, y = avg_meth, color = sample)) +
+te_size_plot <- function(x, cntx, line_col = "red4", point_col = "gray20") {
+    ggplot(x[[cntx]], aes(x = width, y = avg_meth, color = sample)) +
         geom_vline(xintercept = 4000, linetype = "dashed", color = "gray60") +
         geom_point(alpha = 0.6, size = 0.3, shape = 20) +
         geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
