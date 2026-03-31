@@ -2,14 +2,16 @@ metabolome_boxplot <- function(comp.name,
                                df,
                                exp = "mutant",
                                ctrl = "wt",
-                               title_x = "",
+                               title_x = NULL,
+                               text_x = NA, # 'NULL' to remove it
                                log_norm = TRUE,
-                               title_y = ifelse(log_norm, "log(nmol/gr)", "nmol/gr"),
+                               title_y = ifelse(log_norm, "log(nmol/gr)", "nmol/gr"), # 'NULL' to remove it
                                group_lines = TRUE,
                                p_as_star = TRUE,
                                x_cex = 1,
                                box_col = "gray60",
                                jitter_col = "#496b40",
+                               jitter_size = 1,
                                width = 2.01,
                                height = 2.53,
                                path_for_save_file = NULL,
@@ -34,7 +36,7 @@ metabolome_boxplot <- function(comp.name,
   data[, 2] <- as.numeric(data[, 2])
 
   line_wt <- grep(ctrl, data$X)
-  data$X[line_wt] <- gsub("\\.[0-9]+", "", data$X[line_wt])
+  data$X[line_wt] <- gsub("\\.[0-9]+|\\_[0-9]+", "", data$X[line_wt])
 
   if (group_lines) {
     line_treatment <- grep(exp, data$X)
@@ -79,12 +81,34 @@ metabolome_boxplot <- function(comp.name,
   p_labels_size <- ifelse(p_as_star, 4, 2)
 
 
-  y_max <- max(stat.test$y.position, na.rm = T) * 1.06
+  y_max <- max(stat.test$y.position, na.rm = T) * 1.1
   y_min <- min(data$Y, na.rm = T)
   if (log_norm == T & y_max > 8.5) {
     y_min <- y_min * 0.9
   } else {
-    y_min <- y_min * 0.8
+    y_min <- y_min * 0.75
+  }
+
+  #########################
+
+  if (is.null(text_x)) {
+     axis_text_x <- element_blank()
+     ticks_len_x <- unit(0, "cm")
+  } else {
+     axis_text_x <- element_text(angle = 45, vjust = 0.5, hjust = 0.5, face = "bold", size = x_cex)
+     ticks_len_x <- unit(0.1, "cm")
+  }
+
+  axis_title_x <- if (is.null(title_x)) {
+     element_blank()
+  } else {
+     element_text(size = 12, face = "bold")
+  }
+
+  axis_title_y <- if (is.null(title_y)) {
+     element_blank()
+  } else {
+     element_text(size = 12, face = "bold")
   }
 
   #########################
@@ -101,12 +125,13 @@ metabolome_boxplot <- function(comp.name,
     theme_classic() +
     theme( # panel.spacing = unit(2, "lines"),
       text = element_text(family = "serif"),
-      axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5, face = "bold", size = x_cex),
+      axis.text.x = axis_text_x,
       axis.text.y = element_text(face = "bold", size = 8),
-      axis.title.y = element_text(size = 12, face = "bold"),
+      axis.title.y = axis_title_y,
+      axis.title.x = axis_title_x,
       axis.line = element_blank(),
       axis.ticks = element_line("black", size = 0.75),
-      axis.ticks.length.x = unit(0.1, "cm"),
+      axis.ticks.length.x = ticks_len_x,
       axis.ticks.length.y = unit(ifelse(group_lines, -0.125, -0.1), "cm")
       # plot.title = element_text(face="bold.italic")
       # strip.text = element_blank(),
@@ -117,7 +142,7 @@ metabolome_boxplot <- function(comp.name,
     labs(title = title_main, x = title_x, y = title_y) +
 
     # geom_jitter(color="#383838", size=0.625, alpha=0.9, width = 0.18)  +
-    geom_jitter(color = jitter_col, alpha = 0.9, size = 1) +
+    geom_jitter(color = jitter_col, alpha = 0.9, size = jitter_size) +
     # geom_text(aes(label = ifelse(pValue < 0.05, ifelse(pValue < 0.01, ifelse(pValue < 0.001, '***', '**'), '*'), '')),
     #          vjust = -0.5, size = 4) +
     geom_rect(aes(xmin = 0.5, xmax = length(level.order) + 0.5, ymin = y_min, ymax = y_max), # ymax = max(data[,2])*1.05),
