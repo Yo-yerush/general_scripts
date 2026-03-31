@@ -8,10 +8,11 @@ expression_n_DMRs_merge_results <- function(
     ) {
   des_file <- data.table::fread("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/refs/heads/main/annotation_files/Methylome.At_description_file.csv.gz")
 
+  RNA_file <- RNAseq_results[, 1:4]
+  
   if (any(duplicated(RNA_file[, 1]))) stop("duplicated IDs (column 1)")
   if (!all(apply(RNA_file[, 2:4], 2, is.numeric))) stop("non-numeric values (columns 2-4)")
 
-  RNA_file <- RNAseq_results[, 1:4]
   RNA_new_names <- c("gene_id", "RNA_log2FC", "RNA_padj", "RNA_pvalue")
   names(RNA_file) <- RNA_new_names
   RNA_file$RNA_log2FC <- round(RNA_file$RNA_log2FC, 3)

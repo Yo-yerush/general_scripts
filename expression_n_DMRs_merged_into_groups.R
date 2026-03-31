@@ -309,6 +309,7 @@ expression_n_DMRs_merged_into_groups <- function(
     sulfur_biosynthesis = merged_results_df[grep("ath00920", merged_results_df$KEGG_pathway), ],
     sulfur_responsive = sulfur_responsive,
     sulfur_pathway_related = sulfur_pathway_related,
+    glucosinolate_biosynthesis = merged_results_df[grep("ath00966", merged_results_df$KEGG_pathway), ],
     primary_metabolism = primary_metabolism_v,
     secondary_metabolism = secondary_metabolism_v,
     AA_transporters = rbind(
@@ -611,12 +612,9 @@ expression_n_DMRs_merged_into_groups <- function(
     }
 
     if (combine_volcano_plots) {
-      ggsave(
-        paste0(output_dir, "volcano_", treatment, "_all_groups.svg"),
-        plot = gridExtra::grid.arrange(grobs = vol_plot_list, nrow = 4, ncol = 3),
-        width = 12.5,
-        height = 8.5
-      )
+      svg(file = paste0(output_dir, "volcano_", treatment, "_all_groups.svg"), width = 12.5, height = 8.5, family = "serif")
+      print(gridExtra::grid.arrange(grobs = vol_plot_list, nrow = 4, ncol = 3))
+      dev.off()
     }
   }
   ################################################################################
