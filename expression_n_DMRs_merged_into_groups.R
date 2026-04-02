@@ -337,14 +337,15 @@ expression_n_DMRs_merged_into_groups <- function(
     #  dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
 
     defense_response = grep_child_defence %>%
-      dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
+      dplyr::filter(!(RNA_pvalue > 0.05 & is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
     response_to_stress = grep_child_stress %>% dplyr::filter(RNA_pvalue < 0.05),
     # dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
 
     response_to_biotic = grep_child_biotic %>%
-      dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
+      dplyr::filter(!(RNA_pvalue > 0.05 & is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters))),
+
     response_to_abiotic = grep_child_abiotic %>%
-      dplyr::filter(!(is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters)))
+      dplyr::filter(!(RNA_pvalue > 0.05 & is.na(CG_Genes) & is.na(CHG_Genes) & is.na(CHH_Genes) & is.na(CG_Promoters) & is.na(CHG_Promoters) & is.na(CHH_Promoters)))
   )
 
   ################################################################################

@@ -20,14 +20,14 @@ expression_n_DMRs_merge_results <- function(
   RNA_file$RNA_pvalue <- as.numeric(sprintf("%.3e", RNA_file$RNA_pvalue))
 
   meth_fun <- function(context.f, ann.f) {
-    tryCatch(
+    meth_file.f <- tryCatch(
       {
-        meth_file.f <- read.csv(paste0(DMRs_results_directory, context.f, "/", ann.f, "_", context.f, "_genom_annotations.csv"))
-        meth_file.f$log2FoldChange <- round(log2(meth_file.f$proportion2 / meth_file.f$proportion1), 3)
-        meth_file.f <- meth_file.f[, c("gene_id", "log2FoldChange")]
+        x <- read.csv(paste0(DMRs_results_directory, context.f, "/", ann.f, "_", context.f, "_genom_annotations.csv"))
+        x$log2FoldChange <- round(log2(x$proportion2 / x$proportion1), 3)
+        x[, c("gene_id", "log2FoldChange")]
       },
       error = function(e) {
-        meth_file.f <- data.frame(gene_id = NA, log2FoldChange = NA)
+        data.frame(gene_id = NA, log2FoldChange = NA)
       }
     )
     names(meth_file.f)[2] <- paste0(context.f, "_", ann.f)
