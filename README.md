@@ -471,6 +471,48 @@ write.csv(merged_df, "/PATH/TO/merge_rnaseq_methylome_tables_mto1_vs_wt.csv", ro
 -----------------------------------------------------------------
 -----------------------------------------------------------------
 
+## Methylation & expression snapshot from TAIR IDs
+
+This script generates locus-level methylation and RNA-seq snapshot plots for AT5G19097 and AT4G15590.
+
+RNA-seq coverage is displayed as bars, with WT in gray and mto1 in orange. Differentially methylated regions are shown below the RNA-seq track and separated by sequence context (CG, CHG, CHH). Smoothed per-replicate methylation profiles (150 bp window) are shown in the bottom three tracks; WT replicates are plotted in gray tones and mto1 replicates in orange tones.
+
+Run:
+
+```r
+source("https://raw.githubusercontent.com/Yo-yerush/mto1-induced-non-CG-hypermethylation/refs/heads/main/scripts/TEGs_example_snapshots.R")
+
+# edit the script to follow your configurations:
+output_dir <- file.path(root_dir, "TEGs_snapshots")
+
+targets <- c("AT5G19097", "AT4G15590")
+flank_size <- 4000L
+grid_step <- 25L
+smooth_radius <- 150L
+
+cx_files <- c(
+  wt_1 = "methylome_CX_reports/wt_1_bismark_pe.CX_report.txt.gz",
+  wt_2 = "methylome_CX_reports/wt_2_bismark_pe.CX_report.txt.gz",
+  mto1_1 = "methylome_CX_reports/mto1_1_bismark_pe.CX_report.txt.gz",
+  mto1_2 = "methylome_CX_reports/mto1_2_bismark_pe.CX_report.txt.gz",
+  mto1_3 = "methylome_CX_reports/mto1_3_bismark_pe.CX_report.txt.gz"
+)
+
+rna_bam_files <- c(
+  wt_1 = "RNAseq_sorted_bam_files/wt_1_sorted.bam",
+  wt_2 = "RNAseq_sorted_bam_files/wt_2_sorted.bam",
+  wt_3 = "RNAseq_sorted_bam_files/wt_3_sorted.bam",
+  mto1_1 = "RNAseq_sorted_bam_files/mto1_1_sorted.bam",
+  mto1_2 = "RNAseq_sorted_bam_files/mto1_2_sorted.bam",
+  mto1_3 = "RNAseq_sorted_bam_files/mto1_3_sorted.bam"
+)
+```
+
+<img src="AT5G19097_results_snapshot.svg" alt="AT5G19097 snapshot" width="100%"/> <img src="AT4G15590_results_snapshot.svg" alt="AT4G15590 snapshot" width="100%"/>
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
 ## Classify the integrated table into gene groups (epigenetic, metabolism, stress-related, etc.)
 *return **unique** IDs data frame if there is **>1 DMR** within annotation*
 
