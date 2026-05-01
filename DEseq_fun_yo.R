@@ -5,7 +5,8 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
                      control = NA, # control character value from 'exp' column in 'col.data' file
                      group.A = NA, # samples row number for treated samples from 'col.data' file
                      path, # path for DEseq folder
-                     description_file) {
+                     description_file = NA,
+                     lfc_shrink = FALSE) {
   if (is.na(group.A)[1] == T) {
     if (is.na(exp.treatment) == T) {
       stop("experiment treatment name from coldata file: <exp.treatment> VS <control> (mut1 VS WT)")
@@ -62,17 +63,22 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
   ddsDE <- DESeq(dds)
   res <- results(ddsDE, contrast = contrast, alpha = 0.05)
-
+  if (lfc_shrink) {
+    res <- lfcShrink(ddsDE, contrast = contrast, res = res, type = "ashr")
+  }
+  
   samples.deseq <- data.frame(rownames(res), res$log2FoldChange, res$padj, res$pvalue)
   names(samples.deseq) <- c("gene_id", "log2FoldChange", "padj", "pValue")
 
   ################ merge names and samples by ACCESSION column, save csv file #############
 
   # gene_id and description
-  gene_id.and.description <- read.csv(description_file)
-  df_merge <- merge(samples.deseq, gene_id.and.description, by = "gene_id", all.x = T) %>%
-    arrange(padj)
-
+  if (!is.na(description_file)) { 
+    gene_id.and.description <- read.csv(description_file)
+    df_merge <- merge(samples.deseq, gene_id.and.description, by = "gene_id", all.x = T) %>%
+      arrange(padj)
+  }
+  
   # norm counts file
   normCounts <- as.data.frame(counts(ddsDE, normalized = T)) %>%
     mutate(gene_id = row.names(.)) %>%
