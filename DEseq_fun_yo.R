@@ -75,6 +75,8 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
   samples.deseq <- data.frame(rownames(res), res$log2FoldChange, res$padj, res$pvalue)
   names(samples.deseq) <- c("gene_id", "log2FoldChange", "padj", "pValue")
 
+  samples.deseq$gene_id <- sub("\\..*", "", samples.deseq$gene_id) 
+
   ################ merge names and samples by ACCESSION column, save csv file #############
 
   # gene_id and description
