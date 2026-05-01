@@ -5,6 +5,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
                      control = NA, # control character value from 'exp' column in 'col.data' file
                      group.A = NA, # samples row number for treated samples from 'col.data' file
                      path, # path for DEseq folder
+                     colData_file,
                      description_file = NA,
                      lfc_shrink = FALSE) {
   if (is.na(group.A)[1] == T) {
@@ -34,7 +35,10 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
 
   # coldata file
-  info <- read.table(paste0(path, "/coldata.", experiment, ".txt"), header = T, sep = "\t")
+  # info <- read.table(paste0(path, "/coldata.", experiment, ".txt"), header = T, sep = "\t")
+  info <- colData_file
+  names(info) <- c("x", "sample", "exp")
+  
   info$sample <- as.character(info$sample)
 
   if (is.na(group.A)[1] == T) {
