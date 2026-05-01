@@ -5,6 +5,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
                      control = NA, # control character value from 'exp' column in 'col.data' file
                      group.A = NA, # samples row number for treated samples from 'col.data' file
                      path, # path for DEseq folder
+                     genes_results_path = path,
                      colData_file,
                      description_file = NA,
                      lfc_shrink = FALSE) {
@@ -49,7 +50,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
     info <- info[samples.number, ]
   }
 
-  files <- c(paste0(path, "/genes.results.files/", info$x, ".genes.results"))
+  files <- c(paste0(genes_results_path, "/", info$x, ".genes.results"))
   names(files) <- c(info$x)
 
   ########################## DESeq2 ######################
