@@ -180,6 +180,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
   } else {
     resApeT <- res
   }
+  
   svg(paste0(new_path_2, "/MA_plot_", A.B_VS_c, ".svg"), width = 4.65, height = 2.5, family = "serif")
 
   # layout(matrix(c(1, 2), nrow = 1))#, widths = c(2,2))
