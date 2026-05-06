@@ -69,7 +69,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
   ddsDE <- DESeq(dds)
   res <- results(ddsDE, contrast = contrast, alpha = 0.05)
   if (lfc_shrink) {
-    res <- lfcShrink(ddsDE, contrast = contrast, res = res, type = "ashr")
+    res <- lfcShrink(ddsDE, contrast = contrast, res = res, type = "apeglm")
   }
   
   samples.deseq <- data.frame(rownames(res), res$log2FoldChange, res$padj, res$pvalue)
@@ -175,8 +175,11 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
   ############################################################
   ######### MA plot
-  resApeT <- lfcShrink(ddsDE, coef = 2, type = "apeglm", lfcThreshold = 1)
-
+  if (!lfc_shrink) {
+    resApeT <- lfcShrink(ddsDE, contrast = contrast, res = res, coef = 2, type = "apeglm", lfcThreshold = 1)
+  } else {
+    resApeT <- res
+  }
   svg(paste0(new_path_2, "/MA_plot_", A.B_VS_c, ".svg"), width = 4.65, height = 2.5, family = "serif")
 
   # layout(matrix(c(1, 2), nrow = 1))#, widths = c(2,2))
