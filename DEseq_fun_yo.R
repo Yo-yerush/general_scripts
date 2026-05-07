@@ -25,7 +25,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
   # upload libraries
   lib_packages <- c(
-    "dplyr", "DESeq2", "apeglm", "ggplot2", "tximport", "RColorBrewer", "pheatmap"
+    "dplyr", "DESeq2", "apeglm", "ggplot2", "tximport", "RColorBrewer", "pheatmap", "ashr"
   )
   for (n.pkg in seq(lib_packages)) {
     suppressMessages(library(lib_packages[n.pkg], character.only = TRUE))
