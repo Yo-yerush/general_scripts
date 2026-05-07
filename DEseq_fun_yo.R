@@ -176,7 +176,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
   ############################################################
   ######### MA plot
   if (!lfc_shrink) {
-    resApeT <- lfcShrink(ddsDE, contrast = contrast, res = res, coef = 2, type = "apeglm", lfcThreshold = 1)
+    resApeT <- lfcShrink(ddsDE, res = res, coef = 2, type = "apeglm", lfcThreshold = 1)
   } else {
     resApeT <- res
   }
