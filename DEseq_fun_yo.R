@@ -5,7 +5,10 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
                      control = NA, # control character value from 'exp' column in 'col.data' file
                      group.A = NA, # samples row number for treated samples from 'col.data' file
                      path, # path for DEseq folder
-                     description_file) {
+                     genes_results_path = path,
+                     colData_file,
+                     description_file = NA,
+                     lfc_shrink = FALSE) {
   if (is.na(group.A)[1] == T) {
     if (is.na(exp.treatment) == T) {
       stop("experiment treatment name from coldata file: <exp.treatment> VS <control> (mut1 VS WT)")
@@ -22,7 +25,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
   # upload libraries
   lib_packages <- c(
-    "dplyr", "DESeq2", "apeglm", "ggplot2", "tximport", "RColorBrewer", "pheatmap"
+    "dplyr", "DESeq2", "apeglm", "ggplot2", "tximport", "RColorBrewer", "pheatmap", "ashr"
   )
   for (n.pkg in seq(lib_packages)) {
     suppressMessages(library(lib_packages[n.pkg], character.only = TRUE))
@@ -33,7 +36,10 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
 
   # coldata file
-  info <- read.table(paste0(path, "/coldata.", experiment, ".txt"), header = T, sep = "\t")
+  # info <- read.table(paste0(path, "/coldata.", experiment, ".txt"), header = T, sep = "\t")
+  info <- colData_file
+  names(info) <- c("x", "sample", "exp")
+  
   info$sample <- as.character(info$sample)
 
   if (is.na(group.A)[1] == T) {
@@ -44,7 +50,7 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
     info <- info[samples.number, ]
   }
 
-  files <- c(paste0(path, "/genes.results.files/", info$x, ".genes.results"))
+  files <- c(paste0(genes_results_path, "/", info$x, ".genes.results"))
   names(files) <- c(info$x)
 
   ########################## DESeq2 ######################
@@ -62,17 +68,24 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
   ddsDE <- DESeq(dds)
   res <- results(ddsDE, contrast = contrast, alpha = 0.05)
-
+  if (lfc_shrink) {
+    res <- lfcShrink(ddsDE, contrast = contrast, res = res, type = "ashr")
+  }
+  
   samples.deseq <- data.frame(rownames(res), res$log2FoldChange, res$padj, res$pvalue)
   names(samples.deseq) <- c("gene_id", "log2FoldChange", "padj", "pValue")
+
+  samples.deseq$gene_id <- sub("\\..*", "", samples.deseq$gene_id) 
 
   ################ merge names and samples by ACCESSION column, save csv file #############
 
   # gene_id and description
-  gene_id.and.description <- read.csv(description_file)
-  df_merge <- merge(samples.deseq, gene_id.and.description, by = "gene_id", all.x = T) %>%
-    arrange(padj)
-
+  if (!is.na(description_file)) { 
+    gene_id.and.description <- read.csv(description_file)
+    df_merge <- merge(samples.deseq, gene_id.and.description, by = "gene_id", all.x = T) %>%
+      arrange(padj)
+  }
+  
   # norm counts file
   normCounts <- as.data.frame(counts(ddsDE, normalized = T)) %>%
     mutate(gene_id = row.names(.)) %>%
@@ -162,8 +175,12 @@ deseq_fc <- function(A.B_VS_c, # DE design. <"." for "&" (and)> <"_" for " " (sp
 
   ############################################################
   ######### MA plot
-  resApeT <- lfcShrink(ddsDE, coef = 2, type = "apeglm", lfcThreshold = 1)
-
+  if (!lfc_shrink) {
+    resApeT <- lfcShrink(ddsDE, contrast = contrast, res = res, type = "ashr", lfcThreshold = 1)
+  } else {
+    resApeT <- res
+  }
+  
   svg(paste0(new_path_2, "/MA_plot_", A.B_VS_c, ".svg"), width = 4.65, height = 2.5, family = "serif")
 
   # layout(matrix(c(1, 2), nrow = 1))#, widths = c(2,2))
