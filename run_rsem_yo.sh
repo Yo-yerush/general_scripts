@@ -17,7 +17,8 @@ Options:
 -g, --genome        FASTA of the reference genome (will be indexed)
 -a, --gtf           GTF/GFF3 annotation file (will be copied next to the index)
 -o, --outdir        Output directory [default: ./rsem_results]
--n, --ncores        Number of cores for alignment/quant [default: 16]
+-n, --ncores        Number of maximum cores usage for alignment/quant [default: 16]
+-c, --chunks        How many samples to run in parallel [default: auto]
 --sort              Sort & index transcript-aligned BAM files
 --genes_results     Keep just '*.genes.results' file (for downstream analysis)
 --help
@@ -25,8 +26,8 @@ Options:
 Notes:
 ------
 * Sample table supports single- or paired-end reads. Use typical names like:
-  _R1_, _R2_, _1.fq(.gz), _2.fastq(.gz). If single-end, just list one row per
-  sample with the read file path.
+_R1_, _R2_, _1.fq(.gz), _2.fastq(.gz). If single-end, just list one row per
+sample with the read file path.
 * Keeps the overall UX and logging style of your Bismark pipeline, but shorter.
 
 Example:
@@ -52,6 +53,7 @@ ann_file_full_path=
 output_path="./rsem_results"
 output_suffix="rnaseq_rsem_$(date +%d%m%y)"
 n_cores=16
+chunks=auto
 sort_bam=false
 genes_res=false
 
@@ -75,6 +77,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         -n | --ncores)
             n_cores=$2
+            shift 2
+        ;;
+        -c | --chunks)
+            chunks=$2
             shift 2
         ;;
         --sort)
@@ -141,6 +147,33 @@ if [[ "$paired_end_sequence" == "false" ]]; then
 fi
 
 ####################
+### chunking and cores per job
+sample_count=${#sample_name[@]}
+
+if [[ "$chunks" == "auto" ]]; then
+    if (( sample_count >= 12 )); then ### and module!!
+        chunks=4
+    elif (( sample_count >= 6 )); then
+        chunks=3
+    else
+        chunks=2
+    fi
+fi
+
+# cap chunks to sample count and enforce minimum 1
+if (( chunks > sample_count )); then
+    chunks=$sample_count
+fi
+if (( chunks < 1 )); then
+    chunks=1
+fi
+
+cores_per_job=$(( n_cores / chunks ))
+if (( cores_per_job < 1 )); then
+    cores_per_job=1
+fi
+
+####################
 ### prepare output
 ori_path=$(pwd)
 mkdir -p "$output_path"
@@ -151,15 +184,17 @@ output_path=$(pwd)
 mkdir -p "$output_path/tmp"
 cd "$output_path/tmp"
 
-log_file="../${output_suffix}.log"
-echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
-echo "**  samples: ${sample_name[@]}" >> "$log_file"
+echo ""
+echo "**  samples: ${sample_name[@]}"
 if [[ "$sort_bam" == "true" ]]; then
-    echo "**  will sort & index transcript BAMs" >> "$log_file"
+    echo "**  will sort & index transcript BAMs"
 fi
 if [[ "$genes_res" == "true" ]]; then
-    echo "**  will keep just '*.genes.results' files" >> "$log_file"
+    echo "**  will keep just '*.genes.results' files"
 fi
+echo ""
+
+mkdir -p "${output_path}/logs"
 
 ####################
 ### index (prepare) the reference for RSEM
@@ -188,60 +223,77 @@ fi
 if [[ "$genome_new_path" == *.fas ]]; then
     mv "$genome_new_path" "${genome_new_path%.fas}.fa"
     genome_new_path="${genome_new_path%.fas}.fa"
-    echo "** rename genome file: '$(basename "$genome_new_path")'" >> "$log_file"
+    echo "** rename genome file: '$(basename "$genome_new_path")'"
 fi
 
 index_prefix="$output_path/genome_indx/rsem_index"
 cd "$output_path/genome_indx"
-echo "preparing RSEM reference..." >> "$log_file"
-rsem-prepare-reference --bowtie2 --gtf "$(basename "$ann_new_path")" "$(basename "$genome_new_path")" "rsem_index"
+echo "preparing RSEM reference..."
+echo "**  $(date +"%d-%m-%y %H:%M")" > "${output_path}/logs/index.rsem.log"
+rsem-prepare-reference --bowtie2 --gtf "$(basename "$ann_new_path")" "$(basename "$genome_new_path")" "rsem_index" >> "${output_path}/logs/index.rsem.log" 2>&1
 
 cd "$output_path/tmp"
-echo "" >> "$log_file"
-echo "-----------------------------------" >> "$log_file"
+echo ""
+echo "-----------------------------------"
 
 ####################
 ### main loop
 for ((u = 0; u < ${#sample_name[@]}; u++)); do
-    echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
-    echo "" >> "$log_file"
+    echo "**  $(date +"%d-%m-%y %H:%M")"
+    echo ""
 
     i="${sample_name[$u]}"
     R1_i="${R1_fastq_path[$u]}"
     R2_i="${R2_fastq_path[$u]}"
 
-    echo "Processing sample: $i" >> "$log_file"
+    echo "Processing sample: $i"
     mkdir -p "$output_path/$i"
 
     if [[ "$paired_end_sequence" == "false" ]]; then
-        echo "* read1 file: '$(basename "$R1_i")'" >> "$log_file"
-        rsem-calculate-expression -p "$n_cores" --bowtie2 "$R1_i" "$index_prefix" "$output_path/$i/$i"
+        echo "* read1 file: '$(basename "$R1_i")'"
     else
-        echo "* read1 file: '$(basename "$R1_i")'" >> "$log_file"
-        echo "* read2 file: '$(basename "$R2_i")'" >> "$log_file"
-        rsem-calculate-expression -p "$n_cores" --bowtie2 --paired-end "$R1_i" "$R2_i" "$index_prefix" "$output_path/$i/$i"
+        echo "* read1 file: '$(basename "$R1_i")'"
+        echo "* read2 file: '$(basename "$R2_i")'"
     fi
 
-    # optional: sort BAM for IGV, etc.
-    if [[ "$sort_bam" == "true" ]]; then
-        if [[ -f "$output_path/$i/$i.transcript.bam" ]]; then
-            samtools sort "$output_path/$i/$i.transcript.bam" -o "$output_path/$i/${i}_sorted.bam"
-            samtools index "$output_path/$i/${i}_sorted.bam"
+    echo "**  $(date +"%d-%m-%y %H:%M")" > "${output_path}/logs/sample_${i}.rsem.log"
+
+    (
+        echo ""
+        
+        if [[ "$paired_end_sequence" == "false" ]]; then
+            rsem-calculate-expression -p "$cores_per_job" --bowtie2 "$R1_i" "$index_prefix" "$output_path/$i/$i"
+        else
+            rsem-calculate-expression -p "$cores_per_job" --bowtie2 --paired-end "$R1_i" "$R2_i" "$index_prefix" "$output_path/$i/$i"
         fi
-    fi
 
-    # optional: keep just '*genes.results' files
-    if [[ "$genes_res" == "true" ]]; then
-        mv  "$output_path"/"$i"/"$i".genes.results $output_path
-        rm -r -- "$output_path"/"$i"
-    fi
+        if [[ "$sort_bam" == "true" ]]; then
+            if [[ -f "$output_path/$i/$i.transcript.bam" ]]; then
+                samtools sort "$output_path/$i/$i.transcript.bam" -o "$output_path/$i/${i}_sorted.bam"
+                samtools index "$output_path/$i/${i}_sorted.bam"
+            fi
+        fi
 
-    
+        if [[ "$genes_res" == "true" ]]; then
+            mv "$output_path/$i/$i".genes.results "$output_path"
+            rm -r -- "$output_path/$i"
+        fi
+        
+        echo ""
+        echo "**  $(date +"%d-%m-%y %H:%M")"
+    ) >> "${output_path}/logs/sample_${i}.rsem.log" 2>&1 &
 
-    echo "" >> "$log_file"
-    echo "-----------------------------------" >> "$log_file"
+
+if (( (u + 1) % chunks == 0 )); then
+    wait
+fi
+
+    echo ""
+    echo "-----------------------------------"
 done
 
-echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
+wait
+
+echo "**  $(date +"%d-%m-%y %H:%M")"
 cd "$ori_path"
 rm -r "$output_path/tmp"
