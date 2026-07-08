@@ -9,18 +9,20 @@ RSEM RNA-seq pipeline (Bowtie2)
 
 Usage:
 ------
-run_rsem_yo.sh [-s <required>] [-g <required>] [-a <required>] [options]
+run_rsem_yo.sh [-s <required>] [-g <required>] [-a | -t <required>] [options]
 
 Options:
 --------
--s, --samples       Tab-delimited two-column file: sample-name <TAB> fastq-path
--g, --genome        FASTA of the reference genome (will be indexed)
--a, --gtf           GTF/GFF3 annotation file (will be copied next to the index)
--o, --outdir        Output directory [default: ./rsem_results]
--n, --ncores        Number of maximum cores usage for alignment/quant [default: 16]
--c, --chunks        How many samples to run in parallel [default: auto]
---sort              Sort & index transcript-aligned BAM files
---genes_results     Keep just '*.genes.results' file (for downstream analysis)
+-s, --samples           Tab-delimited two-column file: 'sample-name <TAB> fastq-path'
+-g, --genome            FASTA ('*.fasta', '*.fas, '*.fa') of the reference genome (will be indexed).
+                        Alternatively, a reference transcriptome ('*.fna') can be provided, but then a 'gene2transcript' file must also be provided.
+-a, --gtf               GTF/GFF3 annotation file (will be copied next to the index)
+-t, --gene2transcript   Text file to map transcripts to genes IDs. (two columns: 'gene-id <TAB> transcript-id').
+-o, --outdir            Output directory [default: ./rsem_results]
+-n, --ncores            Number of maximum cores usage for alignment/quant [default: 16]
+-c, --chunks            How many samples to run in parallel [default: auto]
+--sort                  Sort & index transcript-aligned BAM files
+--genes_results         Keep just '*.genes.results' file (for downstream analysis)
 --help
 
 Notes:
@@ -28,7 +30,6 @@ Notes:
 * Sample table supports single- or paired-end reads. Use typical names like:
 _R1_, _R2_, _1.fq(.gz), _2.fastq(.gz). If single-end, just list one row per
 sample with the read file path.
-* Keeps the overall UX and logging style of your Bismark pipeline, but shorter.
 
 Example:
 --------
@@ -50,8 +51,9 @@ $ ./run_rsem_yo.sh -s samples_table.txt -g TAIR10_chr_all.fa -a TAIR10.gtf --gen
 sample_table=
 genome_file_full_path=
 ann_file_full_path=
+gene2transcript_file_full_path=
 output_path="./rsem_results"
-output_suffix="rnaseq_rsem_$(date +%d%m%y)"
+# output_suffix="rnaseq_rsem_$(date +%d%m%y)"
 n_cores=16
 chunks=auto
 sort_bam=false
@@ -69,6 +71,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         -a | --gtf)
             ann_file_full_path=$2
+            shift 2
+        ;;
+        -t | --gene2transcript)
+            gene2transcript_file_full_path=$2
             shift 2
         ;;
         -o | --outdir)
@@ -104,10 +110,22 @@ done
 
 ####################
 # basic checks
-if [[ -z "$sample_table" || -z "$genome_file_full_path" || -z "$ann_file_full_path" ]]; then
-    echo "Error: -s/--samples, -g/--genome, and -a/--gtf are required."
+if [[ -z "$sample_table" || -z "$genome_file_full_path" ]]; then
+    echo "Error: -s/--samples and -g/--genome are required."
     echo ""
     echo "$usage_yo"
+    exit 1
+fi
+
+if [[ -z "$ann_file_full_path" && -z "$gene2transcript_file_full_path" ]]; then
+    echo "Error: Either -a/--gtf or -t/--gene2transcript is required."
+    echo ""
+    echo "$usage_yo"
+    exit 1
+fi
+
+if [[ -n "$ann_file_full_path" && -n "$gene2transcript_file_full_path" ]]; then
+    echo "Error: Provide only one: either -a/--gtf or -t/--gene2transcript, not both."
     exit 1
 fi
 
@@ -116,11 +134,19 @@ if [[ ! -f "$sample_table" ]]; then
     exit 1
 fi
 if [[ ! -f "$genome_file_full_path" ]]; then
-    echo "Error: Genome file '$genome_file_full_path' does not exist."
+    echo "Error: Genome/Transcriptome file '$genome_file_full_path' does not exist."
     exit 1
 fi
-if [[ ! -f "$ann_file_full_path" ]]; then
-    echo "Error: Annotation (GTF/GFF3) file '$ann_file_full_path' does not exist."
+
+if [[ -n "$ann_file_full_path" && ! -f "$ann_file_full_path" ]]; then
+    echo "Error: Annotation file does not exist:"
+    echo "$ann_file_full_path"
+    exit 1
+fi
+
+if [[ -n "$gene2transcript_file_full_path" && ! -f "$gene2transcript_file_full_path" ]]; then
+    echo "Error: Gene-to-transcript mapping file does not exist:"
+    echo "$gene2transcript_file_full_path"
     exit 1
 fi
 
@@ -129,6 +155,13 @@ if [[ "$sort_bam" == "true" && "$genes_res" == "true" ]]; then
     echo "Sorting BAM files requires keeping the full output directory structure."
     exit 1
 fi
+
+####################
+
+ann_file_full_path="${ann_file_full_path:-none}"
+gene2transcript_file_full_path="${gene2transcript_file_full_path:-none}"
+
+####################
 
 # ensure sample table has unix line endings
 dos2unix "$sample_table" 2>/dev/null
@@ -186,6 +219,9 @@ cd "$output_path/tmp"
 
 echo ""
 echo "**  samples: ${sample_name[@]}"
+if [[ "$ann_file_full_path" == "none" ]]; then
+    echo "**  Using transcriptome as reference"
+fi
 if [[ "$sort_bam" == "true" ]]; then
     echo "**  will sort & index transcript BAMs"
 fi
@@ -200,11 +236,16 @@ mkdir -p "${output_path}/logs"
 ### index (prepare) the reference for RSEM
 mkdir -p "$output_path/genome_indx"
 genome_b_name=$(basename "$genome_file_full_path")
-ann_b_name=$(basename "$ann_file_full_path")
+    if [[ "$gene2transcript_file_full_path" == "none" ]]; then
+    ann_b_name=$(basename "$ann_file_full_path")
+    cp "$ann_file_full_path" "$output_path/genome_indx"/
+else
+    ann_b_name=$(basename "$gene2transcript_file_full_path")
+    cp "$gene2transcript_file_full_path" "$output_path/genome_indx"/
+fi
 
 # copy inputs
 cp "$genome_file_full_path" "$output_path/genome_indx"/
-cp "$ann_file_full_path" "$output_path/genome_indx"/
 
 genome_new_path="$output_path/genome_indx/$genome_b_name"
 ann_new_path="$output_path/genome_indx/$ann_b_name"
@@ -230,7 +271,11 @@ index_prefix="$output_path/genome_indx/rsem_index"
 cd "$output_path/genome_indx"
 echo "preparing RSEM reference..."
 echo "**  $(date +"%d-%m-%y %H:%M")" > "${output_path}/logs/index.rsem.log"
-rsem-prepare-reference --bowtie2 --gtf "$(basename "$ann_new_path")" "$(basename "$genome_new_path")" "rsem_index" >> "${output_path}/logs/index.rsem.log" 2>&1
+if [[ "$gene2transcript_file_full_path" == "none" ]]; then
+    rsem-prepare-reference --bowtie2 --gtf "$(basename "$ann_new_path")" "$(basename "$genome_new_path")" "rsem_index" >> "${output_path}/logs/index.rsem.log" 2>&1
+else
+    rsem-prepare-reference --bowtie2 --transcript-to-gene-map "$(basename "$ann_new_path")" "$(basename "$genome_new_path")" "rsem_index" >> "${output_path}/logs/index.rsem.log" 2>&1
+fi
 
 cd "$output_path/tmp"
 echo ""
