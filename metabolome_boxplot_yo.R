@@ -4,14 +4,23 @@ metabolome_boxplot <- function(comp.name,
                                ctrl = "wt",
                                title_x = NULL,
                                text_x = NA, # 'NULL' to remove it
+                               xaxis_text_angle = 0,
                                log_norm = TRUE,
                                title_y = ifelse(log_norm, "log(nmol/gr)", "nmol/gr"), # 'NULL' to remove it
                                group_lines = TRUE,
                                p_as_star = TRUE,
                                x_cex = 1,
-                               box_col = "gray60",
+                               box_width = 0.5,
+                               box_linewidth = 0.5,
+                               box_col_exp = "white",
+                               box_col_ctrl = "white",
+                               box_line_color = "black",
                                jitter_col = "#496b40",
                                jitter_size = 1,
+                               jitter_alpha = 0.9,
+                               jitters_spread_width = 0.1,
+                               outlier_shape = NA,
+                               outside_rect_linewidth = 0.75,
                                width = 2.01,
                                height = 2.53,
                                path_for_save_file = NULL,
@@ -95,7 +104,7 @@ metabolome_boxplot <- function(comp.name,
      axis_text_x <- element_blank()
      ticks_len_x <- unit(0, "cm")
   } else {
-     axis_text_x <- element_text(angle = 45, vjust = 0.5, hjust = 0.5, face = "bold", size = x_cex)
+     axis_text_x <- element_text(angle = xaxis_text_angle, vjust = 0.5, hjust = 0.5, face = "bold", size = x_cex)
      ticks_len_x <- unit(0.1, "cm")
   }
 
@@ -121,7 +130,12 @@ metabolome_boxplot <- function(comp.name,
   #########################
   comp.plot <- data %>%
     ggplot(aes(x = factor(x = X, level = level.order), y = Y)) +
-    geom_boxplot(fill = c("gray100", rep(box_col, n_exp_groups)), colour = "black") +
+    geom_boxplot(
+      width = box_width,
+      outlier.shape = outlier_shape,
+      linewidth = box_linewidth,
+      fill = c(box_col_ctrl, rep(box_col_exp, n_exp_groups)),
+      colour = box_line_color) +
     theme_classic() +
     theme( # panel.spacing = unit(2, "lines"),
       text = element_text(family = "serif"),
@@ -142,11 +156,12 @@ metabolome_boxplot <- function(comp.name,
     labs(title = title_main, x = title_x, y = title_y) +
 
     # geom_jitter(color="#383838", size=0.625, alpha=0.9, width = 0.18)  +
-    geom_jitter(color = jitter_col, alpha = 0.9, size = jitter_size) +
+    geom_jitter(color = jitter_col, alpha = jitter_alpha, size = jitter_size, width = jitters_spread_width) +
+
     # geom_text(aes(label = ifelse(pValue < 0.05, ifelse(pValue < 0.01, ifelse(pValue < 0.001, '***', '**'), '*'), '')),
     #          vjust = -0.5, size = 4) +
     geom_rect(aes(xmin = 0.5, xmax = length(level.order) + 0.5, ymin = y_min, ymax = y_max), # ymax = max(data[,2])*1.05),
-      fill = "transparent", color = "black", size = 0.75
+      fill = "transparent", color = "black", size = outside_rect_linewidth
     ) +
     stat_pvalue_manual(stat.test, label = p_labels, label.size = p_labels_size, hide.ns = T, family = "serif", face = "italic") + # , tip.length = 0.01)
     # annotate("text", label= p_value_vector, size = 8)
