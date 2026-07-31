@@ -1,0 +1,5 @@
+SampleID	Condition	Replicate	ChIP_R1	ChIP_R2	Input_R1	Input_R2
+WT_1	WT	1	/path/WT_1_ChIP_R1.fastq.gz	/path/WT_1_ChIP_R2.fastq.gz	/path/WT_1_Input_R1.fastq.gz	/path/WT_1_Input_R2.fastq.gz
+WT_2	WT	2	/path/WT_2_ChIP_R1.fastq.gz	/path/WT_2_ChIP_R2.fastq.gz	/path/WT_2_Input_R1.fastq.gz	/path/WT_2_Input_R2.fastq.gz
+mto3_1	mto3	1	/path/mto3_1_ChIP_R1.fastq.gz	/path/mto3_1_ChIP_R2.fastq.gz	/path/mto3_1_Input_R1.fastq.gz	/path/mto3_1_Input_R2.fastq.gz
+mto3_2	mto3	2	/path/mto3_2_ChIP_R1.fastq.gz	/path/mto3_2_ChIP_R2.fastq.gz	/path/mto3_2_Input_R1.fastq.gz	/path/mto3_2_Input_R2.fastq.gz
