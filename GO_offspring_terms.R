@@ -7,5 +7,5 @@ offspring_fun <- function(go_id, xx = as.list(GO.db::GOBPOFFSPRING)) { # 'GOBPCH
     child_terms <- c(child_terms, as.character(xx[[child_terms[i]]]))
   }
 
-  return(child_terms[!is.na(child_terms)] %>% unique()) # %>% paste(collapse = "|"))
+  return(unique(child_terms[!is.na(child_terms)])) # %>% paste(collapse = "|"))
 }

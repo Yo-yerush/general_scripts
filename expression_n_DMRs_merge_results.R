@@ -1,12 +1,12 @@
 expression_n_DMRs_merge_results <- function(
     DMRs_results_directory,
     RNAseq_results,
-    designed_excel_output = NULL, # if not NULL, write the output file prefix
-    make_it_unique = FALSE, # eill make unique IDs data frame but with non-numeric values got the DMRs log2FC
+    designed_excel_output = NULL, # if not NULL, write WITHOUT the output file prefix
+    make_it_unique = FALSE, # will make unique IDs data frame but with non-numeric values got the DMRs log2FC
     DMR_sep = ", ", # if unique
     empty_DMR = "" # if unique
     ) {
-  des_file <- data.table::fread("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/refs/heads/main/annotation_files/Methylome.At_description_file.csv.gz")
+  des_file <- data.table::fread("https://github.com/Yo-yerush/Methylome.At/raw/refs/heads/main/annotation_files/At_custom_description_file.csv.gz")
 
   RNA_file <- RNAseq_results[, 1:4]
   
@@ -22,7 +22,7 @@ expression_n_DMRs_merge_results <- function(
   meth_fun <- function(context.f, ann.f) {
     meth_file.f <- tryCatch(
       {
-        x <- read.csv(paste0(DMRs_results_directory, context.f, "/", ann.f, "_", context.f, "_genom_annotations.csv"))
+        x <- read.csv(paste0(DMRs_results_directory, context.f, "/DMRs_", ann.f, "_", context.f, "_genom_annotations.csv"))
         x$log2FoldChange <- round(log2(x$proportion2 / x$proportion1), 3)
         x[, c("gene_id", "log2FoldChange")]
       },
