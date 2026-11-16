@@ -35,7 +35,7 @@ abiotic_stress_enrichment_test <- function(df_rna, dataset = NULL, sub_title_pre
         }
     }
 
-    datasetName <- ifelse(is.null(dataset), "DEGs", paste0(dataset, "DEGs"))
+    datasetName <- ifelse(is.null(dataset), "DEGs", paste(dataset, "DEGs"))
     sub_title <- paste0(ifelse(is.null(sub_title_prefix), "", paste0(sub_title_prefix, " - ")), datasetName)
 
     child_terms_cold <- offspring_fun("GO:0009409")
