@@ -25,6 +25,7 @@ abiotic_stress_enrichment_test <- function(df_rna, dataset = NULL, sub_title_pre
     df_rna <- df_rna %>% distinct(gene_id, .keep_all = T)
     df_sig <- df_rna %>% filter(padj < 0.05)
 
+    direction_col <- ifelse(dataset == "up", "#e37a7a", ifelse(dataset == "down", "#8b8be5", "#dddbac"))
     if (!is.null(dataset)) {
         if (dataset == "up") {
             df_sig <- df_sig %>% filter(log2FoldChange > 0)
@@ -170,7 +171,7 @@ abiotic_stress_enrichment_test <- function(df_rna, dataset = NULL, sub_title_pre
                 y = "Fold Enrichment",
                 fill = "Significant\n(Fisher, p<0.05)"
             ) +
-            scale_fill_manual(values = c("TRUE" = "red", "FALSE" = "gray")) +
+            scale_fill_manual(values = c("TRUE" = direction_col, "FALSE" = "gray")) +
             scale_y_continuous(limits = c(0, max(enrichment_summary$Fold_enrichment) * 1.15))
     }
 }
